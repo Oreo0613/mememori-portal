@@ -1,0 +1,618 @@
+@charset "UTF-8";
+
+/* =========================================================================
+   グループ 1：デザインシステム（カラー変数）と画面の基本土台
+   ========================================================================= */
+:root {
+  /* カラーパレット（ポータルの雰囲気に融合した高級感のあるダークテーマ） */
+  --bg-main: #0f172a;
+  /* 画面全体の深いネイビー背景 */
+  --card-bg: #1e293b;
+  /* 各種ボードやモーダルの背景 */
+  --card-bg-dark: #111827;
+  /* モーダル内などでさらに一段暗くする背景 */
+  --input-bg: rgba(255, 255, 255, 0.07);
+  /* 入力欄の薄い透過背景 */
+  --input-bg-sub: #0f172a;
+  /* テーブルヘッダーやパーツ用の暗い背景 */
+  --border: #334155;
+  /* 通常のフチ線 */
+  --border-light: #475569;
+  /* 目立たせたいパーツ用のフチ線 */
+
+  /* テキストカラー */
+  --text-main: #f8fafc;
+  /* メインの白い文字 */
+  --text-sub: #94a3b8;
+  /* 補足やラベル用のグレー文字 */
+  --text-muted: #64748b;
+  /* さらに目立たせないプレースホルダー等の文字 */
+
+  /* アクセント（キーカラー） */
+  --accent: #3b82f6;
+  /* 近未来的な輝くブルー */
+  --accent-hover: #1d4ed8;
+  /* 青ボタンのホバー時 */
+  --accent-glow: rgba(59, 130, 246, 0.4);
+  --success: #10b981;
+  /* 完了・保存成功のグリーン */
+  --danger: #f43f5e;
+  /* 注意・攻撃力などのピンクレッド */
+  --warning: #f59e0b;
+  /* スキル名などのゴールドオレンジ */
+
+  /* 共通の影と角丸 */
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+}
+
+/* 画面全体の基本設定 */
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* 共通上部ヘッダー（メニューバー） */
+.admin-header {
+  background: var(--input-bg-sub);
+  padding: 15px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  margin: -20px -20px 25px -20px;
+  /* 画面端までピッタリ広げる設定 */
+}
+
+.admin-header .header-logo {
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  background: linear-gradient(to right, #fff, var(--text-sub));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.admin-header .header-nav ul {
+  display: flex;
+  gap: 24px;
+  font-size: 14px;
+}
+
+.admin-header .header-nav a {
+  color: var(--text-sub);
+  font-weight: bold;
+  transition: color 0.2s;
+  padding-bottom: 4px;
+}
+
+.admin-header .header-nav a.active {
+  color: #fff;
+  border-bottom: 2px solid var(--accent);
+}
+
+.admin-header .header-nav a:hover {
+  color: #fff;
+}
+
+.ar-btn.admin-logout-btn {
+  margin-left: 20px;
+  padding: 4px 12px;
+  font-size: 13px;
+}
+
+/* 各ページのタイトルエリア */
+.header-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto 20px auto;
+}
+
+.header-controls h2 {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+/* 共通の絞り込みフィルターエリア */
+.admin-container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding-bottom: 40px;
+}
+
+.filter-section {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  margin: 0 auto 25px auto;
+  width: 100%;
+  max-width: 1080px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 12px;
+}
+
+.filter-row:last-child {
+  margin-bottom: 0;
+}
+
+.filter-label {
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--text-sub);
+  min-width: 60px;
+}
+
+.filter-options {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-options label {
+  position: relative;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.filter-options input[type="radio"] {
+  display: none !important;
+}
+
+.filter-options .form-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--input-bg-sub);
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.filter-options .form-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background-color: #fff;
+}
+
+.filter-options .form-icon span {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-sub);
+}
+
+.filter-options input[type="radio"]:checked+.form-icon {
+  border-color: var(--accent) !important;
+  background: var(--card-bg);
+  box-shadow: 0 0 12px var(--accent);
+  transform: scale(1.05);
+}
+
+
+
+/* =========================================================================
+   グループ 2：キャラクター枠・スロット・グリッド（共通パーツ）
+   ========================================================================= */
+
+/* 🃏 横並びの編成スロット親要素 */
+.slots,
+.c-slots {
+  display: flex;
+  gap: 8px;
+}
+
+/* 正方形スロット基本（アルカナの一覧・モーダル内共通） */
+.slot {
+  width: 40px;
+  height: 40px;
+  border: 2px dashed var(--border-light);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--text-muted);
+  cursor: pointer;
+  background: var(--input-bg-sub);
+  position: relative;
+  transition: all 0.15s ease;
+  aspect-ratio: 1 / 1;
+}
+
+.slot:hover,
+.slot.sel {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.slot.sel {
+  box-shadow: 0 0 8px var(--accent);
+}
+
+.slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* フォーム内などの大きめスロット用（64x64pxに拡張） */
+.c-slots .slot {
+  width: 64px;
+  height: 64px;
+}
+
+/* スロット内の右下にある削除「✕」ボタン */
+.c-slot-del {
+  color: white;
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #000;
+  border: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.c-slot-del:hover {
+  background-color: var(--danger);
+}
+
+/* 👥 キャラクターアイコンの並び（アトラスのグリッド及びモーダル内共通） */
+.character-grid,
+.pk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+/* モーダル内のミニ選択画面用（少しコンパクトにリサイズ） */
+.pk-grid {
+  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+  gap: 6px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* キャラクターカード単体 */
+.char-card,
+.pk-card {
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  position: relative;
+}
+
+.char-card:hover,
+.pk-card:hover {
+  transform: translateY(-3px) scale(1.03);
+  border-color: var(--accent);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+.char-card img,
+.pk-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* 性能未入力キャラを半透明（点線枠）にするスタイル */
+.char-card.perf-not-ready {
+  opacity: 0.45;
+  filter: grayscale(30%);
+  border-style: dashed;
+}
+
+.char-card.perf-not-ready::after {
+  content: "未完了";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.7);
+  color: var(--text-sub);
+  font-size: 9px;
+  text-align: center;
+  font-weight: bold;
+  padding: 2px 0;
+}
+
+
+
+/* =========================================================================
+   グループ 3：共通モーダルシステム・フォーム入力・アニメーションボタン
+   ========================================================================= */
+
+/* 🔲 モーダル遮断幕（背景の薄暗いスクリーン） */
+.md-overlay,
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* is-active クラスが付与された瞬間に画面に出現 */
+.md-overlay.is-active,
+.modal-overlay.is-active {
+  display: flex;
+}
+
+/* 🃏 モーダルカード本体（左右2カラム構造） */
+.md-card,
+.modal-box {
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 1000px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+  color: var(--text-main);
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  position: relative;
+  min-height: 450px;
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+/* 縦長スクロール用コンテナ（キャラマスタ用） */
+.modal-body-container {
+  display: flex;
+  width: 100%;
+  gap: 24px;
+  overflow-y: auto;
+}
+
+/* モーダル内部：フォーム設置用のメインエリア */
+.md-main,
+.modal-left-master,
+.modal-right-individual {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  padding-bottom: 50px;
+  /* 右下の保存ボタンと被るのを避ける余白 */
+}
+
+/* モーダル内部：右側サイド（枠クリックで出現するキャラ選択等） */
+.pk-side {
+  width: 320px;
+  flex-shrink: 0;
+  background: var(--card-bg);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  display: none;
+  /* 通常は非表示 */
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pk-side.is-active {
+  display: flex;
+  /* 枠選択時に右側からパッと出現 */
+}
+
+/* ✏️ 共通フォーム入力コントロール */
+.md-card label,
+.modal-box label {
+  display: block;
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--text-sub);
+  margin-bottom: 6px;
+}
+
+.md-card input[type="text"],
+.md-card textarea,
+.modal-box input,
+.modal-box select {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+  background: var(--input-bg);
+  color: var(--text-main);
+  font-size: 14px;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+/* 入力中（フォーカス時）のSFチックな発光アニメーション */
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* 編集不可（IDなど）のグレーアウト表示 */
+input[readonly] {
+  background: var(--input-bg-sub);
+  color: var(--text-sub);
+  cursor: not-allowed;
+  border-color: var(--border);
+}
+
+/* キャラマスタ用の一際大きいヒーロー名入力欄 */
+input.main-hero-name {
+  font-size: 18px !important;
+  font-weight: bold !important;
+  color: #fff !important;
+  border-color: var(--text-sub) !important;
+}
+
+/* 2列に綺麗に並べるためのフォーム用グリッド */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* 🔘 共通アニメーションボタン */
+/* 高級感のあるダークブルーボタン（共通の基本形状） */
+.ar-btn,
+.pk-btn,
+.btn {
+  background: #1e293b;
+  border: 1px solid var(--border-light);
+  color: #cbd5e1;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* gap: 6px; */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+/* 🔓 マウスホバーした瞬間のドラマチックな浮き上がり演出 */
+.ar-btn:hover,
+.btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px) scale(1.02);
+  opacity: 1 !important;
+  /* 透過スタイルが入っていても100%表示に上書き */
+}
+
+/* 🔘 カチッとクリックした（アクティブな）瞬間の押し込み手応え */
+.ar-btn:active,
+.btn:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* カラーバリエーション（保存・更新ボタン用のアクセントブルー） */
+.btn-primary,
+.status-toggle-btn.done,
+#mdStatusBtn {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover) !important;
+}
+
+/* キャンセルボタン等のグレーカラー */
+.btn-muted {
+  background: #475569 !important;
+  color: #cbd5e1 !important;
+}
+
+/* ボタンをモーダルの右下隅に絶対に固定させる共通ルール */
+.modal-footer-fixed,
+[style*="position: absolute; bottom: 20px; right: 24px;"] {
+  position: absolute !important;
+  bottom: 20px !important;
+  right: 24px !important;
+  z-index: 10;
+}
+
+/* =========================================================================
+   🌀 共通ローディングアニメーション（スピナー）
+   ========================================================================= */
+
+/* 画面全体を覆う半透明の黒いマスク */
+.admin-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(10, 16, 28, 0.6);
+  /* 画面を薄く暗くする */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  /* 一番手前に表示 */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+/* is-active がついたら表示、かつ連打防止で操作をロック */
+.admin-loading-overlay.is-active {
+  opacity: 1;
+  pointer-events: auto;
+  /* 表示中は画面の後ろのボタンを押せなくする（連打防止） */
+}
+
+/* ぐるぐる回る本体（CSSだけで動かします） */
+.admin-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--primary-color, #4f46e5);
+  /* 設計図のメインカラー等に連動 */
+  border-radius: 50%;
+  animation: admin-spin 1s linear infinite;
+}
+
+@keyframes admin-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

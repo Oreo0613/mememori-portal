@@ -1,0 +1,594 @@
+/* -------------------------------------------------------------------------
+   1. 画面専用の変数定義 ＆ 選択肢マスター
+   ------------------------------------------------------------------------- */
+// パッシブ効果の選択肢リスト
+const PASSIVE_OPTIONS = [
+  "未設定",
+  "攻撃力(%)",
+  "HP(%)",
+  "HPドレイン(%)",
+  "防御力(%)",
+  "腕力(%)",
+  "技力(%)",
+  "魔力(%)",
+  "耐久力(%)",
+  "クリティカル(%)",
+  "回避(%)",
+  "スピード",
+  "防御貫通",
+  "物魔防御貫通",
+  "命中(%)",
+  "クリティカル耐性(%)",
+  "弱体効果命中(%)",
+  "弱体効果耐性(%)",
+  "物理防御力(%)",
+  "魔法防御力(%)",
+  "物理クリダメ緩和(%)",
+  "魔法クリダメ緩和(%)",
+  "クリダメ強化(%)",
+];
+
+// 💡 フィルター用・ドロップダウン用のアイコン画像のモック
+var ATTR_IMAGES = [
+  { name: "藍", url: "assets/images/icon-attr-blue.png" },
+  { name: "紅", url: "assets/images/icon-attr-red.png" },
+  { name: "翠", url: "assets/images/icon-attr-green.png" },
+  { name: "黄", url: "assets/images/icon-attr-yellow.png" },
+  { name: "天", url: "assets/images/icon-attr-holy.png" },
+  { name: "冥", url: "assets/images/icon-attr-dark.png" },
+];
+var TYPE_IMAGES = [
+  { name: "ウォーリアー", url: "assets/images/icon-type-warrior.png" },
+  { name: "スナイパー", url: "assets/images/icon-type-gunner.png" },
+  { name: "ソーサラー", url: "assets/images/icon-type-sorcerer.png" },
+];
+
+// キャラクター詳細データのモック（読み込みテスト用）
+var cachedDetailPackage = {
+  status: {
+    id: "1",
+    speed: 120,
+    str: 500,
+    dex: 450,
+    mag: 200,
+    sta: 600,
+    defInitial: 100,
+    hpCustom: 15000,
+    penCustom: 50,
+    tags: "アタッカー",
+  },
+  skills: {
+    A1: {
+      name: "アクティブスキル1",
+      normal: "敵単体に300%の物理ダメージ",
+      ct: "4",
+    },
+    A2: {
+      name: "アクティブスキル2",
+      normal: "敵全体に150%の物理ダメージ",
+      ct: "6",
+    },
+    P1: { name: "パッシブスキル1", normal: "戦闘開始時、自身の攻撃力+10%" },
+    P2: {
+      name: "パッシブスキル2",
+      normal: "自身のHPが50%以下の時、回避率+15%",
+    },
+  },
+  weapon: {
+    name: "ヴァルキリースピア",
+    mika: {
+      val: "腕力+100",
+      p1: "攻撃力(%)+10",
+      p2: "クリティカル(%)+5",
+      p3: "未設定",
+    },
+  },
+};
+
+var currentDetailIndex = -1; // 現在詳細を見ているキャラのインデックス番
+
+/* =========================================================================
+   🧙‍♀️ ログイン成功後の初期化処理
+   ========================================================================= */
+
+// 💡 admin.js が認証に成功したあと、自動でこの関数を呼び出し
+window.onAdminAuthSuccess = function (user) {
+  console.log("admin.js からの通知：キャラクターページの描画を開始します。");
+
+  // 3つの関数をここで呼び出す
+  renderGridHTML(characterMaster);
+  buildCustomDropdowns();
+  buildFilterButtons();
+};
+
+/* -------------------------------------------------------------------------
+   キャラクター一覧グリッドを動的に組み立てる関数
+   ------------------------------------------------------------------------- */
+function renderGridHTML(charList) {
+  const grid = document.getElementById("charGrid");
+  if (!grid) return;
+
+  grid.innerHTML = charList
+    .map((char, i) => {
+      const isFinished = char.tags && char.tags.includes("[完了]");
+      return `
+      <div class="char-card ${!isFinished ? "perf-not-ready" : ""}" onclick="openCharacterDetail(${i})" data-attr="${char.attr}" data-type="${char.type}">
+        <img src="${char.iconUrl}" class="char-icon" onerror="this.onerror=null; this.src='https://placehold.co';">
+      </div>
+    `;
+    })
+    .join("");
+}
+
+/* -------------------------------------------------------------------------
+    絞り込みフィルター ＆ カスタムドロップダウンの構築
+   ------------------------------------------------------------------------- */
+function buildFilterButtons() {
+  const aOpt = document.getElementById("filterAttrOptions");
+  if (aOpt) {
+    aOpt.innerHTML =
+      `<label><input type="radio" name="filterAttr" value="ALL" checked onchange="execFiltering()"><div class="form-icon"><img src="assets/images/icon-all.png" alt="ALL"></div></label>` +
+      ATTR_IMAGES.map(
+        (i) =>
+          `<label><input type="radio" name="filterAttr" value="${i.name}" onchange="execFiltering()"><div class="form-icon"><img src="${i.url}"></div></label>`,
+      ).join("");
+  }
+  const tOpt = document.getElementById("filterTypeOptions");
+  if (tOpt) {
+    tOpt.innerHTML =
+      `<label><input type="radio" name="filterType" value="ALL" checked onchange="execFiltering()"><div class="form-icon"><img src="assets/images/icon-all.png" alt="ALL"></div></label>` +
+      TYPE_IMAGES.map(
+        (i) =>
+          `<label><input type="radio" name="filterType" value="${i.name}" onchange="execFiltering()"><div class="form-icon"><img src="${i.url}"></div></label>`,
+      ).join("");
+  }
+}
+
+// フィルターの実行（ALLまたは選択された属性・タイプ以外をパッと非表示にする）
+function execFiltering() {
+  const attrRadio = document.querySelector('input[name="filterAttr"]:checked');
+  const typeRadio = document.querySelector('input[name="filterType"]:checked');
+  if (!attrRadio || !typeRadio) return;
+
+  const a = attrRadio.value;
+  const t = typeRadio.value;
+
+  document.querySelectorAll(".char-card").forEach((c) => {
+    c.style.display =
+      (a === "ALL" || c.dataset.attr === a) &&
+      (t === "ALL" || c.dataset.type === t)
+        ? "flex"
+        : "none";
+  });
+}
+
+// モーダル内のカスタムドロップダウン（属性・タイプ選択）の中身を生成
+function buildCustomDropdowns() {
+  const attrMenu = document.getElementById("ddAttrMenu");
+  if (attrMenu) {
+    attrMenu.innerHTML = ATTR_IMAGES.map(function (item) {
+      return (
+        '<div class="dd-item" style="display:flex; align-items:center; gap:10px; padding:10px; cursor:pointer;" onclick="setDDValue(\'Attr\', \'' +
+        item.name +
+        "', '" +
+        item.url +
+        "')\">" +
+        '<img src="' +
+        item.url +
+        '" style="width:22px; height:22px;"> ' +
+        "<span>" +
+        item.name +
+        "</span>" +
+        "</div>"
+      );
+    }).join("");
+  }
+
+  const typeMenu = document.getElementById("ddTypeMenu");
+  if (typeMenu) {
+    typeMenu.innerHTML = TYPE_IMAGES.map(function (item) {
+      return (
+        '<div class="dd-item" style="display:flex; align-items:center; gap:10px; padding:10px; cursor:pointer;" onclick="setDDValue(\'Type\', \'' +
+        item.name +
+        "', '" +
+        item.url +
+        "')\">" +
+        '<img src="' +
+        item.url +
+        '" style="width:22px; height:22px;"> ' +
+        "<span>" +
+        item.name +
+        "</span>" +
+        "</div>"
+      );
+    }).join("");
+  }
+}
+
+function toggleDD(id) {
+  const e = document.getElementById(id);
+  if (e) e.style.display = e.style.display === "block" ? "none" : "block";
+}
+
+/* -------------------------------------------------------------------------
+   4. キャラクター詳細・性能確認モーダルの制御
+   ------------------------------------------------------------------------- */
+// キャラクター詳細モーダルを開く
+function openCharacterDetail(idx) {
+  currentDetailIndex = idx;
+  const baseInfo = characterMaster[idx];
+  if (!baseInfo) return;
+
+  document.getElementById("cd-avatar").src = baseInfo.iconUrl;
+  document.getElementById("cd-name").innerText = baseInfo.name;
+  document.getElementById("cd-attr").innerText = baseInfo.attr;
+  document.getElementById("cd-type").innerText = baseInfo.type;
+
+  // Rarity表示用の要素が存在するかチェックして安全に流し込み
+  const rarityEl =
+    document.getElementById("cd-rarity-display") ||
+    document.getElementById("formRarity");
+  if (rarityEl) rarityEl.innerText = baseInfo.rarity;
+
+  let cleanTags = baseInfo.tags
+    ? baseInfo.tags.replace(/,?\s*\[完了\]/, "").replace(/^,\s*/, "")
+    : "";
+  document.getElementById("cd-tags-display").innerText = cleanTags
+    ? "🏷️ " + cleanTags
+    : "";
+
+  // パラメーター自動計算エンジンの実行
+  runStatusCalculationEngine(cachedDetailPackage.status, baseInfo.type);
+  switchWeaponTrigger("mika"); // 初期表示はミカエル武器タブ
+
+  document.getElementById("charDetailModal").classList.add("is-active");
+}
+
+// 📊 パラメーター自動計算エンジン（タイプ別の割り振りロジック）
+function runStatusCalculationEngine(status, type) {
+  let atkVal = 0;
+  // 💡 タイプ別に攻撃力に反映する基礎パラメータをスイッチする定石ロジック
+  if (type === "ウォーリアー" || type === "ウォーリア") {
+    atkVal = status.str; // ウォーリアーは腕力（STR）が攻撃力になる
+  } else if (type === "スナイパー") {
+    atkVal = status.dex; // スナイパーは技力（DEX）が攻撃力になる
+  } else if (type === "ソーサラー") {
+    atkVal = status.mag; // ソーサラーは魔力（MAG）が攻撃力になる
+  }
+
+  const hitVal = Math.floor(status.str * 0.5); // 腕力の半分が命中
+  const critVal = Math.floor(status.dex * 0.5); // 技力の半分がクリティカル
+  const debuffVal = Math.floor(status.mag * 0.5); // 魔力の半分が弱体効果命中
+
+  document.getElementById("v-stat-speed").innerText =
+    status.speed.toLocaleString();
+  document.getElementById("v-stat-atk").innerText = atkVal.toLocaleString();
+  document.getElementById("v-stat-hit").innerText = hitVal.toLocaleString();
+  document.getElementById("v-stat-crit").innerText = critVal.toLocaleString();
+  document.getElementById("v-stat-debuff").innerText =
+    debuffVal.toLocaleString();
+
+  const physDef = status.str; // 腕力＝物理防御力
+  const magDef = status.mag; // 魔力＝魔法防御力
+  const evadeVal = Math.floor(status.dex * 0.5); // 技力の半分が回避
+  const staVal = Math.floor(status.sta * 0.5); // 耐久力の半分がクリ耐性
+
+  document.getElementById("v-stat-hp").innerText = (
+    status.hpCustom || 0
+  ).toLocaleString();
+  document.getElementById("v-stat-def").innerText =
+    status.defInitial.toLocaleString();
+  document.getElementById("v-stat-pdef").innerText = physDef.toLocaleString();
+  document.getElementById("v-stat-mdef").innerText = magDef.toLocaleString();
+  document.getElementById("v-stat-evade").innerText = evadeVal.toLocaleString();
+  document.getElementById("v-stat-critres").innerText = staVal.toLocaleString();
+}
+
+// 専用武器のタブ切り替え処理
+function switchWeaponTrigger(mode) {
+  document
+    .querySelectorAll("#charDetailModal .admin-btn")
+    .forEach((b) => b.classList.remove("active"));
+  const targetBtn = document.getElementById(`btn-wp-${mode}`);
+  if (targetBtn) targetBtn.classList.add("active");
+
+  // 4大スキルのテキスト流し込み
+  ["A1", "A2", "P1", "P2"].forEach((slot) => {
+    const sk = cachedDetailPackage.skills[slot] || {
+      name: "未設定",
+      normal: "",
+    };
+    document.getElementById(`sk-${slot}-name`).innerText = sk.name;
+    document.getElementById(`sk-${slot}-text`).innerText =
+      sk.normal || "未登録";
+
+    const ctArea = document.getElementById(`sk-${slot}-ct-area`);
+    if (ctArea) {
+      ctArea.innerHTML =
+        sk.ct && sk.ct !== "0"
+          ? `<span class="tag-badge" style="background:#1e1b4b; color:#a5b4fc; border:1px solid #4338ca;">CT: ${sk.ct}</span>`
+          : "";
+    }
+  });
+
+  // 武器パッシブの流し込み
+  const w = cachedDetailPackage.weapon || { name: "" };
+  if (mode === "normal") {
+    document.getElementById("v-w-name").innerText = "専用武器なし (未装備)";
+    document.getElementById("v-w-val").innerText = "固有値: -";
+    document.getElementById("v-w-passives-lbl").style.display = "none";
+    document.getElementById("v-w-passives").innerHTML =
+      "<li>パッシバ効果はありません</li>";
+  } else {
+    const wd = w[mode] || { val: "", p1: "", p2: "", p3: "" };
+    document.getElementById("v-w-name").innerText = w.name
+      ? w.name
+      : "専用武器名未設定";
+    document.getElementById("v-w-val").innerText = `固有値: ${wd.val || "-"}`;
+    document.getElementById("v-w-passives-lbl").style.display = "block";
+
+    const pUl = document.getElementById("v-w-passives");
+    pUl.innerHTML = "";
+    [wd.p1, wd.p2, wd.p3].forEach((pStr) => {
+      if (pStr && pStr !== "未設定") {
+        const li = document.createElement("li");
+        li.innerText = `● ${pStr}`;
+        pUl.appendChild(li);
+      }
+    });
+  }
+}
+
+function closeDetailModal() {
+  document.getElementById("charDetailModal").classList.remove("is-active");
+}
+
+/* -------------------------------------------------------------------------
+   5. 性能編集エディタ（性能編集モーダル）の制御
+   ------------------------------------------------------------------------- */
+// 性能編集画面を開く
+function openPerformanceEditor() {
+  const s = characterMaster[currentDetailIndex];
+  if (!s) return;
+
+  document.getElementById("charDetailModal").classList.remove("is-active");
+  document.getElementById("pe-charId").value = s.id;
+  document.getElementById("pe-avatar").src = s.iconUrl;
+  document.getElementById("pe-header-info").innerHTML =
+    `<h3 style="margin:0; font-size:16px; font-weight:bold;">${s.name}</h3><span class="tag-badge">${s.attr} / ${s.type}</span>`;
+
+  // フォームに初期値をセット（モックデータから流し込み）
+  const realStatus = cachedDetailPackage.status;
+  document.getElementById("pe-str").value = realStatus.str;
+  document.getElementById("pe-dex").value = realStatus.dex;
+  document.getElementById("pe-mag").value = realStatus.mag;
+  document.getElementById("pe-sta").value = realStatus.sta;
+  document.getElementById("pe-speed").value = realStatus.speed;
+  document.getElementById("pe-defInitial").value = realStatus.defInitial;
+  document.getElementById("pe-penCustom").value = realStatus.penCustom || 0;
+  document.getElementById("pe-charTags").value = s.tags || "";
+  document.getElementById("pe-w-name").value =
+    cachedDetailPackage.weapon.name || "";
+
+  document.getElementById("charPerfEditModal").classList.add("is-active");
+}
+
+// 性能編集画面を閉じる
+function closePerfEditor() {
+  document.getElementById("charPerfEditModal").classList.remove("is-active");
+}
+
+// ─── 💡 savePerformanceData を丸ごと書き換え ───
+function savePerformanceData() {
+  // 🔔 通知用のメッセージを用意
+  var alertMessage = "✨ キャラクターの性能・ステータスデータを保存しました！";
+
+  // 🌀【新しく追加】共通ローディング演出の連動
+  if (typeof showLoading === "function") showLoading();
+
+  setTimeout(function () {
+    if (typeof hideLoading === "function") hideLoading();
+
+    closePerfEditor();
+
+    alert(alertMessage); 
+  }, 500);
+}
+
+
+/* -------------------------------------------------------------------------
+     6. 大元のキャラクターマスタ編集・新規登録登録フォーム制御
+     ------------------------------------------------------------------------- */
+// 詳細画面の「⚙️ マスタ編集」から呼び出す連動処理
+function openAdminEditFromDetail() {
+  document.getElementById("charDetailModal").classList.remove("is-active");
+  openModalForEditByIndex(currentDetailIndex);
+}
+
+// 既存キャラの編集フォーム展開
+function openModalForEditByIndex(idx) {
+  const d = characterMaster[idx];
+  if (!d) return;
+  document.getElementById("modalMainTitle").innerText =
+    "キャラクターマスタ編集";
+  document.getElementById("formId").value = d.id;
+  document.getElementById("formName").value = d.name;
+  document.getElementById("formIconUrl").value = d.iconUrl;
+  document.getElementById("formCoverUrl").value = d.coverUrl || "";
+  document.getElementById("modalCoverPreview").src =
+    d.coverUrl || "https://placehold.co";
+  document.getElementById("formRarity").value = d.rarity || "限定";
+
+  setDDValue(
+    "Attr",
+    d.attr,
+    ATTR_IMAGES.find((i) => i.name === d.attr)?.url || "",
+  );
+  setDDValue(
+    "Type",
+    d.type,
+    TYPE_IMAGES.find((i) => i.name === d.type)?.url || "",
+  );
+
+  document.getElementById("charModal").classList.add("is-active");
+}
+
+// 🔓 新規登録ボタン（openModalForCreate）を押したときの処理
+function openModalForCreate() {
+  document.getElementById("charMasterForm").reset();
+  document.getElementById("modalMainTitle").innerText = "新規キャラクター登録";
+
+  // 新しいIDを仮発行（現在の最大ID+1）
+  const nextId = String(
+    characterMaster.length > 0
+      ? Math.max.apply(
+          null,
+          characterMaster.map(function (c) {
+            return Number(c.id);
+          }),
+        ) + 1
+      : 1,
+  );
+  document.getElementById("formId").value = nextId;
+
+  document.getElementById("formAttr").value = "";
+  document.getElementById("ddAttrIcon").src = "";
+  document.getElementById("ddAttrText").innerText = "選択...";
+  document.getElementById("formType").value = "";
+  document.getElementById("ddTypeIcon").src = "";
+  document.getElementById("ddTypeText").innerText = "選択...";
+  document.getElementById("formElapsedDays").value = "";
+  document.getElementById("modalCoverPreview").src = "https://placehold.co";
+
+  document.getElementById("charModal").classList.add("is-active");
+}
+
+// キャンセル・閉じるボタンの連動
+document
+  .getElementById("closeModalBtn")
+  ?.addEventListener("click", function () {
+    closeModal();
+  });
+
+function closeModal() {
+  document.getElementById("charModal").classList.remove("is-active");
+}
+
+// 「保存する」が押されたときのデータ同期処理
+function saveMasterData() {
+  const formId = document.getElementById("formId").value;
+  const formName = document.getElementById("formName").value.trim();
+  const formAttr = document.getElementById("formAttr").value;
+  const formType = document.getElementById("formType").value;
+  const formRarity = document.getElementById("formRarity").value;
+  const formIconUrl = document.getElementById("formIconUrl").value.trim();
+
+  if (!formName || !formAttr || !formType) {
+    alert("名前、属性、タイプは必須入力です。");
+    return;
+  }
+
+  const formData = {
+    id: formId,
+    name: formName,
+    attr: formAttr,
+    type: formType,
+    rarity: formRarity,
+    iconUrl: formIconUrl || "https://placehold.co",
+    tags: "",
+  };
+
+  const existingIdx = characterMaster.findIndex(function (c) {
+    return String(c.id) === String(formId);
+  });
+
+  // ─── 💡 saveMasterData の後半、既存更新か新規追加の判定部分から ───
+  let alertMessage = ""; // 変数の宣言
+
+  if (existingIdx !== -1) {
+    characterMaster[existingIdx] = Object.assign(
+      {},
+      characterMaster[existingIdx],
+      formData,
+    );
+    alertMessage = `✨ 「${formName}」のマスタ情報を更新しました！`;
+  } else {
+    characterMaster.push(formData); // 新規登録
+    alertMessage = `🎉 新規キャラクター「${formName}」を登録しました！`;
+  }
+
+
+  // 🌀共通ローディング演出の連動
+  if (typeof showLoading === "function") showLoading();
+
+  setTimeout(function () {
+    if (typeof hideLoading === "function") hideLoading();
+
+    closeModal();
+    renderGridHTML(characterMaster);
+
+    alert(alertMessage); 
+  }, 500);
+}
+
+function calculateElapsedDays(startDateStr) {
+  if (!startDateStr) {
+    document.getElementById("formElapsedDays").value = "";
+    return;
+  }
+  const start = new Date(startDateStr);
+  const today = new Date();
+  start.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+  const diffDays = Math.ceil(Math.abs(today - start) / (1000 * 60 * 60 * 24));
+  document.getElementById("formElapsedDays").value = diffDays + "日";
+}
+
+/* =========================================================================
+   ⚙️ ドロップダウン制御関数の追加（重複エラー解決版）
+   ========================================================================= */
+
+// 💡 177行目に古い toggleDD があるため、ここには setDDValue の実体だけを書きます！
+function setDDValue(type, name, url) {
+  const textEl = document.getElementById("dd" + type + "Text");
+  const iconEl = document.getElementById("dd" + type + "Icon");
+  if (textEl) textEl.innerText = name;
+  if (iconEl) {
+    iconEl.src = url;
+    iconEl.style.display = url ? "inline-block" : "none";
+  }
+  const hiddenInput = document.getElementById("form" + type);
+  if (hiddenInput) hiddenInput.value = name;
+  const menu = document.getElementById("dd" + type + "Menu");
+  if (menu) menu.style.display = "none";
+}
+
+// 💡 ドロップダウンの外側をクリックしたときに自動で閉じる仕組み
+window.addEventListener("click", function (event) {
+  if (!event.target.closest(".dd-container")) {
+    document.querySelectorAll(".dd-menu").forEach((menu) => {
+      menu.style.display = "none";
+    });
+  }
+});
+
+// 💡 177行目にある toggleDD と、上で作った setDDValue をHTML（window）へ大公開！
+window.toggleDD = toggleDD;
+window.setDDValue = setDDValue;
+
+/* =========================================================================
+   🌐 HTML側（onclick / onchange）から関数を呼べるようにする公開処理
+   ========================================================================= */
+// 💡 window. に関数を入れることで、HTML側の onclick="openModalForCreate()" などが動くようになります！
+window.openModalForCreate = openModalForCreate;
+window.execFiltering = execFiltering;
+window.openCharacterDetail = openCharacterDetail;
+window.closeDetailModal = closeDetailModal;
+window.switchWeaponTrigger = switchWeaponTrigger;
+window.openPerformanceEditor = openPerformanceEditor;
+window.closePerfEditor = closePerfEditor;
+window.savePerformanceData = savePerformanceData;
+window.openAdminEditFromDetail = openAdminEditFromDetail;
+window.closeModal = closeModal;
+window.saveMasterData = saveMasterData;
+window.calculateElapsedDays = calculateElapsedDays;

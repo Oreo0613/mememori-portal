@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>管理者用 - アルカナマスタ管理</title>
+
+  <link rel="icon" href="data:,">
+  <!-- destyle.cssのCDN読み込み -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/destyle.css@4.0.0/destyle.min.css" />
+
+  <!-- 管理者用のデザインCSS -->
+  <link rel="stylesheet" href="assets/css/admin.css" />
+  <link rel="stylesheet" href="assets/css/admin-arcana.css" />
+
+  <script src="https://kit.fontawesome.com/d36bec305b.js" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+  <!-- 管理者用の専用ヘッダー -->
+  <header class="admin-header">
+    <div class="header-logo">マスタ管理</div>
+    <nav class="header-nav">
+      <ul>
+        <li><a href="#" class="active">アルカナマスタ</a></li>
+        <li><a href="admin-character.html">キャラクターマスタ</a></li>
+        <li><button id="globalLogoutBtn" class="ar-btn btn-muted admin-logout-btn">🚪 ログアウト</button></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- =======================================
+      コンテンツ
+      ======================================== -->
+
+  <!-- 一覧テーブルエリア -->
+  <div class="ar-box">
+    <div class="header-controls">
+      <h2>アルカナマスタ</h2>
+    </div>
+
+    <div class="ar-wrapper">
+      <table class="ar-table">
+        <thead>
+          <tr>
+            <th class="ar-table__th-id">ID</th>
+            <th class="ar-table__th-name">アルカナ名</th>
+            <th class="ar-table__th-chars">キャラ</th>
+            <th>効果</th>
+            <th class="ar-table__th-action">操作</th>
+          </tr>
+        </thead>
+        <tbody id="arTbody">
+          <tr>
+            <td colspan="5" class="ar-table__loading">
+              データ受信中...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- テーブル下部の新規追加アクションバー -->
+    <div class="ar-table-footer">
+      <button class="ar-btn btn-primary ar-table-footer__btn" onclick="openCardForNew()">
+        <i class="fa-solid fa-plus"></i> 新規アルカナを追加
+      </button>
+    </div>
+
+    <!-- 🔲 編集・新規共通モーダル（外枠） -->
+    <div class="md-overlay" id="mdOverlay" onclick="closeCardOutside(event)">
+      <!-- 🃏 モーダルカード本体 -->
+      <div class="md-card" id="mdCard" onclick="event.stopPropagation()">
+        <!-- 🎴 【左側】アルカナの編集・入力フォームセクション -->
+        <div class="md-main">
+          <div>
+            <label>■ アルカナ名</label>
+            <input type="text" id="mdTitleInput" placeholder="アルカナ名を入力してください" />
+          </div>
+
+          <div>
+            <label class="md-main__label-slots">■ 構成メンバーの編成 (枠をクリックしてキャラクターを選択)</label>
+            <div class="c-slots" id="mdSlots"></div>
+          </div>
+
+          <div>
+            <label>■ 発動効果</label>
+            <textarea id="mdEffectInput" class="md-main__textarea-effect" placeholder="発動効果を入力してください"></textarea>
+          </div>
+
+          <div>
+            <label>■ 効果タグ (複数選択可)</label>
+            <div id="mdSelectedBadgeArea" class="md-main__badge-area"></div>
+            <div id="mdTagContainer"></div>
+          </div>
+        </div>
+
+        <!-- 👥 【右側】キャラクター選択ウィンドウ（枠クリックでis-active付与されて出現） -->
+        <div class="pk-side">
+          <div class="pk-side__title">キャラクター選択</div>
+          <div class="pk-side__sub-title" id="slbl">枠を選んでください</div>
+          <div class="pk-flx">
+            <button class="pk-btn act" onclick="flt('all', this)">全</button>
+            <button class="pk-btn" onclick="flt('藍', this)">藍</button>
+            <button class="pk-btn" onclick="flt('紅', this)">紅</button>
+            <button class="pk-btn" onclick="flt('翠', this)">翠</button>
+            <button class="pk-btn" onclick="flt('黄', this)">黄</button>
+            <button class="pk-btn" onclick="flt('天', this)">天</button>
+            <button class="pk-btn" onclick="flt('冥', this)">冥</button>
+          </div>
+          <div class="pk-grid" id="pGrid"></div>
+          <div class="pk-side__footer">
+            <button class="ar-btn btn-muted pk-side__cancel-btn"
+              onclick="document.querySelector('.pk-side').classList.remove('is-active')">
+              キャンセル
+            </button>
+          </div>
+        </div>
+
+        <!-- 🔘 【右下隅】更新ボタン固定配置 -->
+        <div class="modal-footer-fixed">
+          <button class="ar-btn btn-primary modal-footer-fixed__btn" id="mdStatusBtn" onclick="toggleCardStatus()">
+            <i class="fa-solid fa-arrow-rotate-clockwise"></i> 更新する
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="assets/js/admin.js"></script>
+  <script type="module" src="assets/js/admin-arcana.js"></script>
+</body>
+
+</html>

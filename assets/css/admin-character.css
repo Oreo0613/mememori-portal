@@ -1,0 +1,421 @@
+@charset "UTF-8";
+
+/* =========================================================================
+   BEMリファクタリング対応 CSS
+   ========================================================================= */
+
+/* 🗂️ 一覧グリッド内の「データ通信中...」エリア */
+.character-grid__loading {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--accent);
+  padding: 50px;
+  font-weight: bold;
+}
+
+/* 🔲 共通モーダル(md-card)の追加レイアウト要素 */
+.md-card--column {
+  flex-direction: column;
+}
+.md-card--light-border {
+  border-color: var(--border-light);
+}
+
+/* モーダル共通ヘッダー（プロファイル） */
+.md-card__header {
+  display: flex;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.md-card__profile {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.md-card__avatar {
+  width: 55px;
+  height: 55px;
+  border-radius: 12px;
+  border: 2px solid var(--border-light);
+  cursor: default;
+}
+.md-card__meta {
+  display: flex;
+  flex-direction: column;
+}
+.md-card__name-row {
+  display: flex;
+  align-items: center;
+}
+.md-card__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #f9fafb;
+}
+.md-card__tag-display {
+  font-size: 11px;
+  color: #38bdf8;
+  font-weight: 600;
+  margin-left: 10px;
+}
+.md-card__badges {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+  align-items: center;
+}
+
+/* 専用武器タブバー */
+.md-card__tabs {
+  display: flex;
+  gap: 8px;
+  background: var(--input-bg-sub);
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+  margin: 0 -24px;
+  flex-shrink: 0;
+}
+
+/* 詳細モーダルメインボディ（2カラム） */
+.md-card__body {
+  display: flex;
+  gap: 20px;
+  padding: 20px 0;
+  overflow-y: auto;
+  flex: 1;
+  align-items: flex-start;
+}
+.md-card__side-col {
+  width: 240px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.md-card__main-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* パラメータ表示ボックス */
+.md-card__stat-box {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+}
+.md-card__stat-heading {
+  margin: 0 0 6px 0;
+  font-size: 11px;
+  padding-left: 6px;
+  font-weight: bold;
+}
+.md-card__stat-heading--danger {
+  color: var(--danger);
+  border-left: 3px solid var(--danger);
+}
+.md-card__stat-heading--success {
+  color: var(--success);
+  border-left: 3px solid var(--success);
+}
+.md-card__stat-heading--accent {
+  margin-bottom: 4px;
+  color: var(--accent);
+  border-left: 3px solid var(--accent);
+}
+
+.md-card__stat-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+}
+.md-card__stat-row {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  padding: 2px 0;
+  font-size: 12px;
+}
+.md-card__stat-row--last {
+  border-bottom: none;
+}
+.md-card__stat-label {
+  color: var(--text-sub);
+}
+.md-card__stat-val {
+  font-weight: bold;
+}
+
+/* 専用武器個別情報 */
+.md-card__weapon-name {
+  font-size: 12px;
+  font-weight: bold;
+  color: #f9fafb;
+  margin-bottom: 2px;
+}
+.md-card__weapon-val {
+  font-size: 11px;
+  color: var(--text-sub);
+  display: block;
+}
+.md-card__weapon-passive-lbl {
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--text-sub);
+  margin: 6px 0 2px 0;
+  display: block;
+  border-top: 1px dashed var(--border);
+  padding-top: 4px;
+}
+.md-card__weapon-passive-list {
+  list-style: none;
+  padding: 0;
+  margin: 2px 0 0 0;
+  font-size: 11px;
+  color: #38bdf8;
+}
+
+/* 4大スキルカード */
+.md-card__skill-box {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+}
+.md-card__skill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+}
+.md-card__skill-name {
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--warning);
+}
+.md-card__skill-text {
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+/* 詳細モーダルフッター */
+.md-card__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-main);
+  flex-shrink: 0;
+}
+
+
+/* 🛠️ 2. 性能編集フォーム専用 Block (.perf-form) */
+.perf-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+.perf-form__body {
+  display: flex;
+  gap: 20px;
+  padding: 20px 0;
+  overflow-y: auto;
+  flex: 1;
+  align-items: flex-start;
+}
+.perf-form__side-col {
+  width: 240px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.perf-form__main-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.perf-form__group-box {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.perf-form__group-box--padding-lg {
+  padding: 14px;
+  gap: 10px;
+}
+.perf-form__group-heading {
+  font-size: 11px;
+  font-weight: bold;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+}
+.perf-form__group-heading--info { color: #38bdf8; }
+.perf-form__group-heading--purple { color: #a855f7; }
+.perf-form__group-heading--info-sub {
+  font-size: 12px;
+  color: #38bdf8;
+}
+
+.perf-form__field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.perf-form__input-num {
+  text-align: right;
+  width: 100px !important;
+}
+.perf-form__input-text {
+  text-align: left;
+  padding: 8px !important;
+}
+
+/* チェックボックス装飾 */
+.perf-form__checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #1e293b;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px dashed var(--border-light);
+  margin-top: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+.perf-form__checkbox {
+  width: 18px !important;
+  height: 18px !important;
+  cursor: pointer;
+}
+.perf-form__checkbox-text {
+  font-size: 12px;
+  font-weight: bold;
+  color: #e2e8f0;
+  margin: 0;
+}
+
+.perf-form__skills-area {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.perf-form__field-grid-single {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.perf-form__rarity-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.perf-form__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-main);
+  flex-shrink: 0;
+}
+
+
+/* 📝 3. マスタ編集フォーム専用 Block (.master-form) */
+.master-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.master-form__body {
+  padding-bottom: 50px;
+}
+.master-form__left-side,
+.master-form__title-area {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+  margin-bottom: 4px;
+}
+.master-form__preview-box {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background-color: #1e293b;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  margin: auto 0;
+}
+.master-form__preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ID & キャラクター名行 */
+.master-form__hero-row {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 12px;
+  align-items: end;
+}
+.master-form__dropdown {
+  position: relative;
+  width: 100%;
+  user-select: none;
+}
+.master-form__dd-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+.master-form__dd-arrow {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text-sub);
+}
+.master-form__dd-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  z-index: 1100;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* 固定フッター（保存ボタン等） */
+.master-form__footer {
+  position: absolute;
+  bottom: 20px;
+  right: 24px;
+  z-index: 10;
+  display: flex;
+  gap: 12px;
+}

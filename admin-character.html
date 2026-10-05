@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>管理者用 - アルカナマスタ管理</title>
+
+  <link rel="icon" href="data:," />
+  <!-- destyle.cssのCDN読み込み -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/destyle.css@4.0.0/destyle.min.css" />
+
+  <link rel="stylesheet" href="assets/css/admin.css" />
+  <link rel="stylesheet" href="assets/css/admin-character.css" />
+  
+  <script src="https://kit.fontawesome.com/d36bec305b.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <header class="admin-header">
+    <div class="header-logo">マスタ管理</div>
+    <nav class="header-nav">
+      <ul>
+        <li><a href="admin-arcana.html">アルカナマスタ</a></li>
+        <li><a href="#" class="active">キャラクターマスタ</a></li>
+        <li><button id="globalLogoutBtn" class="ar-btn btn-muted admin-logout-btn">🚪 ログアウト</button></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- =======================================
+      キャラクターマスタ　登録ボタン＋フィルター
+      ======================================== -->
+  <div class="ar-box admin-container">
+    <div class="header-controls">
+      <h2>キャラクターマスタ</h2>
+      <div class="header-right-actions">
+        <button class="ar-btn btn-primary" onclick="openModalForCreate()">
+          ＋ 新規キャラ登録
+        </button>
+      </div>
+    </div>
+
+    <!-- 🔍 共通の今風フィルターエリア（属性・タイプ） -->
+    <div class="filter-section">
+      <div class="filter-row">
+        <div class="filter-label">属性</div>
+        <div class="filter-options" id="filterAttrOptions">
+        </div>
+      </div>
+      <div class="filter-row">
+        <div class="filter-label">タイプ</div>
+        <div class="filter-options" id="filterTypeOptions">
+        </div>
+      </div>
+    </div>
+
+    <!-- 🗂️ キャラクター一覧グリッド（100x100pxの正方形カードが並ぶ場所） -->
+    <div class="character-grid" id="charGrid">
+      <div class="character-grid__loading">データ通信中...</div>
+    </div>
+  </div>
+  <!-- ============================================================
+    🔲 1. キャラクター詳細・性能確認モーダル（黒基調）
+    =========================================================== -->
+  <div class="md-overlay" id="charDetailModal" onclick="closeDetailModal()">
+    <!-- 💡 BEM化: モーダルカードに修飾子（--column）を追加 -->
+    <div class="md-card md-card--column" onclick="event.stopPropagation()">
+      <!-- モーダル上部：共通ヘッダープロファイル -->
+      <!-- 💡 BEM化: md-card__header -->
+      <div class="md-card__header">
+        <div class="md-card__profile">
+          <img src="" id="cd-avatar" class="slot md-card__avatar" alt="アバター" />
+          <div class="md-card__meta">
+            <div class="md-card__name-row">
+              <h3 id="cd-name" class="md-card__title">キャラクター名</h3>
+              <span id="cd-tags-display" class="md-card__tag-display"></span>
+            </div>
+            <div class="md-card__badges">
+              <span id="cd-attr" class="tag-badge">属性</span>
+              <span id="cd-type" class="tag-badge">タイプ</span>
+              <span id="cd-rarity" class="tag-badge">限定</span>
+            </div>
+          </div>
+        </div>
+        <button class="ar-btn btn-muted" onclick="closeDetailModal()">
+          ✕ 閉じる
+        </button>
+      </div>
+
+      <!-- 専用武器・装備状態切り替えタブバー -->
+      <!-- 💡 BEM化: md-card__tabs -->
+      <div class="md-card__tabs">
+        <button class="ar-btn" id="btn-wp-normal" onclick="switchWeaponTrigger('normal')">
+          通常時
+        </button>
+        <button class="ar-btn" id="btn-wp-asta" onclick="switchWeaponTrigger('asta')">
+          サタン
+        </button>
+        <button class="ar-btn active" id="btn-wp-mika" onclick="switchWeaponTrigger('mika')">
+          ミカエル
+        </button>
+        <button class="ar-btn" id="btn-wp-meta" onclick="switchWeaponTrigger('meta')">
+          メタトロン
+        </button>
+      </div>
+
+      <!-- モーダルボディ：左右2カラムのスクロールレス超圧縮レイアウト -->
+      <!-- 💡 BEM化: md-card__body -->
+      <div class="md-card__body">
+        <!-- 【左側カラム】：OFFENSE/DEFENSEパラメータ ＆ 専用武器表示 -->
+        <!-- 💡 BEM化: md-card__side-col -->
+        <div class="md-card__side-col">
+          <!-- OFFENSE パラメータ -->
+          <!-- 💡 BEM化: md-card__stat-box -->
+          <div class="md-card__stat-box">
+            <!-- 💡 BEM化: --danger 修飾子 -->
+            <div class="md-card__stat-heading md-card__stat-heading--danger">
+              OFFENSE
+            </div>
+            <div class="md-card__stat-grid">
+              <div class="md-card__stat-row">
+                <span class="md-card__stat-label">スピード</span>
+                <span id="v-stat-speed" class="md-card__stat-val">-</span>
+              </div>
+              <div class="md-card__stat-row">
+                <span class="md-card__stat-label">攻撃力</span>
+                <span id="v-stat-atk" class="md-card__stat-val">-</span>
+              </div>
+              <div class="md-card__stat-row">
+                <span class="md-card__stat-label">命中</span>
+                <span id="v-stat-hit" class="md-card__stat-val">-</span>
+              </div>
+              <div class="md-card__stat-row">
+                <span class="md-card__stat-label">クリティカル</span>
+                <span id="v-stat-crit" class="md-card__stat-val">-</span>
+              </div>
+              <div class="md-card__stat-row md-card__stat-row--last">
+                <span class="md-card__stat-label">弱体効果命中</span>
+                <span id="v-stat-debuff" class="md-card__stat-val">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- DEFENSE パラメータ -->
+          <div class="md-card__stat-box">
+            <!-- 💡 BEM化: --success 修飾子 -->
+            <div class="md-card__stat-heading md-card__stat-heading--success">
+              DEFENSE
+            </div>
+            <div class="md-card__stat-grid">
+              <div class="md-card__stat-row">
+                <span class="md-card__stat-label">HP</span>
+                <span id="v-stat-hp" class="md-card__stat-val">-</span>
+              </div>
+              <div class="md-card__stat-row">
+                <span class="md-card__stat-label">防御力</span>
+                <span id="v-stat-def" class="md-card__stat-val">-</span>
+              </div>
+              <div class="md-card__stat-row">
+                <span class="md-card__stat-label">物理防御力</span>
+                <span id="v-stat-pdef" class="md-card__stat-val">-</span>
+              </div>
+              <div class="md-card__stat-row">
+                <span class="md-card__stat-label">魔法防御力</span>
+                <span id="v-stat-mdef" class="md-card__stat-val">-</span>
+              </div>
+              <div class="md-card__stat-row">
+                <span class="md-card__stat-label">回避</span>
+                <span id="v-stat-evade" class="md-card__stat-val">-</span>
+              </div>
+              <div class="md-card__stat-row md-card__stat-row--last">
+                <span class="md-card__stat-label">クリ耐性</span>
+                <span id="v-stat-critres" class="md-card__stat-val">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 専用武器 -->
+          <div class="md-card__stat-box">
+            <!-- 💡 BEM化: --accent 修飾子 -->
+            <div class="md-card__stat-heading md-card__stat-heading--accent">
+              専用武器
+            </div>
+            <div id="v-weapon-area" class="md-card__weapon-area">
+              <div id="v-w-name" class="md-card__weapon-name">未装備</div>
+              <span id="v-w-val" class="md-card__weapon-val">固有値: -</span>
+              <span id="v-w-passives-lbl" class="md-card__weapon-passive-lbl">専用パッシブ効果</span>
+              <ul id="v-w-passives" class="md-card__weapon-passive-list"></ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 【右側カラム】：4大スキルの詳細表示ボックス -->
+        <!-- 💡 BEM化: md-card__main-col -->
+        <div class="md-card__main-col">
+          <!-- スキルカード1 -->
+          <!-- 💡 BEM化: md-card__skill-box -->
+          <div class="md-card__skill-box">
+            <div class="md-card__skill-header">
+              <span id="sk-A1-name" class="md-card__skill-name">-</span>
+              <span class="tag-badge">ACTIVE 1</span>
+              <span id="sk-A1-ct-area"></span>
+            </div>
+            <div id="sk-A1-text" class="md-card__skill-text"></div>
+          </div>
+          <!-- スキルカード2 -->
+          <div class="md-card__skill-box">
+            <div class="md-card__skill-header">
+              <span id="sk-A2-name" class="md-card__skill-name">-</span>
+              <span class="tag-badge">ACTIVE 2</span>
+              <span id="sk-A2-ct-area"></span>
+            </div>
+            <div id="sk-A2-text" class="md-card__skill-text"></div>
+          </div>
+          <!-- スキルカード3 -->
+          <div class="md-card__skill-box">
+            <div class="md-card__skill-header">
+              <span id="sk-P1-name" class="md-card__skill-name">-</span>
+              <span class="tag-badge">PASSIVE 1</span>
+              <span id="sk-P1-ct-area"></span>
+            </div>
+            <div id="sk-P1-text" class="md-card__skill-text"></div>
+          </div>
+          <!-- スキルカード4 -->
+          <div class="md-card__skill-box">
+            <div class="md-card__skill-header">
+              <span id="sk-P2-name" class="md-card__skill-name">-</span>
+              <span class="tag-badge">PASSIVE 2</span>
+              <span id="sk-P2-ct-area"></span>
+            </div>
+            <div id="sk-P2-text" class="md-card__skill-text"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- モーダル下部のアクションバー -->
+      <div class="md-card__footer">
+        <button class="ar-btn" onclick="openAdminEditFromDetail()">
+          ⚙️ マスタ編集
+        </button>
+        <button id="btnPerfEdit" class="ar-btn btn-primary" onclick="openPerformanceEditor()">
+          ✏️ 性能編集
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- ========================================
+  🔲 2. キャラクター性能編集モーダル（黒基調）
+  ========================================= -->
+  <div class="md-overlay" id="charPerfEditModal" onclick="closePerfEditor()">
+    <!-- 💡 BEM化: 枠線用のModifier（--light-border）と縦並び用の（--column）を付与 -->
+    <div class="md-card md-card--column md-card--light-border" onclick="event.stopPropagation()">
+      <!-- モーダル上部ヘッダー -->
+      <div class="md-card__header">
+        <div class="md-card__profile">
+          <img src="" id="pe-avatar" class="slot md-card__avatar" alt="アバター" />
+          <div id="pe-header-info"></div>
+        </div>
+        <button class="ar-btn btn-muted" onclick="closePerfEditor()">
+          ✕ 閉じる
+        </button>
+      </div>
+
+      <!-- 編集入力フォーム -->
+      <!-- 💡 BEM化: フォーム自体を「perf-form」という独立したブロック（塊）として定義 -->
+      <form id="perfEditorForm" class="perf-form" onsubmit="event.preventDefault()">
+        <input type="hidden" id="pe-charId" />
+
+        <!-- フォームボディ（左右2カラムレイアウト） -->
+        <div class="perf-form__body">
+          <!-- 【左カラム】：パラメータ入力 -->
+          <div class="perf-form__side-col">
+            <!-- 基礎パラメータボックス -->
+            <div class="perf-form__group-box">
+              <div class="perf-form__group-heading perf-form__group-heading--info">
+                📊 基礎パラメータ
+              </div>
+              <div class="perf-form__field">
+                <label for="pe-str">腕力 (STR)</label>
+                <input type="number" id="pe-str" class="perf-form__input-num" required />
+              </div>
+              <div class="perf-form__field">
+                <label for="pe-dex">技力 (DEX)</label>
+                <input type="number" id="pe-dex" class="perf-form__input-num" required />
+              </div>
+              <div class="perf-form__field">
+                <label for="pe-mag">魔力 (MAG)</label>
+                <input type="number" id="pe-mag" class="perf-form__input-num" required />
+              </div>
+              <div class="perf-form__field">
+                <label for="pe-sta">耐久力 (STA)</label>
+                <input type="number" id="pe-sta" class="perf-form__input-num" required />
+              </div>
+              <div class="perf-form__field">
+                <label for="pe-speed">スピード</label>
+                <input type="number" id="pe-speed" class="perf-form__input-num" required />
+              </div>
+              <div class="perf-form__field">
+                <label for="pe-defInitial">防御力</label>
+                <input type="number" id="pe-defInitial" class="perf-form__input-num" required />
+              </div>
+              <div class="perf-form__field">
+                <label for="pe-penCustom">物魔防御貫通</label>
+                <input type="number" id="pe-penCustom" class="perf-form__input-num" required />
+              </div>
+            </div>
+
+            <!-- 特徴タグボックス -->
+            <div class="perf-form__group-box">
+              <div class="perf-form__group-heading perf-form__group-heading--purple">
+                🏷️ 特徴タグ
+              </div>
+              <input type="text" id="pe-charTags" class="perf-form__input-text" placeholder="バッファー,気絶..." />
+            </div>
+
+            <!-- 完了チェックボックス -->
+            <label class="perf-form__checkbox-label" for="pe-complete-check">
+              <input type="checkbox" id="pe-complete-check" class="perf-form__checkbox" />
+              <span class="perf-form__checkbox-text">性能データの入力を完了する</span>
+            </label>
+          </div>
+
+          <!-- 【右カラム】：スキル・武器編集エリアの受け皿 -->
+          <div class="perf-form__main-col">
+            <div id="pe-skills-area" class="perf-form__skills-area"></div>
+
+            <!-- 専用武器エディタ -->
+            <!-- 💡 BEM化: 内側余白を少し広げるModifier（--padding-lg）を付与 -->
+            <div class="perf-form__group-box perf-form__group-box--padding-lg">
+              <div class="perf-form__group-heading perf-form__group-heading--info-sub">
+                🛡️ 専用武器エディタ
+              </div>
+              <div class="perf-form__field-grid-single">
+                <input type="text" id="pe-w-name" placeholder="専用武器の名称を入力" />
+              </div>
+              <div id="pe-w-rarity-container" class="perf-form__rarity-container"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- フッター保存バー -->
+        <div class="perf-form__footer">
+          <button type="button" class="ar-btn btn-muted" onclick="closePerfEditor()">
+            キャンセル
+          </button>
+          <button type="button" class="ar-btn btn-primary" onclick="savePerformanceData()">
+            性能データを保存する
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- ================================================================
+   🔲 3. 大元のキャラクターマスタ編集・新規登録モーダル（共通ボックス）
+   ================================================================= -->
+  <div class="modal-overlay" id="charModal">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <!-- 💡 BEM化: フォーム自体を「master-form」という独立したブロック（塊）として定義 -->
+      <form id="charMasterForm" class="master-form" onsubmit="event.preventDefault()">
+        <!-- 縦長スクロール用コンテナ -->
+        <div class="modal-body-container master-form__body">
+          <!-- モーダル内左側：プレビュー -->
+          <div class="modal-left-master master-form__left-side">
+            <div class="master-form__title-area">
+              <h3 id="modalMainTitle">キャラクターマスタ編集</h3>
+            </div>
+            <div class="master-form__preview-box">
+              <img src="" id="modalCoverPreview" class="master-form__preview-img" alt="カバープレビュー" onerror="
+                    this.onerror = null;
+                    this.src = 'https://placehold.jp';
+                  " />
+            </div>
+          </div>
+
+          <!-- モーダル内右側：マスタ基本情報入力 -->
+          <div class="modal-right-individual master-form__right-side">
+            <!-- ID & キャラクター名入力エリア -->
+            <div class="master-form__hero-row">
+              <div class="master-form__hero-id">
+                <label for="formId">ID</label>
+                <input type="text" id="formId" name="id" readonly />
+              </div>
+              <div class="master-form__hero-name">
+                <label for="formName">キャラクター名</label>
+                <input type="text" id="formName" name="name" class="main-hero-name" autocomplete="off" required />
+              </div>
+            </div>
+
+            <!-- 属性 & タイプ ドロップダウンエリア（問題タブ完全クリア版） -->
+            <div class="form-grid">
+              <div>
+                <label class="master-form__label-wrapper">
+                  <span class="master-form__label-text">属性</span>
+                  <div class="dd-container master-form__dropdown" id="ddAttr">
+                    <div class="dd-trigger" onclick="toggleDD('ddAttrMenu')">
+                      <img src="" id="ddAttrIcon" class="master-form__dd-icon" alt="" />
+                      <span id="ddAttrText">選択...</span>
+                      <span class="master-form__dd-arrow">▼</span>
+                    </div>
+                    <div class="dd-menu master-form__dd-menu" id="ddAttrMenu"></div>
+                    <input type="hidden" id="formAttr" name="attr" />
+                  </div>
+                </label>
+              </div>
+
+              <div>
+                <label class="master-form__label-wrapper">
+                  <span class="master-form__label-text">タイプ</span>
+                  <div class="dd-container master-form__dropdown" id="ddType">
+                    <div class="dd-trigger" onclick="toggleDD('ddTypeMenu')">
+                      <img src="" id="ddTypeIcon" class="master-form__dd-icon" alt="" />
+                      <span id="ddTypeText">選択...</span>
+                      <span class="master-form__dd-arrow">▼</span>
+                    </div>
+                    <div class="dd-menu master-form__dd-menu" id="ddTypeMenu"></div>
+                    <input type="hidden" id="formType" name="type" />
+                  </div>
+                </label>
+              </div>
+            </div>
+
+
+            <!-- その他マスタ入力項目 -->
+            <div class="form-grid">
+              <div>
+                <label for="formRarity">恒常 / 限定</label>
+                <select id="formRarity" name="rarity">
+                  <option value="限定">限定</option>
+                  <option value="恒常">恒常</option>
+                </select>
+              </div>
+              <div>
+                <label for="formStartDate">実装日</label>
+                <input type="date" id="formStartDate" name="startDate" onchange="calculateElapsedDays(this.value)" />
+              </div>
+            </div>
+            <div>
+              <label for="formElapsedDays">実装経過日数</label>
+              <input type="text" id="formElapsedDays" readonly />
+            </div>
+            <div>
+              <label for="formIconUrl">アイコン画像URL</label>
+              <input type="url" id="formIconUrl" name="iconUrl" />
+            </div>
+            <div>
+              <label for="formCoverUrl">カバー画像URL</label>
+              <input type="url" id="formCoverUrl" name="coverUrl" onchange="
+                    document.getElementById('modalCoverPreview').src =
+                      this.value
+                  " />
+            </div>
+          </div>
+        </div>
+
+        <!-- 保存ボタン固定配置（右下） -->
+        <div class="master-form__footer">
+          <button type="button" id="closeModalBtn" class="ar-btn btn-muted">
+            キャンセル
+          </button>
+          <button type="button" class="ar-btn btn-primary" onclick="saveMasterData()">
+            保存する
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="assets/js/admin.js"></script>
+  <script type="module" src="assets/js/admin-character.js"></script>
+</body>
+
+</html>
