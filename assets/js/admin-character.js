@@ -127,6 +127,9 @@ window.onAdminAuthSuccess = function (user) {
         window.characterMaster.push(doc.data());
       });
 
+      // 🔴【追加】IDを数字に変換して、大きい順（降順）に並び替える
+      window.characterMaster.sort((a, b) => Number(b.id) - Number(a.id));
+
       console.log(
         "🔥 Firestoreからキャラクターデータをロードしました！件数:",
         window.characterMaster.length,
