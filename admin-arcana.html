@@ -95,6 +95,16 @@
             <div id="mdSelectedBadgeArea" class="md-main__badge-area"></div>
             <div id="mdTagContainer"></div>
           </div>
+
+          <!-- 🔘 ボタン配置 -->
+          <div class="modal-footer">
+            <button class="ar-btn btn-delete modal-footer__btn" id="mdDeleteBtn" onclick="deleteCard()">
+              <i class="fa-regular fa-trash-can"></i> マスタ削除
+            </button>
+            <button class="ar-btn btn-primary modal-footer__btn" id="mdStatusBtn" onclick="toggleCardStatus()">
+              <i class="fa-solid fa-arrow-rotate-clockwise"></i> 更新する
+            </button>
+          </div>
         </div>
 
         <!-- 👥 【右側】キャラクター選択ウィンドウ（枠クリックでis-active付与されて出現） -->
@@ -119,12 +129,6 @@
           </div>
         </div>
 
-        <!-- 🔘 【右下隅】更新ボタン固定配置 -->
-        <div class="modal-footer-fixed">
-          <button class="ar-btn btn-primary modal-footer-fixed__btn" id="mdStatusBtn" onclick="toggleCardStatus()">
-            <i class="fa-solid fa-arrow-rotate-clockwise"></i> 更新する
-          </button>
-        </div>
       </div>
     </div>
   </div>

@@ -1,4 +1,4 @@
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc  } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 /* =========================================================================
    🧙‍♀️ ログイン成功後の初期化処理
@@ -450,23 +450,90 @@ function toggleCardStatus() {
     alertMessage = "🎉 新規アルカナ「" + inputName + "」を登録しました！";
   }
 
+  // ─── ✨【ここから変更】ダミータイマーを廃止し、本物のFirestore書き込み処理に修正 ───
 
-  // =========================================================================
-  // 🌀ローディングとポップアップの演出連動
-  // =========================================================================
-  
+  // 1. ボタンが押された瞬間に、画面全体をロックしてぐるぐるを開始！
   if (typeof showLoading === "function") showLoading();
 
-  setTimeout(function () {
-    
-    if (typeof hideLoading === "function") hideLoading();
+  // 最新のFirebase(v9+)形式でデータベース（db）を呼び出します
+  const db = getFirestore();
 
-    closeCard();
+  // 「arcana_master」というコレクション（フォルダ）の中に、アルカナIDを名前にしたドキュメント（ファイル）を保存・上書きする設定
+  const docRef = doc(db, "arcana_master", String(curEditingArcana.id));
 
-    alert(alertMessage);
+  // 🚀 本物の Firestore データベースへデータを送信して、完了をじっと待ちます（then）
+  setDoc(docRef, curEditingArcana, { merge: true })
+    .then(function() {
+      // 👍 データベースへの保存が成功したあとの処理
+      console.log("💾 Firestore 同期完了: アルカナID " + curEditingArcana.id);
 
-  }, 500); // 💡 500ミリ秒（0.5秒）後に実行する設定
+      // 待ち時間が終わったのでぐるぐるを消す
+      if (typeof hideLoading === "function") hideLoading();
+
+      // モーダルカード（入力画面）を閉じる
+      closeCard();
+
+      // 最新のデータで一覧テーブルを再描画する
+      drawTable();
+
+      // 最後に親切なポップアップを表示する
+      alert(alertMessage);
+    })
+    .catch(function(error) {
+      // ⚠️ 万が一、ネット接続エラーやセキュリティルール（権限）で弾かれた場合のセーフティネット
+      console.error("❌ Firestoreへの保存に失敗しました:", error);
+      
+      // 画面がフリーズしないようにぐるぐるを解除
+      if (typeof hideLoading === "function") hideLoading();
+      
+      // 原因をポップアップで教えてくれる安心設計
+      alert("⚠️ データベースへの保存に失敗しました。通信環境やログイン状態を確認してください。\n" + error.message);
+    });
 }
+
+
+
+// =================================================================
+// 🗑️ 【修正版】表示中のアルカナをFirestoreから完全に削除する関数
+// =================================================================
+function deleteCard() {
+  if (!curEditingArcana) return alert("編集中のデータが見つかりません");
+
+  // 🛑 誤削除を防ぐための最終確認ポップアップ
+  if (!confirm("⚠️ 本当にアルカナ「" + curEditingArcana.name + "」を削除しますか？\nこの操作は取り消せません。")) {
+    return; // キャンセルされたら何もしない
+  }
+
+  // 🌀 削除完了まで画面をロックしてローディング開始
+  if (typeof showLoading === "function") showLoading();
+
+  const db = getFirestore();
+  // 削除対象のドキュメント（ファイル）を指定
+  const docRef = doc(db, "arcana_master", String(curEditingArcana.id));
+
+  // 🚀 Firestoreからデータを削除
+  deleteDoc(docRef)
+    .then(function() {
+      console.log("🗑️ Firestore 削除完了: アルカナID " + curEditingArcana.id);
+
+      // ローカルの配列（一覧データ）からも削除したデータを間引く
+      arcanaMaster = arcanaMaster.filter(function(a) {
+        return String(a.id) !== String(curEditingArcana.id);
+      });
+
+      if (typeof hideLoading === "function") hideLoading();
+      closeCard();   // モーダルを閉じる
+      drawTable();   // 一覧テーブルをリフレッシュ
+      alert("✨ アルカナを完全に消去しました。");
+    })
+    .catch(function(error) {
+      console.error("❌ 削除に失敗しました:", error);
+      if (typeof hideLoading === "function") hideLoading();
+      alert("⚠️ 削除に失敗しました: " + error.message);
+    });
+}
+
+
 
 /* =========================================================================
    🌐 HTML側（onclick / onchange）から関数を呼べるようにする公開処理
@@ -480,3 +547,4 @@ window.closeCardOutside = closeCardOutside;
 window.flt = flt;
 window.updateMdTagBadges = updateMdTagBadges;
 window.clearSlot = clearSlot;
+window.deleteCard = deleteCard;

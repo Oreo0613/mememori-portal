@@ -209,7 +209,6 @@ body {
 }
 
 
-
 /* =========================================================================
    グループ 2：キャラクター枠・スロット・グリッド（共通パーツ）
    ========================================================================= */
@@ -397,7 +396,6 @@ body {
   display: flex;
   flex-direction: row;
   gap: 24px;
-  position: relative;
   min-height: 450px;
   max-height: 90vh;
   overflow: hidden;
@@ -420,8 +418,6 @@ body {
   flex-direction: column;
   gap: 16px;
   overflow-y: auto;
-  padding-bottom: 50px;
-  /* 右下の保存ボタンと被るのを避ける余白 */
 }
 
 /* モーダル内部：右側サイド（枠クリックで出現するキャラ選択等） */
@@ -531,8 +527,8 @@ input.main-hero-name {
   color: #ffffff;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   transform: translateY(-1px) scale(1.02);
+  transform-origin: right center; 
   opacity: 1 !important;
-  /* 透過スタイルが入っていても100%表示に上書き */
 }
 
 /* 🔘 カチッとクリックした（アクティブな）瞬間の押し込み手応え */
@@ -561,13 +557,16 @@ input.main-hero-name {
   color: #cbd5e1 !important;
 }
 
-/* ボタンをモーダルの右下隅に絶対に固定させる共通ルール */
-.modal-footer-fixed,
-[style*="position: absolute; bottom: 20px; right: 24px;"] {
-  position: absolute !important;
-  bottom: 20px !important;
-  right: 24px !important;
-  z-index: 10;
+.modal-footer {
+  margin-top: 16px;
+  padding-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 32px;
+}
+
+.btn-delete:hover {
+  background-color: #dc3545;
 }
 
 /* =========================================================================
