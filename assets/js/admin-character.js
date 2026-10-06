@@ -47,9 +47,15 @@ var ATTR_IMAGES = [
   { name: "冥", url: "assets/images/filter-icon/icon-attr-dark.png" },
 ];
 var TYPE_IMAGES = [
-  { name: "ウォーリアー", url: "assets/images/filter-icon/icon-type-warrior.png" },
+  {
+    name: "ウォーリアー",
+    url: "assets/images/filter-icon/icon-type-warrior.png",
+  },
   { name: "スナイパー", url: "assets/images/filter-icon/icon-type-gunner.png" },
-  { name: "ソーサラー", url: "assets/images/filter-icon/icon-type-sorcerer.png" },
+  {
+    name: "ソーサラー",
+    url: "assets/images/filter-icon/icon-type-sorcerer.png",
+  },
 ];
 
 // キャラクター詳細データのモック（読み込みテスト用）
@@ -96,54 +102,6 @@ var cachedDetailPackage = {
 
 var currentDetailIndex = -1; // 現在詳細を見ているキャラのインデックス番
 
-/* =========================================================================
-   🧙‍♀️ ログイン成功後の初期化処理
-   ========================================================================= */
-
-// 💡 admin.js が認証に成功したあと、自動でこの関数を呼び出し
-window.onAdminAuthSuccess = function (user) {
-  console.log("admin.js からの通知：キャラクターページの描画を開始します。");
-
-  // 🌀 画面ロックとローディングの開始
-  if (typeof showLoading === "function") showLoading();
-
-  // 💡 最新の関数を使ってデータベース（Firestore）の接続インスタンスを準備
-  const db = getFirestore();
-
-  // Firestoreから「character_master」コレクションの全データをロードする
-  getDocs(collection(db, "character_master"))
-    .then(function (querySnapshot) {
-      // 💡 共通データの characterMaster 配列を一回リセット
-      window.characterMaster = [];
-
-      // データベースから取得したキャラデータを1件ずつ配列に詰め込む
-      querySnapshot.forEach(function (doc) {
-        window.characterMaster.push(doc.data());
-      });
-
-      console.log(
-        "🔥 Firestoreからキャラクターデータをロードしました！件数:",
-        window.characterMaster.length,
-      );
-
-      // 1. データが揃ったので、本物のデータでキャラクター一覧（グリッド）を描画！
-      renderGridHTML(window.characterMaster);
-      // 2. カスタムドロップダウンの組み立て
-      buildCustomDropdowns();
-      // 3. 絞り込みフィルターの組み立て
-      buildFilterButtons();
-    })
-    .catch(function (error) {
-      console.error("キャラクターデータの読み込みに失敗しました:", error);
-      alert(
-        "データの取得に失敗しました。セキュリティルール等を確認してください。",
-      );
-    })
-    .then(function () {
-      // 🌀 成功しても失敗してもローディングを消す
-      if (typeof hideLoading === "function") hideLoading();
-    });
-};
 /* =========================================================================
    🧙‍♀️ ログイン成功後の初期化処理
    ========================================================================= */
@@ -316,11 +274,11 @@ function openCharacterDetail(idx) {
   document.getElementById("cd-attr").innerText = baseInfo.attr;
   document.getElementById("cd-type").innerText = baseInfo.type;
 
-  // Rarity表示用の要素が存在するかチェックして安全に流し込み
-  const rarityEl =
-    document.getElementById("cd-rarity-display") ||
-    document.getElementById("formRarity");
-  if (rarityEl) rarityEl.innerText = baseInfo.rarity;
+  // 💡 【修正】詳細画面の正しいID（cd-rarity）を取得して表示を更新します（formRarityを巻き込まない）
+  const rarityEl = document.getElementById("cd-rarity");
+  if (rarityEl) {
+    rarityEl.innerText = baseInfo.rarity || "限定";
+  }
 
   let cleanTags = baseInfo.tags
     ? baseInfo.tags.replace(/,?\s*\[完了\]/, "").replace(/^,\s*/, "")
@@ -505,10 +463,14 @@ function openModalForEditByIndex(idx) {
   document.getElementById("formId").value = d.id;
   document.getElementById("formName").value = d.name;
   document.getElementById("formIconUrl").value = d.iconUrl;
-  document.getElementById("modalIconPreview").src = d.iconUrl || "https://placehold.jp";
+  document.getElementById("modalIconPreview").src =
+    d.iconUrl || "https://placehold.jp";
   document.getElementById("formCoverUrl").value = d.coverUrl || "";
-  document.getElementById("modalCoverPreview").src = d.coverUrl || "https://placehold.jp";
+  document.getElementById("modalCoverPreview").src =
+    d.coverUrl || "https://placehold.jp";
   document.getElementById("formRarity").value = d.rarity || "限定";
+  document.getElementById("formStartDate").value = d.releaseDate || ""; // 保存されている「releaseDate」を、カレンダーの入力欄（formStartDate）にセット！
+  calculateElapsedDays(d.releaseDate || ""); // 編集画面を開いた瞬間に、実装経過日数を自動計算して「◯日」と表示させる関数を動かす！
 
   setDDValue(
     "Attr",
@@ -572,8 +534,9 @@ function saveMasterData() {
   const formAttr = document.getElementById("formAttr").value;
   const formType = document.getElementById("formType").value;
   const formRarity = document.getElementById("formRarity").value;
+  const formStartDate = document.getElementById("formStartDate").value;
   const formIconUrl = document.getElementById("formIconUrl").value.trim();
-  const formCovernUrl = document.getElementById("formCoverUrl").value.trim();
+  const formCoverUrl = document.getElementById("formCoverUrl").value.trim();
 
   if (!formName || !formAttr || !formType) {
     alert("名前、属性、タイプは必須入力です。");
@@ -586,8 +549,9 @@ function saveMasterData() {
     attr: formAttr,
     type: formType,
     rarity: formRarity,
+    releaseDate: formStartDate || "", // スプレッドシートのヘッダー名と一致させます
     iconUrl: formIconUrl || "https://placehold.co",
-    CoverUrl: formCovernUrl || "https://placehold.co",
+    coverUrl: formCoverUrl || "https://placehold.co",
     tags: "",
   };
 
