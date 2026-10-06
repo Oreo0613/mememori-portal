@@ -425,3 +425,9 @@
   background-color: #2a2a35; /* 💡 選択肢の背景をダークな色（モーダルに近い色）にします */
   color: #ffffff;            /* 💡 文字色を白にして、文字がハッキリ読めるようにします */
 }
+
+.manual-link {
+  color: var(--text-sub);
+  font-size: 12px;
+  text-align: end;
+}
