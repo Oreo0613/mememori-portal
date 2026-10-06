@@ -1,3 +1,12 @@
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  doc,
+  setDoc,
+  deleteDoc,
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
 /* -------------------------------------------------------------------------
    1. 画面専用の変数定義 ＆ 選択肢マスター
    ------------------------------------------------------------------------- */
@@ -95,10 +104,93 @@ var currentDetailIndex = -1; // 現在詳細を見ているキャラのインデ
 window.onAdminAuthSuccess = function (user) {
   console.log("admin.js からの通知：キャラクターページの描画を開始します。");
 
-  // 3つの関数をここで呼び出す
-  renderGridHTML(characterMaster);
-  buildCustomDropdowns();
-  buildFilterButtons();
+  // 🌀 画面ロックとローディングの開始
+  if (typeof showLoading === "function") showLoading();
+
+  // 💡 最新の関数を使ってデータベース（Firestore）の接続インスタンスを準備
+  const db = getFirestore();
+
+  // Firestoreから「character_master」コレクションの全データをロードする
+  getDocs(collection(db, "character_master"))
+    .then(function (querySnapshot) {
+      // 💡 共通データの characterMaster 配列を一回リセット
+      window.characterMaster = [];
+
+      // データベースから取得したキャラデータを1件ずつ配列に詰め込む
+      querySnapshot.forEach(function (doc) {
+        window.characterMaster.push(doc.data());
+      });
+
+      console.log(
+        "🔥 Firestoreからキャラクターデータをロードしました！件数:",
+        window.characterMaster.length,
+      );
+
+      // 1. データが揃ったので、本物のデータでキャラクター一覧（グリッド）を描画！
+      renderGridHTML(window.characterMaster);
+      // 2. カスタムドロップダウンの組み立て
+      buildCustomDropdowns();
+      // 3. 絞り込みフィルターの組み立て
+      buildFilterButtons();
+    })
+    .catch(function (error) {
+      console.error("キャラクターデータの読み込みに失敗しました:", error);
+      alert(
+        "データの取得に失敗しました。セキュリティルール等を確認してください。",
+      );
+    })
+    .then(function () {
+      // 🌀 成功しても失敗してもローディングを消す
+      if (typeof hideLoading === "function") hideLoading();
+    });
+};
+/* =========================================================================
+   🧙‍♀️ ログイン成功後の初期化処理
+   ========================================================================= */
+
+// 💡 admin.js が認証に成功したあと、自動でこの関数を呼び出し
+window.onAdminAuthSuccess = function (user) {
+  console.log("admin.js からの通知：キャラクターページの描画を開始します。");
+
+  // 🌀 画面ロックとローディングの開始
+  if (typeof showLoading === "function") showLoading();
+
+  // 💡 最新の関数を使ってデータベース（Firestore）の接続インスタンスを準備
+  const db = getFirestore();
+
+  // Firestoreから「character_master」コレクションの全データをロードする
+  getDocs(collection(db, "character_master"))
+    .then(function (querySnapshot) {
+      // 💡 共通データの characterMaster 配列を一回リセット
+      window.characterMaster = [];
+
+      // データベースから取得したキャラデータを1件ずつ配列に詰め込む
+      querySnapshot.forEach(function (doc) {
+        window.characterMaster.push(doc.data());
+      });
+
+      console.log(
+        "🔥 Firestoreからキャラクターデータをロードしました！件数:",
+        window.characterMaster.length,
+      );
+
+      // 1. データが揃ったので、本物のデータでキャラクター一覧（グリッド）を描画！
+      renderGridHTML(window.characterMaster);
+      // 2. カスタムドロップダウンの組み立て
+      buildCustomDropdowns();
+      // 3. 絞り込みフィルターの組み立て
+      buildFilterButtons();
+    })
+    .catch(function (error) {
+      console.error("キャラクターデータの読み込みに失敗しました:", error);
+      alert(
+        "データの取得に失敗しました。セキュリティルール等を確認してください。",
+      );
+    })
+    .then(function () {
+      // 🌀 成功しても失敗してもローディングを消す
+      if (typeof hideLoading === "function") hideLoading();
+    });
 };
 
 /* -------------------------------------------------------------------------
@@ -391,13 +483,12 @@ function savePerformanceData() {
 
     closePerfEditor();
 
-    alert(alertMessage); 
+    alert(alertMessage);
   }, 500);
 }
 
-
 /* -------------------------------------------------------------------------
-     6. 大元のキャラクターマスタ編集・新規登録登録フォーム制御
+     大元のキャラクターマスタ編集・新規登録登録フォーム制御
      ------------------------------------------------------------------------- */
 // 詳細画面の「⚙️ マスタ編集」から呼び出す連動処理
 function openAdminEditFromDetail() {
@@ -431,6 +522,9 @@ function openModalForEditByIndex(idx) {
   );
 
   document.getElementById("charModal").classList.add("is-active");
+
+  var delBtn = document.getElementById("cmDeleteBtn");
+  if (delBtn) delBtn.style.display = "block"; // 既存編集時は「削除ボタンを表示」
 }
 
 // 🔓 新規登録ボタン（openModalForCreate）を押したときの処理
@@ -461,14 +555,10 @@ function openModalForCreate() {
   document.getElementById("modalCoverPreview").src = "https://placehold.co";
 
   document.getElementById("charModal").classList.add("is-active");
-}
 
-// キャンセル・閉じるボタンの連動
-document
-  .getElementById("closeModalBtn")
-  ?.addEventListener("click", function () {
-    closeModal();
-  });
+  var delBtn = document.getElementById("cmDeleteBtn");
+  if (delBtn) delBtn.style.display = "none"; // 👈 新規作成時は「削除ボタンを非表示」
+}
 
 function closeModal() {
   document.getElementById("charModal").classList.remove("is-active");
@@ -517,20 +607,116 @@ function saveMasterData() {
     alertMessage = `🎉 新規キャラクター「${formName}」を登録しました！`;
   }
 
+  // ─── ✨Firestore書き込み処理 ───
 
-  // 🌀共通ローディング演出の連動
+  // 1. 保存ボタンが押された瞬間に、画面全体をロックしてぐるぐるを開始！
   if (typeof showLoading === "function") showLoading();
 
-  setTimeout(function () {
-    if (typeof hideLoading === "function") hideLoading();
+  // 最新のFirebase形式でデータベース（db）を呼び出します
+  const db = getFirestore();
 
-    closeModal();
-    renderGridHTML(characterMaster);
+  // 「character_master」というコレクションの中に、キャラIDをファイル名にしたドキュメントを保存・上書きする設定
+  const docRef = doc(db, "character_master", String(formData.id));
 
-    alert(alertMessage); 
-  }, 500);
+  // 🚀 本物の Firestore データベースへデータを送信して、完了をじっと待ちます（then）
+  setDoc(docRef, formData, { merge: true })
+    .then(function () {
+      console.log("💾 Firestore 同期完了: キャラクターID " + formData.id);
+
+      // 最新のデータをローカルの配列（characterMaster）にも即時反映させる
+      if (existingIdx !== -1) {
+        window.characterMaster[existingIdx] = Object.assign(
+          {},
+          window.characterMaster[existingIdx],
+          formData,
+        );
+      }
+
+      // 待ち時間が終わったのでぐるぐるを消す
+      if (typeof hideLoading === "function") hideLoading();
+
+      // モーダル（入力画面）を閉じる
+      closeModal();
+
+      // 最新のデータでキャラクター一覧（グリッド）を再描画する
+      renderGridHTML(window.characterMaster);
+
+      // 最後に親切なポップアップを表示する
+      alert(alertMessage);
+    })
+    .catch(function (error) {
+      // ⚠️ 万が一の通信エラーや権限エラーに対するセーフティ
+      console.error("❌ Firestoreへの保存に失敗しました:", error);
+      if (typeof hideLoading === "function") hideLoading();
+      alert(
+        "⚠️ データベースへの保存に失敗しました。通信環境やログイン状態を確認してください。\n" +
+          error.message,
+      );
+    });
 }
 
+// ===================================================================
+// 🗑️ キャラクターマスタをFirestore（クラウド）から完全に抹消する関数
+// ===================================================================
+function deleteMasterCharacter() {
+  // 画面の入力フォームから、今開いているキャラクターのIDと名前を取得
+  const formId = document.getElementById("formId").value;
+  const formName = document.getElementById("formName").value.trim();
+
+  if (!formId) return alert("削除対象のキャラクターIDが見つかりません");
+
+  // 🛑 誤クリックで大事なキャラを消さないための最終確認ポップアップ
+  if (
+    !confirm(
+      "⚠️ 本当にキャラクター「" +
+        formName +
+        "」をマスタから完全に削除しますか？\nこの操作は取り消せません。",
+    )
+  ) {
+    return; // キャンセルされたら何もしない
+  }
+
+  // 🌀 削除完了まで画面全体をロックしてローディング（ぐるぐる）を開始！
+  if (typeof showLoading === "function") showLoading();
+
+  const db = getFirestore();
+  // 削除対象のドキュメント（ファイル）を指定
+  const docRef = doc(db, "character_master", String(formId));
+
+  // 🚀 本物の Firestore からキャラクターデータを消去！
+  deleteDoc(docRef)
+    .then(function () {
+      console.log("🗑️ Firestore キャラクターマスタ削除完了: ID " + formId);
+
+      // クラウド側が消えたので、ローカルのメモリ（配列）からもそのキャラを間引く
+      window.characterMaster = window.characterMaster.filter(function (c) {
+        return String(c.id) !== String(formId);
+      });
+
+      // 待ち時間が終わったので画面ロックを解除
+      if (typeof hideLoading === "function") hideLoading();
+
+      closeModal(); // 編集モーダルを閉じる
+      window.onAdminAuthSuccess();
+
+      alert(
+        "✨ 「" + formName + "」のキャラクターマスタ情報を完全に消去しました。",
+      );
+    })
+    .catch(function (error) {
+      // ⚠️ 万が一、通信エラーなどが起きた場合のセーフティ
+      console.error("❌ キャラクターの削除に失敗しました:", error);
+      if (typeof hideLoading === "function") hideLoading();
+      alert(
+        "⚠️ 削除に失敗しました。通信環境を確認してください:\n" + error.message,
+      );
+    });
+}
+
+// 💡 windowに大公開して、HTML側の onclick="deleteMasterCharacter()" から呼べるように紐付けます
+window.deleteMasterCharacter = deleteMasterCharacter;
+
+// 経過日数の計算のための関数
 function calculateElapsedDays(startDateStr) {
   if (!startDateStr) {
     document.getElementById("formElapsedDays").value = "";

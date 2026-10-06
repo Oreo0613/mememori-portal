@@ -12,7 +12,7 @@
 
   <link rel="stylesheet" href="assets/css/admin.css" />
   <link rel="stylesheet" href="assets/css/admin-character.css" />
-  
+
   <script src="https://kit.fontawesome.com/d36bec305b.js" crossorigin="anonymous"></script>
 </head>
 
@@ -452,11 +452,10 @@
             </div>
           </div>
         </div>
-
-        <!-- 保存ボタン固定配置（右下） -->
+        <!-- ボタン配置 -->
         <div class="master-form__footer">
-          <button type="button" id="closeModalBtn" class="ar-btn btn-muted">
-            キャンセル
+          <button type="button" id="cmDeleteBtn" class="ar-btn btn-muted btn-delete" onclick="deleteMasterCharacter()">
+            マスタ削除
           </button>
           <button type="button" class="ar-btn btn-primary" onclick="saveMasterData()">
             保存する
