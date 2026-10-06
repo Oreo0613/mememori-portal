@@ -1,3 +1,51 @@
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+/* =========================================================================
+   🧙‍♀️ ログイン成功後の初期化処理
+   ========================================================================= */
+
+// 💡 admin.js が認証に成功したあと、自動でこの関数を呼び出し
+window.onAdminAuthSuccess = function (user) {
+  console.log("admin.js からの通知：アルカナページの描画を開始します。");
+
+  // 🌀 読み込み中ローディングを出す
+  if (typeof showLoading === "function") showLoading();
+
+  // ─── ✨【ここから変更】最新のFirebase(v9+)形式の書き方に修正 ───
+  
+  // 💡【追加】admin.jsで初期化されたFirebaseから、最新の接続インスタンス（db）を取得する1行
+  const db = getFirestore();
+
+  // 💡【変更】古い「firebase.firestore().collection(...).get()」を廃止し、
+  // 事前にimportした最新の「getDocs(collection(db, "コレクション名"))」という形に書き換え
+  getDocs(collection(db, "arcana_master"))
+    .then(function(querySnapshot) {
+      // ─── 💡【ここから下は元の処理と同じです】 ───
+      
+      // 一旦、ローカルの配列をリセット
+      arcanaMaster = [];
+      
+      // データベースから取得したデータを1件ずつ配列に詰め込む
+      querySnapshot.forEach(function(doc) {
+        arcanaMaster.push(doc.data());
+      });
+
+      console.log("🔥 Firestoreからデータをダウンロードしました！件数:", arcanaMaster.length);
+
+      // データが揃ったのでメインテーブル（一覧）を描画！
+      drawTable();
+    })
+    .catch(function(error) {
+      console.error("データの読み込みに失敗しました:", error);
+      alert("データの取得に失敗しました。セキュリティルール等を確認してください。");
+    })
+    .then(function() {
+      // 🌀 成功しても失敗してもローディングを消す
+      if (typeof hideLoading === "function") hideLoading();
+    });
+};
+
+
 /* -------------------------------------------------------------------------
    1. アルカナ画面専用の変数・モックデータ定義
    ------------------------------------------------------------------------- */
@@ -59,45 +107,8 @@ var arcanaMaster = [];
 var curEditingArcana = null;
 var curSlotIdx = null;
 
-/* =========================================================================
-   🧙‍♀️ ログイン成功後の初期化処理
-   ========================================================================= */
-
-// 💡 admin.js が認証に成功したあと、自動でこの関数を呼び出し
-window.onAdminAuthSuccess = function (user) {
-  console.log("admin.js からの通知：アルカナページの描画を開始します。");
-
-  // 🌀 読み込み中ローディングを出す（共通関数があれば）
-  if (typeof showLoading === "function") showLoading();
-
-  // 【修正点②】Firestoreから「arcana_master」コレクションの全データをロードする
-  firebase.firestore().collection("arcana_master").get()
-    .then(function(querySnapshot) {
-      // 一旦、ローカルの配列をリセット
-      arcanaMaster = [];
-      
-      // データベースから取得したデータを1件ずつ配列に詰め込む
-      querySnapshot.forEach(function(doc) {
-        arcanaMaster.push(doc.data());
-      });
-
-      console.log("🔥 Firestoreからデータをダウンロードしました！件数:", arcanaMaster.length);
-
-      // データが揃ったのでメインテーブル（一覧）を描画！
-      drawTable();
-    })
-    .catch(function(error) {
-      console.error("データの読み込みに失敗しました:", error);
-      alert("データの取得に失敗しました。セキュリティルール等を確認してください。");
-    })
-    .then(function() {
-      // 🌀 成功しても失敗してもローディングを消す
-      if (typeof hideLoading === "function") hideLoading();
-    });
-};
-
 /* -------------------------------------------------------------------------
-     2. アプリケーション起動 ＆ メインテーブル（一覧）描画
+     アプリケーション起動 ＆ メインテーブル（一覧）描画
      ------------------------------------------------------------------------- */
 
 // アルカナ一覧テーブルを動的に描画する関数
