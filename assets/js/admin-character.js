@@ -39,17 +39,17 @@ const PASSIVE_OPTIONS = [
 
 // 💡 フィルター用・ドロップダウン用のアイコン画像のモック
 var ATTR_IMAGES = [
-  { name: "藍", url: "assets/images/icon-attr-blue.png" },
-  { name: "紅", url: "assets/images/icon-attr-red.png" },
-  { name: "翠", url: "assets/images/icon-attr-green.png" },
-  { name: "黄", url: "assets/images/icon-attr-yellow.png" },
-  { name: "天", url: "assets/images/icon-attr-holy.png" },
-  { name: "冥", url: "assets/images/icon-attr-dark.png" },
+  { name: "藍", url: "assets/images/filter-icon/icon-attr-blue.png" },
+  { name: "紅", url: "assets/images/filter-icon/icon-attr-red.png" },
+  { name: "翠", url: "assets/images/filter-icon/icon-attr-green.png" },
+  { name: "黄", url: "assets/images/filter-icon/icon-attr-yellow.png" },
+  { name: "天", url: "assets/images/filter-icon/icon-attr-holy.png" },
+  { name: "冥", url: "assets/images/filter-icon/icon-attr-dark.png" },
 ];
 var TYPE_IMAGES = [
-  { name: "ウォーリアー", url: "assets/images/icon-type-warrior.png" },
-  { name: "スナイパー", url: "assets/images/icon-type-gunner.png" },
-  { name: "ソーサラー", url: "assets/images/icon-type-sorcerer.png" },
+  { name: "ウォーリアー", url: "assets/images/filter-icon/icon-type-warrior.png" },
+  { name: "スナイパー", url: "assets/images/filter-icon/icon-type-gunner.png" },
+  { name: "ソーサラー", url: "assets/images/filter-icon/icon-type-sorcerer.png" },
 ];
 
 // キャラクター詳細データのモック（読み込みテスト用）
@@ -219,7 +219,7 @@ function buildFilterButtons() {
   const aOpt = document.getElementById("filterAttrOptions");
   if (aOpt) {
     aOpt.innerHTML =
-      `<label><input type="radio" name="filterAttr" value="ALL" checked onchange="execFiltering()"><div class="form-icon"><img src="assets/images/icon-all.png" alt="ALL"></div></label>` +
+      `<label><input type="radio" name="filterAttr" value="ALL" checked onchange="execFiltering()"><div class="form-icon"><img src="assets/images/filter-icon/icon-all.png" alt="ALL"></div></label>` +
       ATTR_IMAGES.map(
         (i) =>
           `<label><input type="radio" name="filterAttr" value="${i.name}" onchange="execFiltering()"><div class="form-icon"><img src="${i.url}"></div></label>`,
@@ -228,7 +228,7 @@ function buildFilterButtons() {
   const tOpt = document.getElementById("filterTypeOptions");
   if (tOpt) {
     tOpt.innerHTML =
-      `<label><input type="radio" name="filterType" value="ALL" checked onchange="execFiltering()"><div class="form-icon"><img src="assets/images/icon-all.png" alt="ALL"></div></label>` +
+      `<label><input type="radio" name="filterType" value="ALL" checked onchange="execFiltering()"><div class="form-icon"><img src="assets/images/filter-icon/icon-all.png" alt="ALL"></div></label>` +
       TYPE_IMAGES.map(
         (i) =>
           `<label><input type="radio" name="filterType" value="${i.name}" onchange="execFiltering()"><div class="form-icon"><img src="${i.url}"></div></label>`,
@@ -573,6 +573,7 @@ function saveMasterData() {
   const formType = document.getElementById("formType").value;
   const formRarity = document.getElementById("formRarity").value;
   const formIconUrl = document.getElementById("formIconUrl").value.trim();
+  const formCovernUrl = document.getElementById("formCoverUrl").value.trim();
 
   if (!formName || !formAttr || !formType) {
     alert("名前、属性、タイプは必須入力です。");
@@ -586,6 +587,7 @@ function saveMasterData() {
     type: formType,
     rarity: formRarity,
     iconUrl: formIconUrl || "https://placehold.co",
+    CoverUrl: formCovernUrl || "https://placehold.co",
     tags: "",
   };
 
