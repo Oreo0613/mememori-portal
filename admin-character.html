@@ -365,7 +365,13 @@
             <div class="master-form__title-area">
               <h3 id="modalMainTitle">キャラクターマスタ編集</h3>
             </div>
-            <div class="master-form__preview-box">
+            <div class="master-form__icon-preview-box">
+              <img src="" id="modalIconPreview" class="master-form__preview-img" alt="アイコンープレビュー" onerror="
+                    this.onerror = null;
+                    this.src = 'https://placehold.jp';
+                  " />
+            </div>
+            <div class="master-form__cover-preview-box">
               <img src="" id="modalCoverPreview" class="master-form__preview-img" alt="カバープレビュー" onerror="
                     this.onerror = null;
                     this.src = 'https://placehold.jp';
@@ -441,7 +447,10 @@
             </div>
             <div>
               <label for="formIconUrl">アイコン画像URL</label>
-              <input type="url" id="formIconUrl" name="iconUrl" />
+              <input type="url" id="formIconUrl" name="iconUrl" onchange="
+              document.getElementById('modalIconPreview').src =
+                this.value
+            " />
             </div>
             <div>
               <label for="formCoverUrl">カバー画像URL</label>

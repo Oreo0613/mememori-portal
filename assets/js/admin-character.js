@@ -505,9 +505,9 @@ function openModalForEditByIndex(idx) {
   document.getElementById("formId").value = d.id;
   document.getElementById("formName").value = d.name;
   document.getElementById("formIconUrl").value = d.iconUrl;
+  document.getElementById("modalIconPreview").src = d.iconUrl || "https://placehold.jp";
   document.getElementById("formCoverUrl").value = d.coverUrl || "";
-  document.getElementById("modalCoverPreview").src =
-    d.coverUrl || "https://placehold.co";
+  document.getElementById("modalCoverPreview").src = d.coverUrl || "https://placehold.jp";
   document.getElementById("formRarity").value = d.rarity || "限定";
 
   setDDValue(
@@ -552,7 +552,8 @@ function openModalForCreate() {
   document.getElementById("ddTypeIcon").src = "";
   document.getElementById("ddTypeText").innerText = "選択...";
   document.getElementById("formElapsedDays").value = "";
-  document.getElementById("modalCoverPreview").src = "https://placehold.co";
+  document.getElementById("modalIconPreview").src = "https://placehold.jp";
+  document.getElementById("modalCoverPreview").src = "https://placehold.jp";
 
   document.getElementById("charModal").classList.add("is-active");
 

@@ -219,6 +219,7 @@
 }
 
 
+
 /* 🛠️ 2. 性能編集フォーム専用 Block (.perf-form) */
 .perf-form {
   display: flex;
@@ -350,14 +351,22 @@
   flex: 1;
 }
 
-.master-form__preview-box {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  background-color: #1e293b;
+.master-form__icon-preview-box {
+  width: 100px;
+  aspect-ratio: 1 / 1;
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid var(--border);
-  margin: auto 0;
+  font-size: 11px;
+}
+
+.master-form__cover-preview-box {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  font-size: 11px;
 }
 .master-form__preview-img {
   width: 100%;
