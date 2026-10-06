@@ -349,15 +349,7 @@
   flex-direction: column;
   flex: 1;
 }
-.master-form__body {
-  padding-bottom: 50px;
-}
-.master-form__left-side,
-.master-form__title-area {
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 10px;
-  margin-bottom: 4px;
-}
+
 .master-form__preview-box {
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -384,6 +376,7 @@
   position: relative;
   width: 100%;
   user-select: none;
+  cursor: pointer;
 }
 .master-form__dd-icon {
   width: 22px;
@@ -412,10 +405,14 @@
 
 /* 固定フッター（保存ボタン等） */
 .master-form__footer {
-  position: absolute;
-  bottom: 20px;
-  right: 24px;
-  z-index: 10;
+  margin-top: 32px;
   display: flex;
-  gap: 12px;
+  justify-content: flex-end;
+  gap: 32px;
+}
+
+/* 🗳️ セレクトボックスの選択肢（プルダウンの中身）の文字をクッキリ見せる対策 */
+#formRarity option {
+  background-color: #2a2a35; /* 💡 選択肢の背景をダークな色（モーダルに近い色）にします */
+  color: #ffffff;            /* 💡 文字色を白にして、文字がハッキリ読めるようにします */
 }
