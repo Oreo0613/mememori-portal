@@ -304,11 +304,50 @@
   cursor: pointer;
   user-select: none;
 }
+
+/* 🔲 チェックボックス本体のベーススタイル */
 .perf-form__checkbox {
-  width: 18px !important;
-  height: 18px !important;
+  appearance: none; /* 💡 ブラウザ標準の野暮ったい枠線を消す */
+  -webkit-appearance: none;
+  width: 20px !important; /* 押しやすいように少しだけサイズアップ */
+  height: 20px !important;
   cursor: pointer;
+  background-color: #ffffff;
+  border: 2px solid #cbd5e1; /* 落ち着いたグレーの枠線 */
+  border-radius: 4px; /* ほんのり角丸にして今風に */
+  position: relative;
+  transition: all 0.2s ease; /* 変化をなめらかに */
+  margin-right: 4px;
 }
+
+/* 🔥 マウスを載せたときに枠線をちょっと濃くする（ホバー演出） */
+.perf-form__checkbox:hover {
+  border-color: #94a3b8;
+}
+
+/* 🟦 チェックが入ったとき（is-active）のボックス自体の変化 */
+.perf-form__checkbox-label.is-active .perf-form__checkbox {
+  background-color: #3b82f6; /* 💡 綺麗なブルー（お好みの色に変えられます） */
+  border-color: #3b82f6;
+}
+
+/* ☑️ チェックが入ったときの「レ点（✔）」のデザイン */
+.perf-form__checkbox-label.is-active .perf-form__checkbox:after {
+  content: "";
+  display: block;
+  position: absolute;
+  /* 💡 枠線の傾きと太さだけで、画像を使わずに綺麗なレ点を作ります */
+  top: 2px;
+  left: 6px;
+  width: 5px;
+  height: 10px;
+  border: solid #ffffff; /* 白色のレ点 */
+  border-width: 0 2px 2px 0; /* 下と右の線だけを残す */
+  transform: rotate(45deg); /* 45度回転させて「✔」にする */
+}
+
+
+
 .perf-form__checkbox-text {
   font-size: 12px;
   font-weight: bold;

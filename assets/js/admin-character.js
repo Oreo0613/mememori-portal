@@ -157,13 +157,17 @@ window.onAdminAuthSuccess = function (user) {
 /* -------------------------------------------------------------------------
    キャラクター一覧グリッドを動的に組み立てる関数
    ------------------------------------------------------------------------- */
+// ─── ⭕️ 修正後の renderGridHTML 関数 ───
 function renderGridHTML(charList) {
   const grid = document.getElementById("charGrid");
   if (!grid) return;
 
   grid.innerHTML = charList
     .map((char, i) => {
-      const isFinished = char.tags && char.tags.includes("[完了]");
+      // 🔴【修正】本物の true でも、文字列の "true" でも、どちらでも 100% 完了と判定する
+      const isFinished =
+        char.isFinished === true || String(char.isFinished) === "TRUE";
+
       return `
       <div class="char-card ${!isFinished ? "perf-not-ready" : ""}" onclick="openCharacterDetail(${i})" data-attr="${char.attr}" data-type="${char.type}">
         <img src="${char.iconUrl}" class="char-icon" onerror="this.onerror=null; this.src='https://placehold.co';">
@@ -410,6 +414,32 @@ function openPerformanceEditor() {
   document.getElementById("pe-header-info").innerHTML =
     `<h3 style="margin:0; font-size:16px; font-weight:bold;">${s.name}</h3><span class="tag-badge">${s.attr} / ${s.type}</span>`;
 
+  // 🔴【修正】データが存在し、かつ「厳格に大文字の"TRUE"であるとき」だけをTRUEにする安全な判定
+  const isCharFinished =
+    s && s.isFinished && String(s.isFinished).trim() === "TRUE";
+
+  const checkboxEl = document.getElementById("isFinished");
+  const labelEl = document.querySelector(".perf-form__checkbox-label");
+
+  if (checkboxEl) {
+    // 💡 1. 内部のチェック状態（レ点）を確実に同期
+    checkboxEl.checked = isCharFinished;
+
+    // 💡 2. 【最重要】検証モードのHTML属性（見た目）にも大文字の文字を直接ハメ込む！
+    if (isCharFinished) {
+      checkboxEl.setAttribute("checked", "TRUE");
+      if (labelEl) labelEl.classList.add("is-active"); // デザイン変更用のクラス（あれば）
+    } else {
+      checkboxEl.setAttribute("checked", "FALSE");
+      if (labelEl) labelEl.classList.remove("is-active");
+    }
+
+    console.log(
+      `👁️ 読み込み完了: [${s.name}] のデータベース値: ${s.isFinished} ➔ 反映属性:`,
+      checkboxEl.getAttribute("checked"),
+    );
+  }
+
   // フォームに初期値をセット（モックデータから流し込み）
   const realStatus = cachedDetailPackage.status;
   document.getElementById("pe-str").value = realStatus.str;
@@ -431,22 +461,84 @@ function closePerfEditor() {
   document.getElementById("charPerfEditModal").classList.remove("is-active");
 }
 
-// ─── 💡 savePerformanceData を丸ごと書き換え ───
+// ─── ⭕️ ③ データ保存時：見た目と連動して TRUE / FALSE を文字で書き込む ───
 function savePerformanceData() {
-  // 🔔 通知用のメッセージを用意
-  var alertMessage = "✨ キャラクターの性能・ステータスデータを保存しました！";
+  const s = characterMaster[currentDetailIndex];
+  if (!s) return alert("キャラクターの指定が正しくありません");
 
-  // 🌀【新しく追加】共通ローディング演出の連動
   if (typeof showLoading === "function") showLoading();
 
-  setTimeout(function () {
-    if (typeof hideLoading === "function") hideLoading();
+  // 💡 画面上のHTML属性から、今入っている「"TRUE"」または「"FALSE"」の文字を直接ぶっこ抜く！
+  const checkboxEl = document.getElementById("isFinished");
+  const currentStatusText = checkboxEl
+    ? checkboxEl.getAttribute("checked")
+    : "FALSE";
 
-    closePerfEditor();
+  // 💡 文字列のままデータベース（Firestore）へ送るデータを組み立て
+  const updateData = {
+    isFinished: currentStatusText,
+  };
 
-    alert(alertMessage);
-  }, 500);
+  const db = getFirestore();
+  const docRef = doc(db, "character_master", String(s.id));
+
+  setDoc(docRef, updateData, { merge: true })
+    .then(function () {
+      console.log(`💾 Firestore同期完了: ID ${s.id} = ${currentStatusText}`);
+
+      // ローカルのデータ配列も同じ「文字（"TRUE" / "FALSE"）」で上書き同期
+      window.characterMaster[currentDetailIndex].isFinished = currentStatusText;
+
+      if (typeof hideLoading === "function") hideLoading();
+      closePerfEditor();
+
+      // 一覧画面の描画をリフレッシュ
+      renderGridHTML(window.characterMaster);
+
+      if (currentStatusText === "TRUE") {
+        alert(`✨ 「${s.name}」の性能入力を「完了」として保存しました！`);
+      } else {
+        alert(`✨ 「${s.name}」の性能データを保存しました（未完了）。`);
+      }
+    })
+    .catch(function (error) {
+      console.error("❌ 保存エラー:", error);
+      if (typeof hideLoading === "function") hideLoading();
+      alert("⚠️ 保存に失敗しました:\n" + error.message);
+    });
 }
+
+/* =========================================================================
+   ☑️ 完了チェックボックス（isFinished）のクリックイベント制御
+   ========================================================================= */
+document.addEventListener("DOMContentLoaded", function () {
+  const label = document.querySelector(".perf-form__checkbox-label");
+  const checkbox = document.getElementById("isFinished");
+
+  if (label && checkbox) {
+    label.addEventListener("click", function (e) {
+      if (e.target === checkbox) return;
+      e.preventDefault();
+
+      // 今の状態を反転
+      checkbox.checked = !checkbox.checked;
+
+      // 💡 TRUE と FALSE の文字をHTML属性へリアルタイムにハメ込む！
+      if (checkbox.checked) {
+        checkbox.setAttribute("checked", "TRUE");
+        label.classList.add("is-active");
+      } else {
+        checkbox.setAttribute("checked", "FALSE");
+        label.classList.remove("is-active");
+      }
+
+      console.log(
+        "☑️ クリック連動：現在の属性値 =",
+        checkbox.getAttribute("checked"),
+      );
+    });
+  }
+});
 
 /* -------------------------------------------------------------------------
      大元のキャラクターマスタ編集・新規登録登録フォーム制御
