@@ -1,12 +1,3 @@
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  doc,
-  setDoc,
-  deleteDoc,
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-
 /* -------------------------------------------------------------------------
    1. 画面専用の変数定義 ＆ 選択肢マスター
    ------------------------------------------------------------------------- */
@@ -37,7 +28,7 @@ const PASSIVE_OPTIONS = [
   "クリダメ強化(%)",
 ];
 
-// 💡 フィルター用・ドロップダウン用のアイコン画像のモック
+// 💡 フィルター用・ドロップダウン用のアイコン画像
 var ATTR_IMAGES = [
   { name: "藍", url: "assets/images/filter-icon/icon-attr-blue.png" },
   { name: "紅", url: "assets/images/filter-icon/icon-attr-red.png" },
@@ -103,53 +94,48 @@ var cachedDetailPackage = {
 var currentDetailIndex = -1; // 現在詳細を見ているキャラのインデックス番
 
 /* =========================================================================
-   🧙‍♀️ ログイン成功後の初期化処理
+   🧙‍♀️ ログイン成功後の初期化処理（JSON読み込み）
    ========================================================================= */
-
-// 💡 admin.js が認証に成功したあと、自動でこの関数を呼び出し
 window.onAdminAuthSuccess = function (user) {
-  console.log("admin.js からの通知：キャラクターページの描画を開始します。");
+  console.log(
+    "admin.js からの通知：ローカルJSONによるキャラクターページの描画を開始します。",
+  );
 
-  // 🌀 画面ロックとローディングの開始
   if (typeof showLoading === "function") showLoading();
 
-  // 💡 最新の関数を使ってデータベース（Firestore）の接続インスタンスを準備
-  const db = getFirestore();
+  const charJsonUrl = "assets/json/character-master.json";
 
-  // Firestoreから「character_master」コレクションの全データをロードする
-  getDocs(collection(db, "character_master"))
-    .then(function (querySnapshot) {
-      // 💡 共通データの characterMaster 配列を一回リセット
-      window.characterMaster = [];
+  fetch(charJsonUrl)
+    .then((response) => {
+      if (!response.ok)
+        throw new Error("キャラクターマスタの読込に失敗しました。");
+      return response.json();
+    })
+    .then(function (charData) {
+      if (typeof characterMaster === "undefined") window.characterMaster = [];
+      characterMaster = charData;
 
-      // データベースから取得したキャラデータを1件ずつ配列に詰め込む
-      querySnapshot.forEach(function (doc) {
-        window.characterMaster.push(doc.data());
+      // 👤 キャラクター一覧をIDの大きい順（降順）にソート
+      characterMaster.sort(function (a, b) {
+        return Number(b.id) - Number(a.id);
       });
-
-      // 🔴【追加】IDを数字に変換して、大きい順（降順）に並び替える
-      window.characterMaster.sort((a, b) => Number(b.id) - Number(a.id));
-
       console.log(
-        "🔥 Firestoreからキャラクターデータをロードしました！件数:",
-        window.characterMaster.length,
+        "🌸 [JSON] キャラクターデータを読み込み、ID降順にソートしました！件数:",
+        characterMaster.length,
       );
 
-      // 1. データが揃ったので、本物のデータでキャラクター一覧（グリッド）を描画！
-      renderGridHTML(window.characterMaster);
-      // 2. カスタムドロップダウンの組み立て
-      buildCustomDropdowns();
-      // 3. 絞り込みフィルターの組み立て
-      buildFilterButtons();
+      renderGridHTML(characterMaster);
+
+      if (typeof buildFilterButtons === "function") buildFilterButtons();
+      if (typeof buildCustomDropdowns === "function") buildCustomDropdowns();
     })
     .catch(function (error) {
-      console.error("キャラクターデータの読み込みに失敗しました:", error);
+      console.error("JSONデータの読込中にエラーが発生しました:", error);
       alert(
-        "データの取得に失敗しました。セキュリティルール等を確認してください。",
+        "キャラクターマスタの読込に失敗しました。assets/json/character-master.json があるか確認してください。",
       );
     })
     .then(function () {
-      // 🌀 成功しても失敗してもローディングを消す
       if (typeof hideLoading === "function") hideLoading();
     });
 };
@@ -157,29 +143,52 @@ window.onAdminAuthSuccess = function (user) {
 /* -------------------------------------------------------------------------
    キャラクター一覧グリッドを動的に組み立てる関数
    ------------------------------------------------------------------------- */
-// ─── ⭕️ 修正後の renderGridHTML 関数 ───
 function renderGridHTML(charList) {
   const grid = document.getElementById("charGrid");
   if (!grid) return;
 
   grid.innerHTML = charList
     .map((char, i) => {
-      // 🔴【修正】本物の true でも、文字列の "true" でも、どちらでも 100% 完了と判定する
       const isFinished =
         char.isFinished === true || String(char.isFinished) === "TRUE";
-
       return `
-      <div class="char-card ${!isFinished ? "perf-not-ready" : ""}" onclick="openCharacterDetail(${i})" data-attr="${char.attr}" data-type="${char.type}">
-        <img src="${char.iconUrl}" class="char-icon" onerror="this.onerror=null; this.src='https://placehold.co';">
-      </div>
-    `;
+        <div class="char-card ${!isFinished ? "perf-not-ready" : ""}" onclick="openCharacterDetail(${i})" data-attr="${char.attr}" data-type="${char.type}">
+          <img src="${char.iconUrl}" class="char-icon" onerror="this.onerror=null; this.src='https://placehold.co';">
+        </div>
+      `;
     })
     .join("");
 }
 
 /* -------------------------------------------------------------------------
-    絞り込みフィルター ＆ カスタムドロップダウンの構築
-   ------------------------------------------------------------------------- */
+      💡 最新のJSONデータをパソコンへ自動エクスポート（保存）する共通関数
+     ------------------------------------------------------------------------- */
+function exportUpdatedJsonFile() {
+  // 保存する前に、JSON内の並び順を綺麗な「ID昇順（数字の小さい順）」に並び替えて整える
+  const outputData = [].concat(characterMaster).sort(function (a, b) {
+    return Number(a.id) - Number(b.id);
+  });
+
+  const jsonString = JSON.stringify(outputData, null, 4);
+  const blob = new Blob([jsonString], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "character-master.json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  console.log(
+    "💾 最新の character-master.json をローカルに出力しました。これを差し替えてください。",
+  );
+}
+
+/* -------------------------------------------------------------------------
+      絞り込みフィルター ＆ カスタムドロップダウンの構築
+     ------------------------------------------------------------------------- */
 function buildFilterButtons() {
   const aOpt = document.getElementById("filterAttrOptions");
   if (aOpt) {
@@ -201,7 +210,6 @@ function buildFilterButtons() {
   }
 }
 
-// フィルターの実行（ALLまたは選択された属性・タイプ以外をパッと非表示にする）
 function execFiltering() {
   const attrRadio = document.querySelector('input[name="filterAttr"]:checked');
   const typeRadio = document.querySelector('input[name="filterType"]:checked');
@@ -219,7 +227,6 @@ function execFiltering() {
   });
 }
 
-// モーダル内のカスタムドロップダウン（属性・タイプ選択）の中身を生成
 function buildCustomDropdowns() {
   const attrMenu = document.getElementById("ddAttrMenu");
   if (attrMenu) {
@@ -232,11 +239,9 @@ function buildCustomDropdowns() {
         "')\">" +
         '<img src="' +
         item.url +
-        '" style="width:22px; height:22px;"> ' +
-        "<span>" +
+        '" style="width:22px; height:22px;"> <span>' +
         item.name +
-        "</span>" +
-        "</div>"
+        "</span></div>"
       );
     }).join("");
   }
@@ -252,11 +257,9 @@ function buildCustomDropdowns() {
         "')\">" +
         '<img src="' +
         item.url +
-        '" style="width:22px; height:22px;"> ' +
-        "<span>" +
+        '" style="width:22px; height:22px;"> <span>' +
         item.name +
-        "</span>" +
-        "</div>"
+        "</span></div>"
       );
     }).join("");
   }
@@ -268,9 +271,8 @@ function toggleDD(id) {
 }
 
 /* -------------------------------------------------------------------------
-   4. キャラクター詳細・性能確認モーダルの制御
-   ------------------------------------------------------------------------- */
-// キャラクター詳細モーダルを開く
+     4. キャラクター詳細・性能確認モーダルの制御
+     ------------------------------------------------------------------------- */
 function openCharacterDetail(idx) {
   currentDetailIndex = idx;
   const baseInfo = characterMaster[idx];
@@ -281,11 +283,8 @@ function openCharacterDetail(idx) {
   document.getElementById("cd-attr").innerText = baseInfo.attr;
   document.getElementById("cd-type").innerText = baseInfo.type;
 
-  // 💡 【修正】詳細画面の正しいID（cd-rarity）を取得して表示を更新します（formRarityを巻き込まない）
   const rarityEl = document.getElementById("cd-rarity");
-  if (rarityEl) {
-    rarityEl.innerText = baseInfo.rarity || "限定";
-  }
+  if (rarityEl) rarityEl.innerText = baseInfo.rarity || "限定";
 
   let cleanTags = baseInfo.tags
     ? baseInfo.tags.replace(/,?\s*\[完了\]/, "").replace(/^,\s*/, "")
@@ -294,28 +293,21 @@ function openCharacterDetail(idx) {
     ? "🏷️ " + cleanTags
     : "";
 
-  // パラメーター自動計算エンジンの実行
   runStatusCalculationEngine(cachedDetailPackage.status, baseInfo.type);
-  switchWeaponTrigger("mika"); // 初期表示はミカエル武器タブ
+  switchWeaponTrigger("mika");
 
   document.getElementById("charDetailModal").classList.add("is-active");
 }
 
-// 📊 パラメーター自動計算エンジン（タイプ別の割り振りロジック）
 function runStatusCalculationEngine(status, type) {
   let atkVal = 0;
-  // 💡 タイプ別に攻撃力に反映する基礎パラメータをスイッチする定石ロジック
-  if (type === "ウォーリアー" || type === "ウォーリア") {
-    atkVal = status.str; // ウォーリアーは腕力（STR）が攻撃力になる
-  } else if (type === "スナイパー") {
-    atkVal = status.dex; // スナイパーは技力（DEX）が攻撃力になる
-  } else if (type === "ソーサラー") {
-    atkVal = status.mag; // ソーサラーは魔力（MAG）が攻撃力になる
-  }
+  if (type === "ウォーリアー" || type === "ウォーリア") atkVal = status.str;
+  else if (type === "スナイパー") atkVal = status.dex;
+  else if (type === "ソーサラー") atkVal = status.mag;
 
-  const hitVal = Math.floor(status.str * 0.5); // 腕力の半分が命中
-  const critVal = Math.floor(status.dex * 0.5); // 技力の半分がクリティカル
-  const debuffVal = Math.floor(status.mag * 0.5); // 魔力の半分が弱体効果命中
+  const hitVal = Math.floor(status.str * 0.5);
+  const critVal = Math.floor(status.dex * 0.5);
+  const debuffVal = Math.floor(status.mag * 0.5);
 
   document.getElementById("v-stat-speed").innerText =
     status.speed.toLocaleString();
@@ -325,10 +317,10 @@ function runStatusCalculationEngine(status, type) {
   document.getElementById("v-stat-debuff").innerText =
     debuffVal.toLocaleString();
 
-  const physDef = status.str; // 腕力＝物理防御力
-  const magDef = status.mag; // 魔力＝魔法防御力
-  const evadeVal = Math.floor(status.dex * 0.5); // 技力の半分が回避
-  const staVal = Math.floor(status.sta * 0.5); // 耐久力の半分がクリ耐性
+  const physDef = status.str;
+  const magDef = status.mag;
+  const evadeVal = Math.floor(status.dex * 0.5);
+  const staVal = Math.floor(status.sta * 0.5);
 
   document.getElementById("v-stat-hp").innerText = (
     status.hpCustom || 0
@@ -341,7 +333,6 @@ function runStatusCalculationEngine(status, type) {
   document.getElementById("v-stat-critres").innerText = staVal.toLocaleString();
 }
 
-// 専用武器のタブ切り替え処理
 function switchWeaponTrigger(mode) {
   document
     .querySelectorAll("#charDetailModal .admin-btn")
@@ -349,7 +340,6 @@ function switchWeaponTrigger(mode) {
   const targetBtn = document.getElementById(`btn-wp-${mode}`);
   if (targetBtn) targetBtn.classList.add("active");
 
-  // 4大スキルのテキスト流し込み
   ["A1", "A2", "P1", "P2"].forEach((slot) => {
     const sk = cachedDetailPackage.skills[slot] || {
       name: "未設定",
@@ -368,14 +358,13 @@ function switchWeaponTrigger(mode) {
     }
   });
 
-  // 武器パッシブの流し込み
   const w = cachedDetailPackage.weapon || { name: "" };
   if (mode === "normal") {
     document.getElementById("v-w-name").innerText = "専用武器なし (未装備)";
     document.getElementById("v-w-val").innerText = "固有値: -";
     document.getElementById("v-w-passives-lbl").style.display = "none";
     document.getElementById("v-w-passives").innerHTML =
-      "<li>パッシバ効果はありません</li>";
+      "<li>パッシブ効果はありません</li>";
   } else {
     const wd = w[mode] || { val: "", p1: "", p2: "", p3: "" };
     document.getElementById("v-w-name").innerText = w.name
@@ -403,7 +392,6 @@ function closeDetailModal() {
 /* -------------------------------------------------------------------------
    5. 性能編集エディタ（性能編集モーダル）の制御
    ------------------------------------------------------------------------- */
-// 性能編集画面を開く
 function openPerformanceEditor() {
   const s = characterMaster[currentDetailIndex];
   if (!s) return;
@@ -414,33 +402,22 @@ function openPerformanceEditor() {
   document.getElementById("pe-header-info").innerHTML =
     `<h3 style="margin:0; font-size:16px; font-weight:bold;">${s.name}</h3><span class="tag-badge">${s.attr} / ${s.type}</span>`;
 
-  // 🔴【修正】データが存在し、かつ「厳格に大文字の"TRUE"であるとき」だけをTRUEにする安全な判定
   const isCharFinished =
     s && s.isFinished && String(s.isFinished).trim() === "TRUE";
-
   const checkboxEl = document.getElementById("isFinished");
   const labelEl = document.querySelector(".perf-form__checkbox-label");
 
   if (checkboxEl) {
-    // 💡 1. 内部のチェック状態（レ点）を確実に同期
     checkboxEl.checked = isCharFinished;
-
-    // 💡 2. 【最重要】検証モードのHTML属性（見た目）にも大文字の文字を直接ハメ込む！
     if (isCharFinished) {
       checkboxEl.setAttribute("checked", "TRUE");
-      if (labelEl) labelEl.classList.add("is-active"); // デザイン変更用のクラス（あれば）
+      if (labelEl) labelEl.classList.add("is-active");
     } else {
       checkboxEl.setAttribute("checked", "FALSE");
       if (labelEl) labelEl.classList.remove("is-active");
     }
-
-    console.log(
-      `👁️ 読み込み完了: [${s.name}] のデータベース値: ${s.isFinished} ➔ 反映属性:`,
-      checkboxEl.getAttribute("checked"),
-    );
   }
 
-  // フォームに初期値をセット（モックデータから流し込み）
   const realStatus = cachedDetailPackage.status;
   document.getElementById("pe-str").value = realStatus.str;
   document.getElementById("pe-dex").value = realStatus.dex;
@@ -456,56 +433,35 @@ function openPerformanceEditor() {
   document.getElementById("charPerfEditModal").classList.add("is-active");
 }
 
-// 性能編集画面を閉じる
 function closePerfEditor() {
   document.getElementById("charPerfEditModal").classList.remove("is-active");
 }
 
-// ─── ⭕️ ③ データ保存時：見た目と連動して TRUE / FALSE を文字で書き込む ───
+// ─── 🚀 Firestoreへの書き込みを廃止し、ローカルメモリ更新＆自動ダウンロードへ変更 ───
 function savePerformanceData() {
   const s = characterMaster[currentDetailIndex];
   if (!s) return alert("キャラクターの指定が正しくありません");
 
-  if (typeof showLoading === "function") showLoading();
-
-  // 💡 画面上のHTML属性から、今入っている「"TRUE"」または「"FALSE"」の文字を直接ぶっこ抜く！
   const checkboxEl = document.getElementById("isFinished");
   const currentStatusText = checkboxEl
     ? checkboxEl.getAttribute("checked")
     : "FALSE";
 
-  // 💡 文字列のままデータベース（Firestore）へ送るデータを組み立て
-  const updateData = {
-    isFinished: currentStatusText,
-  };
+  // ローカルのデータ配列を上書き更新
+  window.characterMaster[currentDetailIndex].isFinished = currentStatusText;
+  window.characterMaster[currentDetailIndex].tags = document
+    .getElementById("pe-charTags")
+    .value.trim();
 
-  const db = getFirestore();
-  const docRef = doc(db, "character_master", String(s.id));
+  closePerfEditor();
+  renderGridHTML(window.characterMaster);
 
-  setDoc(docRef, updateData, { merge: true })
-    .then(function () {
-      console.log(`💾 Firestore同期完了: ID ${s.id} = ${currentStatusText}`);
+  // 💡 変更が加わった最新のJSONファイルを自動ダウンロードさせる
+  exportUpdatedJsonFile();
 
-      // ローカルのデータ配列も同じ「文字（"TRUE" / "FALSE"）」で上書き同期
-      window.characterMaster[currentDetailIndex].isFinished = currentStatusText;
-
-      if (typeof hideLoading === "function") hideLoading();
-      closePerfEditor();
-
-      // 一覧画面の描画をリフレッシュ
-      renderGridHTML(window.characterMaster);
-
-      if (currentStatusText === "TRUE") {
-        alert(`✨ 「${s.name}」の性能入力を「完了」として保存しました！`);
-      } else {
-        alert(`✨ 「${s.name}」の性能データを保存しました（未完了）。`);
-      }
-    })
-    .catch(function (error) {
-      console.error("❌ 保存エラー:", error);
-      if (typeof hideLoading === "function") hideLoading();
-      alert("⚠️ 保存に失敗しました:\n" + error.message);
-    });
+  alert(
+    `✨ 「${s.name}」の性能データを更新し、最新のJSONファイルをダウンロードしました！assets/json/ に上書き配置してください。`,
+  );
 }
 
 /* =========================================================================
@@ -519,11 +475,8 @@ document.addEventListener("DOMContentLoaded", function () {
     label.addEventListener("click", function (e) {
       if (e.target === checkbox) return;
       e.preventDefault();
-
-      // 今の状態を反転
       checkbox.checked = !checkbox.checked;
 
-      // 💡 TRUE と FALSE の文字をHTML属性へリアルタイムにハメ込む！
       if (checkbox.checked) {
         checkbox.setAttribute("checked", "TRUE");
         label.classList.add("is-active");
@@ -531,11 +484,6 @@ document.addEventListener("DOMContentLoaded", function () {
         checkbox.setAttribute("checked", "FALSE");
         label.classList.remove("is-active");
       }
-
-      console.log(
-        "☑️ クリック連動：現在の属性値 =",
-        checkbox.getAttribute("checked"),
-      );
     });
   }
 });
@@ -543,13 +491,11 @@ document.addEventListener("DOMContentLoaded", function () {
 /* -------------------------------------------------------------------------
      大元のキャラクターマスタ編集・新規登録登録フォーム制御
      ------------------------------------------------------------------------- */
-// 詳細画面の「⚙️ マスタ編集」から呼び出す連動処理
 function openAdminEditFromDetail() {
   document.getElementById("charDetailModal").classList.remove("is-active");
   openModalForEditByIndex(currentDetailIndex);
 }
 
-// 既存キャラの編集フォーム展開
 function openModalForEditByIndex(idx) {
   const d = characterMaster[idx];
   if (!d) return;
@@ -564,8 +510,8 @@ function openModalForEditByIndex(idx) {
   document.getElementById("modalCoverPreview").src =
     d.coverUrl || "https://placehold.jp";
   document.getElementById("formRarity").value = d.rarity || "限定";
-  document.getElementById("formStartDate").value = d.releaseDate || ""; // 保存されている「releaseDate」を、カレンダーの入力欄（formStartDate）にセット！
-  calculateElapsedDays(d.releaseDate || ""); // 編集画面を開いた瞬間に、実装経過日数を自動計算して「◯日」と表示させる関数を動かす！
+  document.getElementById("formStartDate").value = d.releaseDate || "";
+  calculateElapsedDays(d.releaseDate || "");
 
   setDDValue(
     "Attr",
@@ -581,10 +527,9 @@ function openModalForEditByIndex(idx) {
   document.getElementById("charModal").classList.add("is-active");
 
   var delBtn = document.getElementById("cmDeleteBtn");
-  if (delBtn) delBtn.style.display = "block"; // 既存編集時は「削除ボタンを表示」
+  if (delBtn) delBtn.style.display = "block";
 }
 
-// 🔓 新規登録ボタン（openModalForCreate）を押したときの処理
 function openModalForCreate() {
   document.getElementById("charMasterForm").reset();
   document.getElementById("modalMainTitle").innerText = "新規キャラクター登録";
@@ -615,14 +560,14 @@ function openModalForCreate() {
   document.getElementById("charModal").classList.add("is-active");
 
   var delBtn = document.getElementById("cmDeleteBtn");
-  if (delBtn) delBtn.style.display = "none"; // 👈 新規作成時は「削除ボタンを非表示」
+  if (delBtn) delBtn.style.display = "none";
 }
 
 function closeModal() {
   document.getElementById("charModal").classList.remove("is-active");
 }
 
-// 「保存する」が押されたときのデータ同期処理
+// ─── 🚀 マスタ情報の追加・更新時のFirestore送信を廃止、JSON自動ダウンロードへ変更 ───
 function saveMasterData() {
   const formId = document.getElementById("formId").value;
   const formName = document.getElementById("formName").value.trim();
@@ -644,141 +589,88 @@ function saveMasterData() {
     attr: formAttr,
     type: formType,
     rarity: formRarity,
-    releaseDate: formStartDate || "", // スプレッドシートのヘッダー名と一致させます
+    releaseDate: formStartDate || "",
+    elapsedDays:
+      document.getElementById("formElapsedDays").value.replace("日", "") || "0",
     iconUrl: formIconUrl || "https://placehold.co",
     coverUrl: formCoverUrl || "https://placehold.co",
+    updatedAt: new Date().toLocaleString("ja-JP"),
+    str: "",
+    dex: "",
+    mag: "",
+    sta: "",
+    spd: "",
+    def: "",
+    pen: "",
     tags: "",
+    isFinished: "FALSE",
   };
 
   const existingIdx = characterMaster.findIndex(function (c) {
     return String(c.id) === String(formId);
   });
 
-  // ─── 💡 saveMasterData の後半、既存更新か新規追加の判定部分から ───
-  let alertMessage = ""; // 変数の宣言
-
   if (existingIdx !== -1) {
-    characterMaster[existingIdx] = Object.assign(
+    // 既存更新時、古い特殊パラメータや完了フラグを壊さないようにマージ
+    window.characterMaster[existingIdx] = Object.assign(
       {},
-      characterMaster[existingIdx],
+      window.characterMaster[existingIdx],
       formData,
     );
-    alertMessage = `✨ 「${formName}」のマスタ情報を更新しました！`;
   } else {
-    characterMaster.push(formData); // 新規登録
-    alertMessage = `🎉 新規キャラクター「${formName}」を登録しました！`;
+    // 新規キャラクター追加
+    window.characterMaster.push(formData);
   }
 
-  // ─── ✨Firestore書き込み処理 ───
+  // 画面の降順ソート（最新が上）を維持
+  window.characterMaster.sort(function (a, b) {
+    return Number(b.id) - Number(a.id);
+  });
 
-  // 1. 保存ボタンが押された瞬間に、画面全体をロックしてぐるぐるを開始！
-  if (typeof showLoading === "function") showLoading();
+  closeModal();
+  renderGridHTML(window.characterMaster);
 
-  // 最新のFirebase形式でデータベース（db）を呼び出します
-  const db = getFirestore();
+  // 💡 最新状態のJSONファイルを自動保存（ダウンロード）
+  exportUpdatedJsonFile();
 
-  // 「character_master」というコレクションの中に、キャラIDをファイル名にしたドキュメントを保存・上書きする設定
-  const docRef = doc(db, "character_master", String(formData.id));
-
-  // 🚀 本物の Firestore データベースへデータを送信して、完了をじっと待ちます（then）
-  setDoc(docRef, formData, { merge: true })
-    .then(function () {
-      console.log("💾 Firestore 同期完了: キャラクターID " + formData.id);
-
-      // 最新のデータをローカルの配列（characterMaster）にも即時反映させる
-      if (existingIdx !== -1) {
-        window.characterMaster[existingIdx] = Object.assign(
-          {},
-          window.characterMaster[existingIdx],
-          formData,
-        );
-      }
-
-      // 待ち時間が終わったのでぐるぐるを消す
-      if (typeof hideLoading === "function") hideLoading();
-
-      // モーダル（入力画面）を閉じる
-      closeModal();
-
-      // 最新のデータでキャラクター一覧（グリッド）を再描画する
-      renderGridHTML(window.characterMaster);
-
-      // 最後に親切なポップアップを表示する
-      alert(alertMessage);
-    })
-    .catch(function (error) {
-      // ⚠️ 万が一の通信エラーや権限エラーに対するセーフティ
-      console.error("❌ Firestoreへの保存に失敗しました:", error);
-      if (typeof hideLoading === "function") hideLoading();
-      alert(
-        "⚠️ データベースへの保存に失敗しました。通信環境やログイン状態を確認してください。\n" +
-          error.message,
-      );
-    });
+  alert(
+    `🎉 キャラクター情報をローカルに反映し、最新のJSONをダウンロードしました！\nファイルをプロジェクトの assets/json/ に上書き保存してください。`,
+  );
 }
 
-// ===================================================================
-// 🗑️ キャラクターマスタをFirestore（クラウド）から完全に抹消する関数
-// ===================================================================
+// ─── 🚀 マスタ削除時のFirestore送信を完全廃止 ───
 function deleteMasterCharacter() {
-  // 画面の入力フォームから、今開いているキャラクターのIDと名前を取得
   const formId = document.getElementById("formId").value;
   const formName = document.getElementById("formName").value.trim();
 
   if (!formId) return alert("削除対象のキャラクターIDが見つかりません");
 
-  // 🛑 誤クリックで大事なキャラを消さないための最終確認ポップアップ
   if (
     !confirm(
-      "⚠️ 本当にキャラクター「" +
-        formName +
-        "」をマスタから完全に削除しますか？\nこの操作は取り消せません。",
+      `⚠️ 本当にキャラクター「${formName}」をマスタから完全に削除しますか？\nこの操作は取り消せません。`,
     )
   ) {
-    return; // キャンセルされたら何もしない
+    return;
   }
 
-  // 🌀 削除完了まで画面全体をロックしてローディング（ぐるぐる）を開始！
-  if (typeof showLoading === "function") showLoading();
+  // メモリ配列から削除
+  window.characterMaster = window.characterMaster.filter(function (c) {
+    return String(c.id) !== String(formId);
+  });
 
-  const db = getFirestore();
-  // 削除対象のドキュメント（ファイル）を指定
-  const docRef = doc(db, "character_master", String(formId));
+  closeModal();
+  renderGridHTML(window.characterMaster);
 
-  // 🚀 本物の Firestore からキャラクターデータを消去！
-  deleteDoc(docRef)
-    .then(function () {
-      console.log("🗑️ Firestore キャラクターマスタ削除完了: ID " + formId);
+  // 💡 削除完了後の最新JSONを自動保存
+  exportUpdatedJsonFile();
 
-      // クラウド側が消えたので、ローカルのメモリ（配列）からもそのキャラを間引く
-      window.characterMaster = window.characterMaster.filter(function (c) {
-        return String(c.id) !== String(formId);
-      });
-
-      // 待ち時間が終わったので画面ロックを解除
-      if (typeof hideLoading === "function") hideLoading();
-
-      closeModal(); // 編集モーダルを閉じる
-      window.onAdminAuthSuccess();
-
-      alert(
-        "✨ 「" + formName + "」のキャラクターマスタ情報を完全に消去しました。",
-      );
-    })
-    .catch(function (error) {
-      // ⚠️ 万が一、通信エラーなどが起きた場合のセーフティ
-      console.error("❌ キャラクターの削除に失敗しました:", error);
-      if (typeof hideLoading === "function") hideLoading();
-      alert(
-        "⚠️ 削除に失敗しました。通信環境を確認してください:\n" + error.message,
-      );
-    });
+  alert(
+    `✨ 「${formName}」をマスタから消去し、最新のJSONをダウンロードしました。ファイルを上書き配置してください。`,
+  );
 }
 
-// 💡 windowに大公開して、HTML側の onclick="deleteMasterCharacter()" から呼べるように紐付けます
 window.deleteMasterCharacter = deleteMasterCharacter;
 
-// 経過日数の計算のための関数
 function calculateElapsedDays(startDateStr) {
   if (!startDateStr) {
     document.getElementById("formElapsedDays").value = "";
@@ -792,11 +684,6 @@ function calculateElapsedDays(startDateStr) {
   document.getElementById("formElapsedDays").value = diffDays + "日";
 }
 
-/* =========================================================================
-   ⚙️ ドロップダウン制御関数の追加（重複エラー解決版）
-   ========================================================================= */
-
-// 💡 177行目に古い toggleDD があるため、ここには setDDValue の実体だけを書きます！
 function setDDValue(type, name, url) {
   const textEl = document.getElementById("dd" + type + "Text");
   const iconEl = document.getElementById("dd" + type + "Icon");
@@ -811,7 +698,6 @@ function setDDValue(type, name, url) {
   if (menu) menu.style.display = "none";
 }
 
-// 💡 ドロップダウンの外側をクリックしたときに自動で閉じる仕組み
 window.addEventListener("click", function (event) {
   if (!event.target.closest(".dd-container")) {
     document.querySelectorAll(".dd-menu").forEach((menu) => {
@@ -820,14 +706,12 @@ window.addEventListener("click", function (event) {
   }
 });
 
-// 💡 177行目にある toggleDD と、上で作った setDDValue をHTML（window）へ大公開！
 window.toggleDD = toggleDD;
 window.setDDValue = setDDValue;
 
 /* =========================================================================
-   🌐 HTML側（onclick / onchange）から関数を呼べるようにする公開処理
-   ========================================================================= */
-// 💡 window. に関数を入れることで、HTML側の onclick="openModalForCreate()" などが動くようになります！
+       🌐 HTML側（onclick / onchange）への関数公開
+       ========================================================================= */
 window.openModalForCreate = openModalForCreate;
 window.execFiltering = execFiltering;
 window.openCharacterDetail = openCharacterDetail;

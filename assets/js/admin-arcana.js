@@ -1,119 +1,70 @@
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  doc,
-  setDoc,
-  deleteDoc,
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-
-/* =========================================================================
-   🧙‍♀️ ログイン成功後の初期化処理
-   ========================================================================= */
-// 💡 admin.js が認証に成功したあと、自動でこの関数を呼び出し
-window.onAdminAuthSuccess = function (user) {
-  console.log("admin.js からの通知：アルカナページの描画を開始します。");
-
-  // 🌀 読み込み中ローディングを出す
-  if (typeof showLoading === "function") showLoading();
-
-  // ─── ✨最新のFirebase(v9+)形式の書き方に修正 ───
-
-  // 💡admin.jsで初期化されたFirebaseから、最新 of 接続インスタンス（db）を取得
-  const db = getFirestore();
-
-  // 💡 まずはキャラクターデータを「character_master」から全件ダウンロードします！
-  getDocs(collection(db, "character_master"))
-    .then(function (charSnapshot) {
-      // 親のグローバル変数 characterMaster にデータを詰め込む
-      if (typeof characterMaster === "undefined") window.characterMaster = [];
-      characterMaster = [];
-      charSnapshot.forEach(function (doc) {
-        characterMaster.push(doc.data());
-      });
-      console.log(
-        "🌸 Firestoreからキャラクターデータをダウンロードしました！件数:",
-        characterMaster.length,
-      );
-
-      // 💡 キャラクターの準備が100%整ったので、バトンタッチしてアルカナデータを取得しに行きます！
-      return getDocs(collection(db, "arcana_master"));
-    })
-    .then(function (querySnapshot) {
-      // 一旦、ローカルの配列をリセット
-      arcanaMaster = [];
-
-      // データベースから取得したデータを1件ずつ配列に詰め込む
-      querySnapshot.forEach(function (doc) {
-        arcanaMaster.push(doc.data());
-      });
-
-      // 🔮アルカナ一覧をIDの小さい順（数字昇順）に並び替える
-      arcanaMaster.sort(function (a, b) {
-        return Number(a.id) - Number(b.id);
-      });
-
-      console.log(
-        "🔥 Firestoreからアルカナデータをダウンロードしました！件数:",
-        arcanaMaster.length,
-      );
-
-      // 両方のデータが完璧に揃ったのでメインテーブル（一覧）を描画！
-      drawTable();
-    })
-    .catch(function (error) {
-      console.error("データの読み込みに失敗しました:", error);
-      alert(
-        "データの取得に失敗しました。セキュリティルール等を確認してください。",
-      );
-    })
-    .then(function () {
-      // 🌀 成功しても失敗しても、ここで確実にローディングを消して操作可能にします！
-      if (typeof hideLoading === "function") hideLoading();
-    });
-};
-
 /* -------------------------------------------------------------------------
    1. アルカナ画面専用の変数・モックデータ定義
    ------------------------------------------------------------------------- */
 // 💡 23種類の効果タグマスター
 var EFFECT_TAGS_MASTER = [
-  "HP",
-  "攻撃力",
-  "クリダメ強化",
-  "物理クリダメ緩和",
-  "魔法クリダメ緩和",
-  "HPドレイン",
-  "カウンタ",
-  "物魔防御貫通",
-  "防御貫通",
-  "耐久力",
-  "クリティカル",
-  "クリティカル耐性",
-  "防御力",
-  "物理防御力",
-  "魔法防御力",
-  "腕力",
-  "技力",
-  "魔力",
-  "命中",
-  "回避",
-  "弱体効果命中",
-  "弱体効果耐性",
-  "パーティLv上限",
+  "HP", "攻撃力", "クリダメ強化", "物理クリダメ緩和", "魔法クリダメ緩和",
+  "HPドレイン", "カウンタ", "物魔防御貫通", "防御貫通", "耐久力", "クリティカル",
+  "クリティカル耐性", "防御力", "物理防御力", "魔法防御力", "腕力", "技力",
+  "魔力", "命中", "回避", "弱体効果命中", "弱体効果耐性", "パーティLv上限"
 ];
 
-// 初期データは空っぽにしておく（Firestoreからダウンロードするため）
+// マスタデータ用グローバル変数
 var arcanaMaster = [];
 
 // 状態管理用グローバル変数
 var curEditingArcana = null;
 var curSlotIdx = null;
 
+/* =========================================================================
+   🧙‍♀️ ログイン成功後の初期化処理（2つのJSONを爆速読み込み）
+   ========================================================================= */
+window.onAdminAuthSuccess = function (user) {
+  console.log("admin.js からの通知：ローカルJSONによるアルカナページの描画を開始します。");
+
+  if (typeof showLoading === "function") showLoading();
+
+  const charJsonUrl = "assets/json/character-master.json";
+  const arcanaJsonUrl = "assets/json/arcana-master.json";
+
+  // 2つのJSONファイルを同時に爆速で並列ダウンロード！
+  Promise.all([
+    fetch(charJsonUrl).then(response => {
+      if (!response.ok) throw new Error("キャラクターマスタの読込に失敗しました。");
+      return response.json();
+    }),
+    fetch(arcanaJsonUrl).then(response => {
+      if (!response.ok) throw new Error("アルカナマスタの読込に失敗しました。");
+      return response.json();
+    })
+  ])
+  .then(function ([charData, arcanaData]) {
+    if (typeof characterMaster === "undefined") window.characterMaster = [];
+    characterMaster = charData;
+    console.log("🌸 [JSON] キャラクターデータを読み込みました！件数:", characterMaster.length);
+
+    arcanaMaster = arcanaData;
+
+    // 🔮 【ID小さい順ソート】
+    arcanaMaster.sort(function (a, b) {
+      return Number(a.id) - Number(b.id);
+    });
+    console.log("🔥 [JSON] アルカナデータを読み込み、ID降順にソートしました！件数:", arcanaMaster.length);
+
+    drawTable();
+  })
+  .catch(function (error) {
+    console.error("JSONデータの読込中にエラーが発生しました:", error);
+    alert("マスタデータの読込に失敗しました。ファイル名やパス（assets/json/内にあるか）を確認してください。");
+  })
+  .then(function () {
+    if (typeof hideLoading === "function") hideLoading();
+  });
+};
+
 /* -------------------------------------------------------------------------
      アプリケーション起動 ＆ メインテーブル（一覧）描画
      ------------------------------------------------------------------------- */
-
 // アルカナ一覧テーブルを動的に描画する関数
 function drawTable() {
   var tbody = document.getElementById("arTbody");
@@ -135,7 +86,6 @@ function drawTable() {
       var cId = ar["charId" + idx];
       if (!cId) return '<div class="slot slot--hide">-</div>';
       var c = characterMaster.find(function (ch) {
-        // 💡 左右両方のIDを完全に「String（文字列）」に変換してから比較することで、型のすれ違いを100%防ぎます！
         return String(ch.id).trim() === String(cId).trim();
       });
       var inner = c
@@ -168,6 +118,30 @@ function drawTable() {
 }
 
 /* -------------------------------------------------------------------------
+    💡 最新のJSONデータをパソコンへ自動エクスポート（保存）する共通関数
+   ------------------------------------------------------------------------- */
+function exportUpdatedJsonFile() {
+  // 保存する前に、JSON内の並び順を綺麗な「ID昇順（数字の小さい順）」に並び替えて整える
+  const outputData = [].concat(arcanaMaster).sort(function(a, b) {
+    return Number(a.id) - Number(b.id);
+  });
+
+  const jsonString = JSON.stringify(outputData, null, 4);
+  const blob = new Blob([jsonString], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "arcana-master.json"; // 💡 この名前でダウンロードさせます
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  
+  console.log("💾 最新の arcana-master.json をローカルに出力しました。これを差し替えてください。");
+}
+
+/* -------------------------------------------------------------------------
      3. モーダルウィンドウの制御（表示・非表示・データ流し込み）
      ------------------------------------------------------------------------- */
 // 【既存編集】データを選んでモーダルを開く
@@ -186,9 +160,7 @@ function openCard(id) {
   renderTagCheckboxes();
 
   var overlay = document.getElementById("mdOverlay");
-  if (overlay) {
-    overlay.classList.add("is-active");
-  }
+  if (overlay) overlay.classList.add("is-active");
   curSlotIdx = null;
 }
 
@@ -196,13 +168,8 @@ function openCard(id) {
 function openCardForNew() {
   var nextId = String(
     arcanaMaster.length > 0
-      ? Math.max.apply(
-          null,
-          arcanaMaster.map(function (a) {
-            return Number(a.id);
-          }),
-        ) + 1
-      : 1,
+      ? Math.max.apply(null, arcanaMaster.map(function (a) { return Number(a.id); })) + 1
+      : 1
   );
   curEditingArcana = {
     id: nextId,
@@ -224,23 +191,18 @@ function openCardForNew() {
   renderTagCheckboxes();
 
   var overlay = document.getElementById("mdOverlay");
-  if (overlay) {
-    overlay.classList.add("is-active");
-  }
+  if (overlay) overlay.classList.add("is-active");
   curSlotIdx = null;
 }
 
 // モーダルを閉じ、メインテーブルをリフレッシュ
 function closeCard() {
   var overlay = document.getElementById("mdOverlay");
-  if (overlay) {
-    overlay.classList.remove("is-active");
-  }
+  if (overlay) overlay.classList.remove("is-active");
   document.querySelector(".pk-side").classList.remove("is-active");
   drawTable();
 }
 
-// ⚠️ 親に共通の背景クリックを設置したため、こちら側を誤動作防止用にガード
 function closeCardOutside(e) {
   if (e.target.id === "mdOverlay") closeCard();
 }
@@ -248,7 +210,6 @@ function closeCardOutside(e) {
 /* -------------------------------------------------------------------------
      4. 編成スロット ＆ キャラクターピッカー連動
      ------------------------------------------------------------------------- */
-// モーダル内の4つのスロット枠を再描画
 function renderModalSlots() {
   var sContainer = document.getElementById("mdSlots");
   sContainer.innerHTML = "";
@@ -259,27 +220,13 @@ function renderModalSlots() {
       return String(ch.id) === String(cId);
     });
     var innerContent = char
-      ? '<img src="' +
-        char.iconUrl +
-        '" title="' +
-        char.name +
-        '"><div class="c-slot-del" onclick="clearSlot(' +
-        idx +
-        ', event)"><i class="fa-solid fa-x"></i></div>'
+      ? '<img src="' + char.iconUrl + '" title="' + char.name + '"><div class="c-slot-del" onclick="clearSlot(' + idx + ', event)"><i class="fa-solid fa-x"></i></div>'
       : "枠" + idx;
-    var slotHtml =
-      '<div class="slot" id="c-slot-' +
-      idx +
-      '" onclick="selectCardSlot(' +
-      idx +
-      ');">' +
-      innerContent +
-      "</div>";
+    var slotHtml = '<div class="slot" id="c-slot-' + idx + '" onclick="selectCardSlot(' + idx + ');">' + innerContent + '</div>';
     sContainer.insertAdjacentHTML("beforeend", slotHtml);
   }
 }
 
-// 特定の編成スロットをクリックして青く光らせる
 function selectCardSlot(idx) {
   if (!curEditingArcana) return;
   document.querySelectorAll(".md-main .slot").forEach(function (s) {
@@ -294,8 +241,7 @@ function selectCardSlot(idx) {
     var pickerWindow = document.querySelector(".pk-side");
     if (pickerWindow) pickerWindow.classList.add("is-active");
 
-    document.getElementById("slbl").innerText =
-      "枠" + idx + " のキャラクターを選択中";
+    document.getElementById("slbl").innerText = "枠" + idx + " のキャラクターを選択中";
     flt("all", document.querySelector(".pk-flx .pk-btn"));
   }
 }
@@ -352,60 +298,44 @@ function flt(elm, btn) {
 /* -------------------------------------------------------------------------
      5. 効果タグコントロール（チェックボックス ＆ バッジ）
      ------------------------------------------------------------------------- */
-// モーダル内の23種類のチェックボックスを動的生成
 function renderTagCheckboxes() {
   var tagContainer = document.getElementById("mdTagContainer");
   if (!tagContainer) return;
   tagContainer.innerHTML = "";
 
   var currentTags = curEditingArcana.tags
-    ? curEditingArcana.tags.split(",").map(function (t) {
-        return t.trim();
-      })
+    ? curEditingArcana.tags.split(",").map(function (t) { return t.trim(); })
     : [];
 
   EFFECT_TAGS_MASTER.forEach(function (tagName) {
     var isChecked = currentTags.indexOf(tagName) !== -1 ? "checked" : "";
     var label = document.createElement("label");
     label.innerHTML =
-      '<input type="checkbox" class="md-effect-tag-cb" value="' +
-      tagName +
-      '" ' +
-      isChecked +
-      ' onchange="updateMdTagBadges()"> ' +
-      tagName;
+      '<input type="checkbox" class="md-effect-tag-cb" value="' + tagName + '" ' + isChecked + ' onchange="updateMdTagBadges()"> ' + tagName;
     tagContainer.appendChild(label);
   });
   updateMdTagBadges();
 }
 
-// チェックされたタグを回収してオシャレな横並びバッジを描画
 function updateMdTagBadges() {
   var badgeArea = document.getElementById("mdSelectedBadgeArea");
   if (!badgeArea) return;
   badgeArea.innerHTML = "";
 
-  // 1. まず、すべてのチェックボックスから一旦 "is-active" を外す
   var allBoxes = document.querySelectorAll(".md-effect-tag-cb");
   allBoxes.forEach(function (cb) {
     cb.classList.remove("is-active");
-    // もし親の <label> に付けたい場合は、以下のようにします
-    // if (cb.parentElement) cb.parentElement.classList.remove("is-active");
   });
 
   var checkedBoxes = document.querySelectorAll(".md-effect-tag-cb:checked");
 
   if (checkedBoxes.length === 0) {
-    badgeArea.innerHTML =
-      '<span style="font-size: 12px; color: rgba(255,255,255,0.2); font-style: italic;">選択中のタグはありません</span>';
+    badgeArea.innerHTML = '<span style="font-size: 12px; color: rgba(255,255,255,0.2); font-style: italic;">選択中のタグはありません</span>';
     return;
   }
 
-  // バッジ（効果タグ）を1つずつ描画
   checkedBoxes.forEach(function (cb) {
-    cb.classList.add("is-active"); // チェックボックスにクラス付与
-
-    // バッジの生成処理
+    cb.classList.add("is-active");
     var badge = document.createElement("span");
     badge.className = "md-effect-badge";
     badge.innerText = cb.value;
@@ -414,7 +344,7 @@ function updateMdTagBadges() {
 }
 
 /* -------------------------------------------------------------------------
-   6. データ保存コミット（モックデータ同期）
+   6. データ保存コミット（ローカルメモリ更新 ＆ 自動ダウンロード）
    ------------------------------------------------------------------------- */
 // 右下の「更新する」ボタンが押された時のデータ上書き処理
 function toggleCardStatus() {
@@ -438,125 +368,57 @@ function toggleCardStatus() {
     return String(a.id) === String(curEditingArcana.id);
   });
 
-  // 🔔 保存アクションに応じた通知メッセージを入れておく変数を追加
   var alertMessage = "";
 
   if (existingIdx !== -1) {
     arcanaMaster[existingIdx] = curEditingArcana;
-    console.log(
-      "📊 既存のアルカナID: " + curEditingArcana.id + " を更新しました。",
-    );
-
-    alertMessage =
-      "✨ アルカナ「" + inputName + "」の組み合わせ情報を更新しました！";
+    alertMessage = "✨ アルカナ「" + inputName + "」の組み合わせ情報を更新しました！";
   } else {
     arcanaMaster.push(curEditingArcana);
-    console.log(
-      "🆕 新しいアルカナID: " + curEditingArcana.id + " を追加しました。",
-    );
-
     alertMessage = "🎉 新規アルカナ「" + inputName + "」を登録しました！";
   }
 
+  // 画面表示用の昇順ソート（最新が下）を維持
   arcanaMaster.sort(function (a, b) {
-    //ID順に並び替え
     return Number(a.id) - Number(b.id);
   });
 
-  // ─── ✨【ここから変更】ダミータイマーを廃止し、本物のFirestore書き込み処理に修正 ───
+  closeCard();
+  drawTable();
 
-  // 1. ボタンが押された瞬間に、画面全体をロックしてぐるぐるを開始！
-  if (typeof showLoading === "function") showLoading();
+  // 💡 最新状態のJSONファイルを自動ダウンロード
+  exportUpdatedJsonFile();
 
-  // 最新のFirebase(v9+)形式でデータベース（db）を呼び出します
-  const db = getFirestore();
-
-  // 「arcana_master」というコレクション（フォルダ）の中に、アルカナIDを名前にしたドキュメント（ファイル）を保存・上書きする設定
-  const docRef = doc(db, "arcana_master", String(curEditingArcana.id));
-
-  // 🚀 本物の Firestore データベースへデータを送信して、完了をじっと待ちます（then）
-  setDoc(docRef, curEditingArcana, { merge: true })
-    .then(function () {
-      // 👍 データベースへの保存が成功したあとの処理
-      console.log("💾 Firestore 同期完了: アルカナID " + curEditingArcana.id);
-
-      // 待ち時間が終わったのでぐるぐるを消す
-      if (typeof hideLoading === "function") hideLoading();
-
-      // モーダルカード（入力画面）を閉じる
-      closeCard();
-
-      // 最新のデータで一覧テーブルを再描画する
-      drawTable();
-
-      // 最後に親切なポップアップを表示する
-      alert(alertMessage);
-    })
-    .catch(function (error) {
-      // ⚠️ 万が一、ネット接続エラーやセキュリティルール（権限）で弾かれた場合のセーフティネット
-      console.error("❌ Firestoreへの保存に失敗しました:", error);
-
-      // 画面がフリーズしないようにぐるぐるを解除
-      if (typeof hideLoading === "function") hideLoading();
-
-      // 原因をポップアップで教えてくれる安心設計
-      alert(
-        "⚠️ データベースへの保存に失敗しました。通信環境やログイン状態を確認してください。\n" +
-          error.message,
-      );
-    });
+  alert(alertMessage + "\n最新のJSONファイルを assets/json/ に上書き配置してください。");
 }
 
 // =================================================================
-// 🗑️ 【修正版】表示中のアルカナをFirestoreから完全に削除する関数
+// 🗑️ 表示中のアルカナをマスタから完全に削除する関数（Firestore完全卒業）
 // =================================================================
 function deleteCard() {
   if (!curEditingArcana) return alert("編集中のデータが見つかりません");
 
-  // 🛑 誤削除を防ぐための最終確認ポップアップ
-  if (
-    !confirm(
-      "⚠️ 本当にアルカナ「" +
-        curEditingArcana.name +
-        "」を削除しますか？\nこの操作は取り消せません。",
-    )
-  ) {
-    return; // キャンセルされたら何もしない
+  if (!confirm("⚠️ 本当にアルカナ「" + curEditingArcana.name + "」を削除しますか？\nこの操作は取り消せません。")) {
+    return;
   }
 
-  // 🌀 削除完了まで画面をロックしてローディング開始
-  if (typeof showLoading === "function") showLoading();
+  // 配列から間引く
+  arcanaMaster = arcanaMaster.filter(function (a) {
+    return String(a.id) !== String(curEditingArcana.id);
+  });
 
-  const db = getFirestore();
-  // 削除対象のドキュメント（ファイル）を指定
-  const docRef = doc(db, "arcana_master", String(curEditingArcana.id));
+  closeCard();
+  drawTable();
 
-  // 🚀 Firestoreからデータを削除
-  deleteDoc(docRef)
-    .then(function () {
-      console.log("🗑️ Firestore 削除完了: アルカナID " + curEditingArcana.id);
+  // 💡 最新状態のJSONファイルを自動ダウンロード
+  exportUpdatedJsonFile();
 
-      // ローカルの配列（一覧データ）からも削除したデータを間引く
-      arcanaMaster = arcanaMaster.filter(function (a) {
-        return String(a.id) !== String(curEditingArcana.id);
-      });
-
-      if (typeof hideLoading === "function") hideLoading();
-      closeCard(); // モーダルを閉じる
-      drawTable(); // 一覧テーブルをリフレッシュ
-      alert("✨ アルカナを完全に消去しました。");
-    })
-    .catch(function (error) {
-      console.error("❌ 削除に失敗しました:", error);
-      if (typeof hideLoading === "function") hideLoading();
-      alert("⚠️ 削除に失敗しました: " + error.message);
-    });
+  alert("✨ アルカナを削除し、最新のJSONをダウンロードしました。ファイルを上書き配置してください。");
 }
 
 /* =========================================================================
    🌐 HTML側（onclick / onchange）から関数を呼べるようにする公開処理
    ========================================================================= */
-// 💡 window. に関数を入れることで、HTML側の onclick="openModalForCreate()" などが動くようになります！
 window.openCardForNew = openCardForNew;
 window.openCard = openCard;
 window.toggleCardStatus = toggleCardStatus;
