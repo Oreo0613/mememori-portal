@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>アルカナマスタデータ一括インポートツール</title>
+</head>
+
+<body>
+    <h1 style="color: #333; font-family: sans-serif;">🔥 Firestore一括インポート実行中...</h1>
+    <p>キーボードの <b>F12</b> キーを押して「コンソール（Console）」タブを開き、ログを確認してください。</p>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+        // 💡 ①【ここにあなたのFirebase設定（Config）を貼り付けてください】
+        //      (admin.js等に書かれているものと全く同じで大丈夫です)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCxPoxxpZMYJAF4I_HM-QeZxI120YOg5YA",
+            authDomain: "mememori-potal.firebaseapp.com",
+            projectId: "mememori-potal",
+            storageBucket: "mememori-potal.firebasestorage.app",
+            messagingSenderId: "773521822661",
+            appId: "1:773521822661:web:3d106588f9fcec7867b1ac",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 💡 ②【ここにステップ2で変換したJSONデータをドンッと貼り付けてください】
+        const arcanaSpreadsheetData = [
+
+            {
+                "id": "1",
+                "name": "トーラスの守護",
+                "charId1": "17",
+                "charId2": "19",
+                "charId3": "",
+                "charId4": "",
+                "effect": "物理防御力3000, 魔法防御力3000",
+                "tags": "物理防御力"
+            },
+            {
+                "id": "2",
+                "name": "リンクスの輪舞",
+                "charId1": "22",
+                "charId2": "29",
+                "charId3": "",
+                "charId4": "",
+                "effect": "物理クリダメ緩和15%, クリティカル耐性1500",
+                "tags": "物理クリダメ緩和"
+            },
+            {
+                "id": "3",
+                "name": "ジェミニの庇翼",
+                "charId1": "26",
+                "charId2": "24",
+                "charId3": "33",
+                "charId4": "",
+                "effect": "防御力1%, 回避1500",
+                "tags": "防御力"
+            },
+            {
+                "id": "4",
+                "name": "ウルススの心眼",
+                "charId1": "23",
+                "charId2": "36",
+                "charId3": "20",
+                "charId4": "",
+                "effect": "弱体効果命中1%, 弱体効果耐性1500",
+                "tags": "弱体効果命中"
+            },
+            {
+                "id": "5",
+                "name": "モノケロスの咆哮",
+                "charId1": "35",
+                "charId2": "18",
+                "charId3": "38",
+                "charId4": "30",
+                "effect": "攻撃力5000, クリダメ強化15%",
+                "tags": "攻撃力"
+            },
+            {
+                "id": "6",
+                "name": "アンドロメダの戦剣",
+                "charId1": "32",
+                "charId2": "37",
+                "charId3": "27",
+                "charId4": "31",
+                "effect": "攻撃力1%, 腕力3000",
+                "tags": "攻撃力"
+            },
+            {
+                "id": "7",
+                "name": "アルビレオの宝石",
+                "charId1": "34",
+                "charId2": "28",
+                "charId3": "25",
+                "charId4": "21",
+                "effect": "HP1%, 魔力3000",
+                "tags": "HP"
+            },
+            {
+                "id": "8",
+                "name": "ミモザの抱擁",
+                "charId1": "39",
+                "charId2": "37",
+                "charId3": "",
+                "charId4": "",
+                "effect": "HP5%, 防御力キャラLv×15",
+                "tags": "HP"
+            },
+            {
+                "id": "9",
+                "name": "アルゴルの武勇",
+                "charId1": "42",
+                "charId2": "24",
+                "charId3": "",
+                "charId4": "",
+                "effect": "クリダメ強化10%, 腕力キャラLv×30",
+                "tags": "クリダメ強化"
+            },
+            {
+                "id": "10",
+                "name": "アルテミスの誓約",
+                "charId1": "48",
+                "charId2": "17",
+                "charId3": "25",
+                "charId4": "",
+                "effect": "HP5%, 命中キャラLv×70",
+                "tags": "HP"
+            },
+            {
+                "id": "11",
+                "name": "ピスケスの愛護",
+                "charId1": "49",
+                "charId2": "22",
+                "charId3": "30",
+                "charId4": "",
+                "effect": "魔法クリダメ緩和15%, 弱体効果命中キャラLv×70",
+                "tags": "魔法クリダメ緩和"
+            },
+            {
+                "id": "12",
+                "name": "サーペンスの愛執",
+                "charId1": "50",
+                "charId2": "18",
+                "charId3": "38",
+                "charId4": "",
+                "effect": "攻撃力1.6%, 技力キャラLv×30",
+                "tags": "攻撃力"
+            },
+            {
+                "id": "13",
+                "name": "カニス・マヨルの遠吠",
+                "charId1": "51",
+                "charId2": "28",
+                "charId3": "19",
+                "charId4": "",
+                "effect": "HPドレイン5%, 魔力キャラLv×30",
+                "tags": "HPドレイン"
+            },
+            {
+                "id": "14",
+                "name": "アクエリアスの流星",
+                "charId1": "52",
+                "charId2": "27",
+                "charId3": "",
+                "charId4": "",
+                "effect": "物魔防御貫通500",
+                "tags": "物魔防御貫通"
+            },
+            {
+                "id": "15",
+                "name": "コルウスの吐息",
+                "charId1": "53",
+                "charId2": "32",
+                "charId3": "",
+                "charId4": "",
+                "effect": "耐久力キャラLv×30, 防御力キャラLv×15",
+                "tags": "耐久力"
+            },
+            {
+                "id": "16",
+                "name": "アウリガの知恵",
+                "charId1": "54",
+                "charId2": "20",
+                "charId3": "",
+                "charId4": "",
+                "effect": "魔力キャラLv×30, 弱体効果命中1%",
+                "tags": "魔力"
+            },
+            {
+                "id": "17",
+                "name": "フェリスの洞察",
+                "charId1": "55",
+                "charId2": "33",
+                "charId3": "",
+                "charId4": "",
+                "effect": "物理防御力2%, 回避キャラLv×50",
+                "tags": "物理防御力"
+            },
+            {
+                "id": "18",
+                "name": "プロキオンの双牙",
+                "charId1": "44",
+                "charId2": "34",
+                "charId3": "",
+                "charId4": "",
+                "effect": "攻撃力2%, 命中キャラLv×70",
+                "tags": "攻撃力"
+            },
+            {
+                "id": "19",
+                "name": "テレスコピウムの星光",
+                "charId1": "61",
+                "charId2": "23",
+                "charId3": "21",
+                "charId4": "",
+                "effect": "HP5%, 物理クリダメ緩和10%",
+                "tags": "HP"
+            },
+            {
+                "id": "20",
+                "name": "コロナボレアリスの約束",
+                "charId1": "62",
+                "charId2": "24",
+                "charId3": "",
+                "charId4": "",
+                "effect": "耐久力キャラLv×40, 防御力キャラLv×15",
+                "tags": "耐久力"
+            },
+            {
+                "id": "21",
+                "name": "ボーテスの聖光",
+                "charId1": "63",
+                "charId2": "31",
+                "charId3": "21",
+                "charId4": "",
+                "effect": "クリダメ強化10%, HPドレイン5%",
+                "tags": "クリダメ強化"
+            },
+            {
+                "id": "22",
+                "name": "アルゴルの武勇の腐敗",
+                "charId1": "64",
+                "charId2": "63",
+                "charId3": "",
+                "charId4": "",
+                "effect": "防御貫通200",
+                "tags": "防御貫通"
+            },
+            {
+                "id": "23",
+                "name": "カマエレオンの制圧",
+                "charId1": "65",
+                "charId2": "33",
+                "charId3": "",
+                "charId4": "",
+                "effect": "クリティカル耐性キャラLv×30, 命中キャラLv×70",
+                "tags": "クリティカル耐性"
+            },
+            {
+                "id": "24",
+                "name": "カニス・ミノルの相愛",
+                "charId1": "45",
+                "charId2": "28",
+                "charId3": "",
+                "charId4": "",
+                "effect": "攻撃力2%, 物理クリダメ緩和10%",
+                "tags": "攻撃力"
+            },
+            {
+                "id": "25",
+                "name": "コマ・ベレニケの恋路",
+                "charId1": "66",
+                "charId2": "18",
+                "charId3": "",
+                "charId4": "",
+                "effect": "クリティカルキャラLv×70, 技力キャラLv×30",
+                "tags": "クリティカル"
+            },
+            {
+                "id": "26",
+                "name": "ピクシスの激情",
+                "charId1": "68",
+                "charId2": "38",
+                "charId3": "",
+                "charId4": "",
+                "effect": "クリダメ強化10%, 命中キャラLv×70",
+                "tags": "クリダメ強化"
+            },
+            {
+                "id": "27",
+                "name": "オフィウクスの双武",
+                "charId1": "70",
+                "charId2": "36",
+                "charId3": "",
+                "charId4": "",
+                "effect": "攻撃力2%, 耐久力キャラLv×30",
+                "tags": "攻撃力"
+            },
+            {
+                "id": "28",
+                "name": "エリダヌスの信託",
+                "charId1": "76",
+                "charId2": "35",
+                "charId3": "",
+                "charId4": "",
+                "effect": "物理防御力2%, 命中1500",
+                "tags": "物理防御力"
+            },
+            {
+                "id": "29",
+                "name": "カリーナの初恋",
+                "charId1": "77",
+                "charId2": "26",
+                "charId3": "",
+                "charId4": "",
+                "effect": "HP5%, 物理クリダメ緩和10%",
+                "tags": "HP"
+            },
+            {
+                "id": "30",
+                "name": "アプスの応報",
+                "charId1": "80",
+                "charId2": "38",
+                "charId3": "",
+                "charId4": "",
+                "effect": "耐久力3000, 魔法防御力2%",
+                "tags": "耐久力"
+            },
+            {
+                "id": "31",
+                "name": "アフロディーテの親心",
+                "charId1": "41",
+                "charId2": "34",
+                "charId3": "",
+                "charId4": "",
+                "effect": "HP5%, 攻撃力2%",
+                "tags": "HP"
+            },
+            {
+                "id": "32",
+                "name": "ボランスの鎮魂",
+                "charId1": "57",
+                "charId2": "19",
+                "charId3": "",
+                "charId4": "",
+                "effect": "魔法防御力2%, 弱体効果命中1.5%",
+                "tags": "魔法防御力"
+            },
+            {
+                "id": "33",
+                "name": "ムネモシネの契約",
+                "charId1": "43",
+                "charId2": "26",
+                "charId3": "23",
+                "charId4": "",
+                "effect": "HP5%, 魔法クリダメ緩和10%",
+                "tags": "HP"
+            },
+            {
+                "id": "34",
+                "name": "デルフィヌスの青旗",
+                "charId1": "56",
+                "charId2": "35",
+                "charId3": "",
+                "charId4": "",
+                "effect": "クリダメ強化10%, 耐久力キャラLv×30",
+                "tags": "クリダメ強化"
+            },
+            {
+                "id": "35",
+                "name": "サジテリアスの逆光",
+                "charId1": "58",
+                "charId2": "17",
+                "charId3": "",
+                "charId4": "",
+                "effect": "カウンタ3%",
+                "tags": "カウンタ"
+            },
+            {
+                "id": "36",
+                "name": "ドラドの一撃",
+                "charId1": "59",
+                "charId2": "36",
+                "charId3": "",
+                "charId4": "",
+                "effect": "攻撃力2%, クリティカルキャラLv×70",
+                "tags": "攻撃力"
+            },
+            {
+                "id": "37",
+                "name": "オリオンの撃鉄",
+                "charId1": "60",
+                "charId2": "29",
+                "charId3": "",
+                "charId4": "",
+                "effect": "クリティカルキャラLv×70, 技力キャラLv×40",
+                "tags": "クリティカル"
+            },
+            {
+                "id": "38",
+                "name": "キルキヌスの教導",
+                "charId1": "46",
+                "charId2": "37",
+                "charId3": "",
+                "charId4": "",
+                "effect": "HP5%, 物理防御力2%",
+                "tags": "HP"
+            },
+            {
+                "id": "39",
+                "name": "ホロロギウムの奇跡",
+                "charId1": "67",
+                "charId2": "32",
+                "charId3": "",
+                "charId4": "",
+                "effect": "HP5%, 魔力キャラLv×30",
+                "tags": "HP"
+            },
+            {
+                "id": "40",
+                "name": "ウルサ・ミノルの心根",
+                "charId1": "47",
+                "charId2": "20",
+                "charId3": "",
+                "charId4": "",
+                "effect": "魔法クリダメ緩和10%, 魔力キャラLv×40",
+                "tags": "魔法クリダメ緩和"
+            },
+            {
+                "id": "41",
+                "name": "レティクルムの秘術",
+                "charId1": "69",
+                "charId2": "22",
+                "charId3": "29",
+                "charId4": "",
+                "effect": "魔法防御力2%, 弱体効果命中1.5%",
+                "tags": "魔法防御力"
+            },
+            {
+                "id": "42",
+                "name": "ギルサニアの玲瓏",
+                "charId1": "71",
+                "charId2": "25",
+                "charId3": "",
+                "charId4": "",
+                "effect": "攻撃力2%, 物魔防御貫通250",
+                "tags": "攻撃力"
+            },
+            {
+                "id": "43",
+                "name": "ジョバリの希望",
+                "charId1": "72",
+                "charId2": "30",
+                "charId3": "",
+                "charId4": "",
+                "effect": "カウンタ3%",
+                "tags": "カウンタ"
+            },
+            {
+                "id": "44",
+                "name": "ヴィルゴの献身",
+                "charId1": "73",
+                "charId2": "27",
+                "charId3": "",
+                "charId4": "",
+                "effect": "耐久力キャラLv×40, 防御力キャラLv×15",
+                "tags": "耐久力"
+            },
+            {
+                "id": "45",
+                "name": "カプリコルヌスの弾孔",
+                "charId1": "75",
+                "charId2": "33",
+                "charId3": "",
+                "charId4": "",
+                "effect": "クリティカルキャラLv×70, 弱体効果命中1.5%",
+                "tags": "クリティカル"
+            },
+            {
+                "id": "46",
+                "name": "ムスカの解放",
+                "charId1": "74",
+                "charId2": "21",
+                "charId3": "",
+                "charId4": "",
+                "effect": "技力キャラLv×40, 弱体効果命中1.5%",
+                "tags": "技力"
+            },
+            {
+                "id": "47",
+                "name": "プテロミスの秘伝",
+                "charId1": "78",
+                "charId2": "34",
+                "charId3": "",
+                "charId4": "",
+                "effect": "攻撃力2%, 回避1500",
+                "tags": "攻撃力"
+            },
+            {
+                "id": "48",
+                "name": "ヴェナティキの忠義",
+                "charId1": "79",
+                "charId2": "42",
+                "charId3": "",
+                "charId4": "",
+                "effect": "防御力キャラLv×15, 腕力キャラLv×40",
+                "tags": "防御力"
+            },
+            {
+                "id": "49",
+                "name": "セプトラムの威光",
+                "charId1": "81",
+                "charId2": "18",
+                "charId3": "",
+                "charId4": "",
+                "effect": "攻撃力2%, 魔法クリダメ緩和10%",
+                "tags": "攻撃力"
+            },
+            {
+                "id": "50",
+                "name": "レグルスの冒険",
+                "charId1": "82",
+                "charId2": "30",
+                "charId3": "",
+                "charId4": "",
+                "effect": "クリティカル耐性キャラLv×70, 技力3000",
+                "tags": "クリティカル"
+            },
+            {
+                "id": "51",
+                "name": "リリウムの誓剣",
+                "charId1": "83",
+                "charId2": "17",
+                "charId3": "",
+                "charId4": "",
+                "effect": "防御貫通200, 腕力キャラLv×40",
+                "tags": "防御貫通"
+            },
+            {
+                "id": "52",
+                "name": "クラテルの祝宴",
+                "charId1": "84",
+                "charId2": "29",
+                "charId3": "",
+                "charId4": "",
+                "effect": "耐久力キャラLv×30, 弱体効果命中1.5%",
+                "tags": "耐久力"
+            },
+            {
+                "id": "53",
+                "name": "リュラの旋律",
+                "charId1": "85",
+                "charId2": "27",
+                "charId3": "",
+                "charId4": "",
+                "effect": "HP3%, 技力キャラLv×30",
+                "tags": "HP"
+            },
+            {
+                "id": "54",
+                "name": "ノーマの分析",
+                "charId1": "86",
+                "charId2": "20",
+                "charId3": "",
+                "charId4": "",
+                "effect": "魔力キャラLv×40, 弱体効果耐性キャラLv×70",
+                "tags": "魔力"
+            },
+            {
+                "id": "55",
+                "name": "ヴルペクラの悪戯",
+                "charId1": "87",
+                "charId2": "22",
+                "charId3": "",
+                "charId4": "",
+                "effect": "攻撃力2%, 腕力キャラLv×40",
+                "tags": "攻撃力"
+            },
+            {
+                "id": "56",
+                "name": "ミクロスコープの探求",
+                "charId1": "88",
+                "charId2": "23",
+                "charId3": "",
+                "charId4": "",
+                "effect": "HPドレイン5%, 腕力キャラLv×40",
+                "tags": "HPドレイン"
+            },
+            {
+                "id": "57",
+                "name": "アルニラムの開花",
+                "charId1": "5",
+                "charId2": "10",
+                "charId3": "12",
+                "charId4": "14",
+                "effect": "パーティLv上限5",
+                "tags": "パーティLv上限"
+            },
+            {
+                "id": "58",
+                "name": "ヴェラの花束",
+                "charId1": "89",
+                "charId2": "31",
+                "charId3": "",
+                "charId4": "",
+                "effect": "クリダメ強化10%, 防御力1%",
+                "tags": "クリダメ強化"
+            },
+            {
+                "id": "59",
+                "name": "レプスの探知",
+                "charId1": "90",
+                "charId2": "32",
+                "charId3": "",
+                "charId4": "",
+                "effect": "魔力キャラLv×30, 弱体効果命中1.5%",
+                "tags": "魔力"
+            },
+            {
+                "id": "60",
+                "name": "アルゴの覚悟",
+                "charId1": "64",
+                "charId2": "5",
+                "charId3": "",
+                "charId4": "",
+                "effect": "攻撃力2%, 腕力キャラLv×70",
+                "tags": "攻撃力"
+            },
+            {
+                "id": "61",
+                "name": "ポルックスの親愛",
+                "charId1": "91",
+                "charId2": "34",
+                "charId3": "",
+                "charId4": "",
+                "effect": "物理クリダメ緩和10%, 物理防御力3000",
+                "tags": "物理クリダメ緩和"
+            },
+            {
+                "id": "62",
+                "name": "カストルの親愛",
+                "charId1": "92",
+                "charId2": "21",
+                "charId3": "",
+                "charId4": "",
+                "effect": "魔法クリダメ緩和10%, 魔法防御力3000",
+                "tags": "魔法クリダメ緩和"
+            },
+            {
+                "id": "63",
+                "name": "セクスタンスの指南",
+                "charId1": "93",
+                "charId2": "5",
+                "charId3": "",
+                "charId4": "",
+                "effect": "技力キャラLv×40, 命中1.5%",
+                "tags": "技力"
+            },
+            {
+                "id": "64",
+                "name": "リゲルの審判",
+                "charId1": "94",
+                "charId2": "76",
+                "charId3": "",
+                "charId4": "",
+                "effect": "HP3%, 攻撃力2%",
+                "tags": "HP"
+            },
+            {
+                "id": "65",
+                "name": "グルスの白椿",
+                "charId1": "96",
+                "charId2": "70",
+                "charId3": "",
+                "charId4": "",
+                "effect": "物理クリダメ緩和10%, 耐久力3000",
+                "tags": "物理クリダメ緩和"
+            },
+            {
+                "id": "66",
+                "name": "アクルックスの未来",
+                "charId1": "95",
+                "charId2": "97",
+                "charId3": "",
+                "charId4": "",
+                "effect": "魔力キャラLv×30, 回避キャラLv×15",
+                "tags": "魔力"
+            },
+            {
+                "id": "67",
+                "name": "アルファルドの猛火",
+                "charId1": "40",
+                "charId2": "26",
+                "charId3": "31",
+                "charId4": "",
+                "effect": "攻撃力2%, クリティカルキャラLv×70",
+                "tags": "攻撃力"
+            },
+            {
+                "id": "68",
+                "name": "フォルナックスの勇気",
+                "charId1": "99",
+                "charId2": "23",
+                "charId3": "",
+                "charId4": "",
+                "effect": "クリティカルキャラLv×70, 防御力キャラLv×15",
+                "tags": "クリティカル"
+            },
+            {
+                "id": "69",
+                "name": "ミンタカの開花",
+                "charId1": "6",
+                "charId2": "8",
+                "charId3": "13",
+                "charId4": "15",
+                "effect": "パーティLv上限5",
+                "tags": "パーティLv上限"
+            },
+            {
+                "id": "70",
+                "name": "オクタンスの残火",
+                "charId1": "100",
+                "charId2": "47",
+                "charId3": "",
+                "charId4": "",
+                "effect": "HPドレイン5%, 魔法防御力1%",
+                "tags": "HPドレイン"
+            },
+            {
+                "id": "71",
+                "name": "ポラリスの愛情",
+                "charId1": "101",
+                "charId2": "47",
+                "charId3": "20",
+                "charId4": "",
+                "effect": "物理クリダメ緩和10%, 防御貫通200",
+                "tags": "物理クリダメ緩和"
+            },
+            {
+                "id": "72",
+                "name": "トゥルドゥスの歌声",
+                "charId1": "130",
+                "charId2": "59",
+                "charId3": "",
+                "charId4": "",
+                "effect": "魔法防御力2%, 技力キャラLv×70",
+                "tags": "魔法防御力"
+            },
+            {
+                "id": "73",
+                "name": "ベスパの使命",
+                "charId1": "103",
+                "charId2": "42",
+                "charId3": "",
+                "charId4": "",
+                "effect": "技力キャラLv×30, 弱体効果耐性キャラLv×70",
+                "tags": "技力"
+            },
+            {
+                "id": "74",
+                "name": "グラの花畑",
+                "charId1": "105",
+                "charId2": "77",
+                "charId3": "",
+                "charId4": "",
+                "effect": "HP5%, クリダメ強化10%",
+                "tags": "HP"
+            },
+            {
+                "id": "75",
+                "name": "クシフィアスの共演",
+                "charId1": "104",
+                "charId2": "59",
+                "charId3": "",
+                "charId4": "",
+                "effect": "耐久力キャラLv×40, 弱体効果命中1.5%",
+                "tags": "耐久力"
+            },
+            {
+                "id": "76",
+                "name": "トリアングルムの距離",
+                "charId1": "98",
+                "charId2": "102",
+                "charId3": "106",
+                "charId4": "",
+                "effect": "クリダメ強化10%, カウンタ3%",
+                "tags": "クリダメ強化"
+            },
+            {
+                "id": "77",
+                "name": "ドラドの栄冠",
+                "charId1": "107",
+                "charId2": "36",
+                "charId3": "",
+                "charId4": "",
+                "effect": "クリダメ強化10%, 命中キャラLv×70",
+                "tags": "クリダメ強化"
+            },
+            {
+                "id": "78",
+                "name": "ジラファの虚像",
+                "charId1": "109",
+                "charId2": "93",
+                "charId3": "",
+                "charId4": "",
+                "effect": "防御力2%, 弱体効果耐性キャラLv×70",
+                "tags": "防御力"
+            },
+            {
+                "id": "79",
+                "name": "カシオペイアの同盟",
+                "charId1": "108",
+                "charId2": "110",
+                "charId3": "",
+                "charId4": "",
+                "effect": "魔法クリダメ緩和10%, クリティカル耐性キャラLv×70",
+                "tags": "魔法クリダメ緩和"
+            },
+            {
+                "id": "80",
+                "name": "コルンバの言伝",
+                "charId1": "111",
+                "charId2": "43",
+                "charId3": "",
+                "charId4": "",
+                "effect": "物理防御力2%, 回避キャラLv×50",
+                "tags": "物理防御力"
+            },
+            {
+                "id": "81",
+                "name": "ループスの宝物",
+                "charId1": "112",
+                "charId2": "28",
+                "charId3": "",
+                "charId4": "",
+                "effect": "物理クリダメ緩和10%, 腕力キャラLv×40",
+                "tags": "物理クリダメ緩和"
+            },
+            {
+                "id": "82",
+                "name": "アルニタクの開花",
+                "charId1": "7",
+                "charId2": "9",
+                "charId3": "11",
+                "charId4": "16",
+                "effect": "パーティLv上限5",
+                "tags": "パーティLv上限"
+            },
+            {
+                "id": "83",
+                "name": "カニス・ミノルの宝物",
+                "charId1": "113",
+                "charId2": "45",
+                "charId3": "",
+                "charId4": "",
+                "effect": "物魔防御貫通250, 命中1.5%",
+                "tags": "物魔防御貫通"
+            },
+            {
+                "id": "84",
+                "name": "ハーシェルの樹影",
+                "charId1": "115",
+                "charId2": "116",
+                "charId3": "",
+                "charId4": "",
+                "effect": "防御貫通200, 魔力キャラLv×70",
+                "tags": "防御貫通"
+            },
+            {
+                "id": "85",
+                "name": "インドゥスの知己",
+                "charId1": "114",
+                "charId2": "117",
+                "charId3": "",
+                "charId4": "",
+                "effect": "攻撃力2%, 技力キャラLv×40",
+                "tags": "攻撃力"
+            },
+            {
+                "id": "86",
+                "name": "アピスの愛着",
+                "charId1": "118",
+                "charId2": "103",
+                "charId3": "",
+                "charId4": "",
+                "effect": "耐久力3000, 魔法防御力2%",
+                "tags": "耐久力"
+            },
+            {
+                "id": "87",
+                "name": "テレスコピウムの星影",
+                "charId1": "116",
+                "charId2": "61",
+                "charId3": "",
+                "charId4": "",
+                "effect": "HP5%, 弱体効果耐性キャラLv×70",
+                "tags": "HP"
+            },
+            {
+                "id": "88",
+                "name": "ラケルタの試練",
+                "charId1": "120",
+                "charId2": "45",
+                "charId3": "",
+                "charId4": "",
+                "effect": "攻撃力2%, クリティカル耐性キャラLv×50",
+                "tags": "攻撃力"
+            },
+            {
+                "id": "89",
+                "name": "アケルナルの神童",
+                "charId1": "119",
+                "charId2": "94",
+                "charId3": "76",
+                "charId4": "",
+                "effect": "HPドレイン5%, クリティカルキャラLv×70",
+                "tags": "HPドレイン"
+            },
+            {
+                "id": "90",
+                "name": "ロサの花棘",
+                "charId1": "122",
+                "charId2": "38",
+                "charId3": "",
+                "charId4": "",
+                "effect": "物理防御力2%, 回避キャラLv×50",
+                "tags": "物理防御力"
+            },
+            {
+                "id": "91",
+                "name": "アラネアの悪夢",
+                "charId1": "121",
+                "charId2": "109",
+                "charId3": "",
+                "charId4": "",
+                "effect": "魔法クリダメ緩和10%, 腕力キャラLv×40",
+                "tags": "魔法クリダメ緩和"
+            },
+            {
+                "id": "92",
+                "name": "サジテリアスの光源",
+                "charId1": "124",
+                "charId2": "58",
+                "charId3": "",
+                "charId4": "",
+                "effect": "耐久力キャラLv×40, 防御力2%",
+                "tags": "耐久力"
+            },
+            {
+                "id": "93",
+                "name": "ルクバトの投影",
+                "charId1": "125",
+                "charId2": "124",
+                "charId3": "",
+                "charId4": "",
+                "effect": "HP5%, 物魔防御貫通250",
+                "tags": "HP"
+            },
+            {
+                "id": "94",
+                "name": "アルバートの真理",
+                "charId1": "126",
+                "charId2": "127",
+                "charId3": "",
+                "charId4": "",
+                "effect": "HP5%, 弱体効果耐性キャラLv×70",
+                "tags": "HP"
+            },
+            {
+                "id": "95",
+                "name": "アカマルの反魂",
+                "charId1": "128",
+                "charId2": "129",
+                "charId3": "",
+                "charId4": "",
+                "effect": "防御貫通250, 命中1.5%",
+                "tags": "防御貫通"
+            },
+            {
+                "id": "96",
+                "name": "ウルクの尻尾",
+                "charId1": "131",
+                "charId2": "51",
+                "charId3": "19",
+                "charId4": "",
+                "effect": "物理クリダメ緩和10%, 回避キャラLv×50",
+                "tags": "物理クリダメ緩和"
+            },
+            {
+                "id": "97",
+                "name": "タルルガルルの奇術",
+                "charId1": "123",
+                "charId2": "90",
+                "charId3": "",
+                "charId4": "",
+                "effect": "魔力キャラLv×70, 命中1.5%",
+                "tags": "魔力"
+            },
+            {
+                "id": "98",
+                "name": "クルクスの天誓",
+                "charId1": "132",
+                "charId2": "133",
+                "charId3": "",
+                "charId4": "",
+                "effect": "攻撃力2%, 耐久力キャラLv×30",
+                "tags": "攻撃力"
+            },
+            {
+                "id": "99",
+                "name": "トゥカナの飛翔",
+                "charId1": "134",
+                "charId2": "120",
+                "charId3": "",
+                "charId4": "",
+                "effect": "防御力2%, 命中キャラLv×70",
+                "tags": "防御力"
+            },
+            {
+                "id": "100",
+                "name": "リゲルの聖剣",
+                "charId1": "135",
+                "charId2": "135",
+                "charId3": "",
+                "charId4": "",
+                "effect": "攻撃力2％, 腕力キャラLv×40",
+                "tags": "攻撃力"
+            }
+
+        ];
+
+
+        async function startImport() {
+            console.log("🚀 アルカナマスタのインポート処理を開始します...");
+            let successCount = 0;
+
+            // データの配列を安全に取得
+            const targetList = arcanaSpreadsheetData;
+
+            for (let i = 0; i < targetList.length; i++) {
+                const item = targetList[i];
+                if (!item || !item.id) continue;
+
+                // 💡 保存先のコレクションとドキュメントIDを指定（item.id を使用）
+                const docRef = doc(db, "arcana_master", String(item.id));
+
+                // 💡 Firestoreの実際のデータ構造に合わせて1項目ずつ安全に整形
+                const arcanaDoc = {
+                    id: String(item.id),
+                    name: String(item.name || ""),
+                    charId1: String(item.charId1 || ""),
+                    charId2: String(item.charId2 || ""),
+                    charId3: String(item.charId3 || ""),
+                    charId4: String(item.charId4 || ""),
+                    effect: String(item.effect || ""),
+                    tags: String(item.tags || "")
+                };
+
+                try {
+                    // 🚀 Firestoreへ上書き保存
+                    await setDoc(docRef, arcanaDoc);
+                    console.log(`✅ アルカナID: ${item.id} (${item.name}) のインポート成功`);
+                    successCount++;
+                } catch (error) {
+                    console.error(`❌ アルカナID: ${item.id} のインポート失敗:`, error);
+                }
+            }
+
+            console.log(`✨ すべての処理が完了しました！ 成功件数: ${successCount} / ${targetList.length}`);
+            alert(`✨ アルカナマスタのインポートが完了しました！\n成功件数: ${successCount} 件`);
+        }
+
+        // ページが開かれたら自動実行
+        startImport();
+
+    </script>
+</body>
+
+</html>
