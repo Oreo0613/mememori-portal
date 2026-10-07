@@ -224,7 +224,7 @@ body {
 .slot {
   width: 40px;
   height: 40px;
-  border: 2px dashed var(--border-light);
+  border: 2px solid transparent;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
@@ -287,28 +287,37 @@ body {
 /* 👥 キャラクターアイコンの並び（アトラスのグリッド及びモーダル内共通） */
 .character-grid,
 .pk-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
-  gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
   box-sizing: border-box;
 }
 
 /* モーダル内のミニ選択画面用（少しコンパクトにリサイズ） */
 .pk-grid {
-  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
   gap: 6px;
   max-height: 400px;
   overflow-y: auto;
 }
 
+.character-grid {
+  gap: 8px;
+}
+
+.pk-filter-img {
+  width: 30px;
+  aspect-ratio: 1 / 1;
+}
+
 /* キャラクターカード単体 */
 .char-card,
 .pk-card {
+  width: 40px;
+  aspect-ratio: 1 / 1;
+
   overflow: hidden;
   box-shadow: var(--shadow);
   cursor: pointer;
   transition: all 0.2s ease;
-  aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -316,6 +325,10 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   position: relative;
+}
+
+.char-card {
+  width: 64px;
 }
 
 .char-card:hover,
@@ -371,9 +384,9 @@ body {
   height: 100%;
   background: rgba(0, 0, 0, 0.65);
   z-index: 9999;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 20px;
+  padding-top: 48px;
 }
 
 /* is-active クラスが付与された瞬間に画面に出現 */
@@ -389,7 +402,7 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   width: 100%;
-  max-width: 1000px;
+  max-width: 1020px;
   padding: 24px;
   box-shadow: var(--shadow);
   color: var(--text-main);
@@ -413,11 +426,22 @@ body {
 .md-main,
 .modal-left-master,
 .modal-right-individual {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   overflow-y: auto;
+}
+
+.md-main {
+  width: 100%;
+}
+
+.master-form__left-side {
+  flex: 2;
+}
+
+.master-form__right-side {
+  flex: 3;
 }
 
 /* モーダル内部：右側サイド（枠クリックで出現するキャラ選択等） */
@@ -519,6 +543,20 @@ input.main-hero-name {
   user-select: none;
 }
 
+.pk-btn {
+  padding: 0;
+  border: none;
+  opacity: 0.3;
+}
+
+.pk-btn.is-active {
+  opacity: 1;
+}
+
+.pk-side__sub-title {
+  font-size: 12px;
+}
+
 /* 🔓 マウスホバーした瞬間のドラマチックな浮き上がり演出 */
 .ar-btn:hover,
 .btn:hover {
@@ -527,7 +565,7 @@ input.main-hero-name {
   color: #ffffff;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   transform: translateY(-1px) scale(1.02);
-  transform-origin: right center; 
+  transform-origin: right center;
   opacity: 1 !important;
 }
 
