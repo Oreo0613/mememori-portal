@@ -590,8 +590,6 @@ function saveMasterData() {
     type: formType,
     rarity: formRarity,
     releaseDate: formStartDate || "",
-    elapsedDays:
-      document.getElementById("formElapsedDays").value.replace("日", "") || "0",
     iconUrl: formIconUrl || "https://placehold.co",
     coverUrl: formCoverUrl || "https://placehold.co",
     updatedAt: new Date().toLocaleString("ja-JP"),
@@ -671,6 +669,7 @@ function deleteMasterCharacter() {
 
 window.deleteMasterCharacter = deleteMasterCharacter;
 
+// 実装日からの経過日数の計算
 function calculateElapsedDays(startDateStr) {
   if (!startDateStr) {
     document.getElementById("formElapsedDays").value = "";
