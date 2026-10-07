@@ -10,7 +10,6 @@ import {
 /* =========================================================================
    🧙‍♀️ ログイン成功後の初期化処理
    ========================================================================= */
-
 // 💡 admin.js が認証に成功したあと、自動でこの関数を呼び出し
 window.onAdminAuthSuccess = function (user) {
   console.log("admin.js からの通知：アルカナページの描画を開始します。");
@@ -20,15 +19,27 @@ window.onAdminAuthSuccess = function (user) {
 
   // ─── ✨最新のFirebase(v9+)形式の書き方に修正 ───
 
-  // 💡admin.jsで初期化されたFirebaseから、最新の接続インスタンス（db）を取得する1行
+  // 💡admin.jsで初期化されたFirebaseから、最新 of 接続インスタンス（db）を取得
   const db = getFirestore();
 
-  // 💡古い「firebase.firestore().collection(...).get()」を廃止し、
-  // 事前にimportした最新の「getDocs(collection(db, "コレクション名"))」という形に書き換え
-  getDocs(collection(db, "arcana_master"))
-    .then(function (querySnapshot) {
-      // ─── 💡【ここから下は元の処理と同じです】 ───
+  // 💡 まずはキャラクターデータを「character_master」から全件ダウンロードします！
+  getDocs(collection(db, "character_master"))
+    .then(function (charSnapshot) {
+      // 親のグローバル変数 characterMaster にデータを詰め込む
+      if (typeof characterMaster === "undefined") window.characterMaster = [];
+      characterMaster = [];
+      charSnapshot.forEach(function (doc) {
+        characterMaster.push(doc.data());
+      });
+      console.log(
+        "🌸 Firestoreからキャラクターデータをダウンロードしました！件数:",
+        characterMaster.length,
+      );
 
+      // 💡 キャラクターの準備が100%整ったので、バトンタッチしてアルカナデータを取得しに行きます！
+      return getDocs(collection(db, "arcana_master"));
+    })
+    .then(function (querySnapshot) {
       // 一旦、ローカルの配列をリセット
       arcanaMaster = [];
 
@@ -43,11 +54,11 @@ window.onAdminAuthSuccess = function (user) {
       });
 
       console.log(
-        "🔥 Firestoreからデータをダウンロードしました！件数:",
+        "🔥 Firestoreからアルカナデータをダウンロードしました！件数:",
         arcanaMaster.length,
       );
 
-      // データが揃ったのでメインテーブル（一覧）を描画！
+      // 両方のデータが完璧に揃ったのでメインテーブル（一覧）を描画！
       drawTable();
     })
     .catch(function (error) {
@@ -57,7 +68,7 @@ window.onAdminAuthSuccess = function (user) {
       );
     })
     .then(function () {
-      // 🌀 成功しても失敗してもローディングを消す
+      // 🌀 成功しても失敗しても、ここで確実にローディングを消して操作可能にします！
       if (typeof hideLoading === "function") hideLoading();
     });
 };
@@ -124,7 +135,8 @@ function drawTable() {
       var cId = ar["charId" + idx];
       if (!cId) return '<div class="slot slot--hide">-</div>';
       var c = characterMaster.find(function (ch) {
-        return String(ch.id) === String(cId);
+        // 💡 左右両方のIDを完全に「String（文字列）」に変換してから比較することで、型のすれ違いを100%防ぎます！
+        return String(ch.id).trim() === String(cId).trim();
       });
       var inner = c
         ? '<img src="' + c.iconUrl + '" title="' + c.name + '">'
@@ -317,9 +329,9 @@ function clearSlot(idx, e) {
 function flt(elm, btn) {
   if (btn) {
     btn.parentElement.querySelectorAll(".pk-btn").forEach(function (b) {
-      b.classList.remove("act");
+      b.classList.remove("is-active");
     });
-    btn.classList.add("act");
+    btn.classList.add("is-active");
   }
   var grid = document.getElementById("pGrid");
   if (!grid) return;
@@ -446,7 +458,8 @@ function toggleCardStatus() {
     alertMessage = "🎉 新規アルカナ「" + inputName + "」を登録しました！";
   }
 
-  arcanaMaster.sort(function (a, b) { //ID順に並び替え
+  arcanaMaster.sort(function (a, b) {
+    //ID順に並び替え
     return Number(a.id) - Number(b.id);
   });
 
