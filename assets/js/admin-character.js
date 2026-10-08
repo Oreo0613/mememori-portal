@@ -843,7 +843,7 @@ function closeModal() {
   document.getElementById("charModal").classList.remove("is-active");
 }
 
-// ─── 🚀 マスタ情報の追加・更新時のFirestore送信を廃止、JSON自動ダウンロードへ変更 ───
+// ─── 🚀 マスタ情報の追加・更新：変更のあるキャラだけをディープコピーで隔離する防衛型 ───
 function saveMasterData() {
   const formId = document.getElementById("formId").value;
   const formName = document.getElementById("formName").value.trim();
@@ -859,44 +859,48 @@ function saveMasterData() {
     return;
   }
 
-  const formData = {
-    id: formId,
-    name: formName,
-    attr: formAttr,
-    type: formType,
-    rarity: formRarity,
-    releaseDate: formStartDate || "",
-    iconUrl: formIconUrl || "https://placehold.co",
-    coverUrl: formCoverUrl || "https://placehold.co",
-    updatedAt: new Date().toLocaleString("ja-JP"),
-    str: "",
-    dex: "",
-    mag: "",
-    sta: "",
-    spd: "",
-    def: "",
-    pen: "",
-    tags: "",
-    isFinished: "FALSE",
-  };
-
-  const existingIdx = characterMaster.findIndex(function (c) {
+  // 1️⃣ 既存のキャラクターかどうかを大元の配列から探す
+  const existingIdx = window.characterMaster.findIndex(function (c) {
     return String(c.id) === String(formId);
   });
 
+  let targetChar = {};
+
   if (existingIdx !== -1) {
-    // 既存更新時、古い特殊パラメータや完了フラグを壊さないようにマージ
-    window.characterMaster[existingIdx] = Object.assign(
-      {},
-      window.characterMaster[existingIdx],
-      formData,
-    );
+    // 2️⃣ 【既存編集の場合】対象キャラだけをディープコピー（完全複製）で隔離！
+    // 💡 これにより、深い階層にある既存のスキルテキストや武器パラメータを100%無傷で保護します。
+    targetChar = JSON.parse(JSON.stringify(window.characterMaster[existingIdx]));
   } else {
-    // 新規キャラクター追加
-    window.characterMaster.push(formData);
+    // 3️⃣ 【新規追加の場合】新しいキャラクターオブジェクトの土台を作成
+    targetChar = {
+      id: formId,
+      str: "", dex: "", mag: "", sta: "", spd: "", def: "", pen: "", tags: "",
+      isFinished: "FALSE",
+      status: { str: "0", dex: "0", mag: "0", sta: "0", speed: "0", defInitial: "0", penCustom: "0" },
+      weapon: { name: "" },
+      skills: []
+    };
   }
 
-  // 画面の降順ソート（最新が上）を維持
+  // 4️⃣ 隔離したクローンデータに対して、マスタの基本情報を安全に上書き
+  targetChar.name = formName;
+  targetChar.attr = formAttr;
+  targetChar.type = formType;
+  targetChar.rarity = formRarity;
+  targetChar.releaseDate = formStartDate || "";
+  targetChar.iconUrl = formIconUrl || "https://placehold.co";
+  targetChar.coverUrl = formCoverUrl || "https://placehold.co";
+  targetChar.updatedAt = new Date().toLocaleString("ja-JP"); // 🕒 更新日時を最新に
+
+  if (existingIdx !== -1) {
+    // 5️⃣ 完成したクローンデータを大元の配列へピンポイントで合流させる（他キャラは一切触らない）
+    window.characterMaster[existingIdx] = targetChar;
+  } else {
+    // 新規キャラクターの場合は配列の末尾に追加
+    window.characterMaster.push(targetChar);
+  }
+
+  // 6️⃣ 画面の降順ソート（最新が上）を維持
   window.characterMaster.sort(function (a, b) {
     return Number(b.id) - Number(a.id);
   });
@@ -908,9 +912,10 @@ function saveMasterData() {
   exportUpdatedJsonFile();
 
   alert(
-    `🎉 キャラクター情報をローカルに反映し、最新のJSONをダウンロードしました！\nファイルをプロジェクトの assets/json/ に上書き保存してください。`,
+    `🎉 キャラクター基本情報を反映し、最新のJSONをダウンロードしました！\n「${targetChar.name}」のデータを更新して保存しました。`
   );
 }
+
 
 // ─── 🚀 マスタ削除時のFirestore送信を完全廃止 ───
 function deleteMasterCharacter() {
