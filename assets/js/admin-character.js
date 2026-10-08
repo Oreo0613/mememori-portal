@@ -568,7 +568,7 @@ function openPerformanceEditor() {
   }
 
   // =========================================================================
-  // ✨ 【専用武器エディタの自動生成 ＆ リアルデータ流し込み：双方向・完全同期対応版】
+  // 🛡️ 専用武器エディタの自動生成（stat一本化 ＆ 完璧な双方向完全同期版）
   // =========================================================================
   const weaponContainer = document.getElementById("pe-w-rarity-container");
   if (weaponContainer) {
@@ -616,11 +616,12 @@ function openPerformanceEditor() {
         continue;
       }
 
-      const wd = w[m] || { val: "", p1: "", p2: "", p3: "" };
+      // ⭕️ 既存マスタに習い、stat値または旧データから値を引き出す（valは完全に無視）
+      const wd = w[m] || { stat: "", passive1: "", passive2: "", passive3: "" };
       let passivePairsHtml = "";
 
       for (let num = 1; num <= 3; num++) {
-        const pStr = wd[`p${num}`] || wd[`passive${num}`] || "未設定+0";
+        const pStr = wd[`passive${num}`] || wd[`p${num}`] || "未設定+0";
         let type = "未設定";
         let val = "0";
 
@@ -639,22 +640,22 @@ function openPerformanceEditor() {
           selectOptionsHtml += `<option value="${opt}" ${isSelected}>${opt}</option>`;
         }
 
-        // 💡 セレクトボックス（効果名）にも、数値入力欄（数字）にも、リアルタイム同期イベントを配置！
+        // 💡 id名に正確な「passive\${num}」を付与して双方向同期に備える
         passivePairsHtml += `
-          <div class="perf-form__passive-row">
-            <div class="perf-form__select-box">
-              <select id="pe-w-${m}-p${num}-type" class="perf-form__select" onchange="syncWeaponPassiveDropdowns(this)">
-                ${selectOptionsHtml}
-              </select>
-            </div>
-            <div class="perf-form__value-box">
-              <input type="number" id="pe-w-${m}-p${num}-num" class="perf-form__input-num-short" value="${val}" placeholder="0" oninput="syncWeaponPassiveNumbers(this)" />
-            </div>
-          </div>
-        `;
+           <div class="perf-form__passive-row">
+             <div class="perf-form__select-box">
+               <select id="pe-w-${m}-passive${num}-type" class="perf-form__select" onchange="syncWeaponPassiveDropdowns(this)">
+                 ${selectOptionsHtml}
+               </select>
+             </div>
+             <div class="perf-form__value-box">
+               <input type="number" id="pe-w-${m}-passive${num}-num" class="perf-form__input-num-short" value="${val}" placeholder="0" oninput="syncWeaponPassiveNumbers(this)" />
+             </div>
+           </div>
+         `;
       }
 
-      const currentVal = wd.val || wd.stat || "";
+      const currentVal = wd.stat || "";
       const displayVal =
         currentVal !== "" && currentVal !== undefined
           ? currentVal
@@ -665,7 +666,7 @@ function openPerformanceEditor() {
           <span class="perf-form__group-heading perf-form__group-heading--${cfg.color}">${cfg.label}</span>
           <div class="perf-form__field perf-form__field--flex-between">
             <label class="perf-form__field-label">武具固有値</label>
-            <input type="text" id="pe-w-${m}-val" class="perf-form__input-text-short" value="${displayVal}" placeholder="未設定" />
+            <input type="text" id="pe-w-${m}-stat" class="perf-form__input-text-short" value="${displayVal}" placeholder="未設定" />
           </div>
           <span class="perf-form__field-sub-label">専用パッシブ効果</span>
           <div class="perf-form__passive-container">
@@ -719,10 +720,10 @@ function openPerformanceEditor() {
   document.getElementById("charPerfEditModal").classList.add("is-active");
 }
 
-// 🔄 【効果名の完全同期】サタン・ミカエル・メタトロンのどこを触っても、同じスロット行の効果名をリアルタイムに双方向同期
+// 🔄 【効果名同期の決定版】インデックス番号[3]で確実に引き抜いて三段階を双方向連動
 function syncWeaponPassiveDropdowns(changedSelect) {
-  const idParts = changedSelect.id.split("-"); // 例: ["pe", "w", "michael", "p2", "type"]
-  const pSlot = idParts[3]; // 💡 インデックス[3]を指定して "p1"〜"p3" を正確に引き出す！
+  const idParts = changedSelect.id.split("-");
+  const pSlot = idParts[3]; // 💡 インデックス[3]を指定して "passive1"〜"passive3" を正確に引き出す！
 
   const targetStages = ["astaroth", "michael", "metatron"];
   for (let k = 0; k < targetStages.length; k++) {
@@ -737,26 +738,7 @@ function syncWeaponPassiveDropdowns(changedSelect) {
   }
 }
 
-// 🔄 【数値の完全同期】サタン・ミカエル・メタトロンのどこを触っても、同じスロット行の数値をリアルタイムに双方向同期
-function syncWeaponPassiveNumbers(changedInput) {
-  const idParts = changedInput.id.split("-"); // 例: ["pe", "w", "metatron", "p1", "num"]
-  const pSlot = idParts[3]; // "p1"〜"p3" を正確に引き出す
-
-  const targetStages = ["astaroth", "michael", "metatron"];
-  for (let k = 0; k < targetStages.length; k++) {
-    const stageName = targetStages[k];
-    const targetInput = document.getElementById(
-      `pe-w-${stageName}-${pSlot}-num`,
-    );
-
-    if (targetInput && targetInput !== changedInput) {
-      targetInput.value = changedInput.value;
-    }
-  }
-}
-
 window.syncWeaponPassiveDropdowns = syncWeaponPassiveDropdowns;
-window.syncWeaponPassiveNumbers = syncWeaponPassiveNumbers;
 
 /* =========================================================================
    ☑️ 完了チェックボックス（isFinished）のクリックイベント制御
@@ -1010,105 +992,115 @@ function closePerfEditor() {
 }
 
 /* -------------------------------------------------------------------------
-     ✨ 【性能データ保存 ＆ 最新JSON自動エクスポート：既存マスタ完全準拠版】
+     ✨ 【性能データ保存 ＆ 最新JSON自動エクスポート：既存マスタ（stat）100%準拠版】
      ------------------------------------------------------------------------- */
-     function savePerformanceData() {
-      const charId = document.getElementById("pe-charId").value;
-      if (!charId) return alert("キャラクターIDが見つかりません。");
-    
-      // 👤 1. 配列から現在編集中のキャラクター（本物データ）の参照を特定
-      const targetChar = window.characterMaster.find(c => String(c.id) === String(charId));
-      if (!targetChar) return alert("対象のキャラクターデータが見つかりません。");
-    
-      // 📝 2. 性能編集フォーム内の入力値を、既存マスタ（IDの小さい方）の形式で上書き回収
-      
-      // ⭕️ フォルティナと同じ文字列の "TRUE" / "FALSE" に強制統一！
-      const isChecked = document.getElementById("isFinished").checked;
-      targetChar.isFinished = isChecked ? "TRUE" : "FALSE";
-    
-      // 📊 基礎パラメータ（statusオブジェクトの中へ集約）
-      targetChar.status = {
-        str: String(document.getElementById("pe-str").value || 0),
-        dex: String(document.getElementById("pe-dex").value || 0),
-        mag: String(document.getElementById("pe-mag").value || 0),
-        sta: String(document.getElementById("pe-sta").value || 0),
-        speed: String(document.getElementById("pe-speed").value || 0),
-        defInitial: String(document.getElementById("pe-defInitial").value || 0),
-        penCustom: String(document.getElementById("pe-penCustom").value || 0)
-      };
-    
-      // 🏷️ 特徴タグ
-      targetChar.tags = document.getElementById("pe-charTags").value.trim();
-    
-      // 🔮 5つのスキル情報（A1, A2, P1, P2, WP）を回収
-      const ALL_SKILL_TYPES = ["A1", "A2", "P1", "P2", "WP"];
-      targetChar.skills = []; // 配列を一度リセット
-    
-      ALL_SKILL_TYPES.forEach((type) => {
-        const is_active = (type === "A1" || type === "A2");
-        const ct_el = document.getElementById(`pe-sk-${type}-ct`);
-        const ct_val = is_active ? (ct_el ? ct_el.value : "") : "";
-    
-        targetChar.skills.push({
-          type: type,
-          name: document.getElementById(`pe-sk-${type}-name`).value.trim(),
-          ct: ct_val ? Number(ct_val) : null,
-          nomalText: document.getElementById(`pe-sk-${type}-nomalText`).value || "",
-          astarothText: document.getElementById(`pe-sk-${type}-astarothText`).value || "",
-          michaelText: document.getElementById(`pe-sk-${type}-michaelText`).value || "",
-          metatronText: document.getElementById(`pe-sk-${type}-metatronText`).value || ""
-        });
-      });
-    
-      // 🛡️ 専用武器エディタの回収
-      targetChar.weapon = {
-        name: document.getElementById("pe-w-name").value.trim()
-      };
-    
-      const WEAPON_STAGES = ["astaroth", "michael", "metatron"];
-      WEAPON_STAGES.forEach((m) => {
-        targetChar.weapon[m] = {
-          // ⭕️ フォルティナと同じキー名（旧フォールバックも考慮し両方セット）
-          val: document.getElementById(`pe-w-${m}-val`).value.trim(),
-          stat: document.getElementById(`pe-w-${m}-val`).value.trim()
-        };
-    
-        // 1〜3個目のパッシブ行をループ
-        for (let num = 1; num <= 3; num++) {
-          const type = document.getElementById(`pe-w-${m}-p${num}-type`).value;
-          const numVal = document.getElementById(`pe-w-${m}-p${num}-num`).value || "0";
-          
-          const suffix = type.includes("%") ? "%" : "";
-          const combinedPassiveStr = (type === "未設定") ? "未設定+0" : `${type}+${numVal}${suffix}`;
-          
-          // ⭕️ 【ここが最重要！】p1 ではなく、既存データの正しい持ち方である「passive1」形式に完全に統一します！
-          targetChar.weapon[m][`passive${num}`] = combinedPassiveStr;
-          
-          // もし不具合防止用に新キー(p1)を残したければ残せますが、今回は既存に合わせるため消去（またはマージ）
-          if (`p${num}` in targetChar.weapon[m]) {
-            delete targetChar.weapon[m][`p${num}`];
-          }
-        }
-      });
-    
-      // 🧹 3. クーシーの末尾に残ってしまっていたルート直下の古いゴミ文字（str や spd）を完全自動デリート
-      const trashKeys = ["str", "dex", "mag", "sta", "spd", "def", "pen"];
-      trashKeys.forEach(key => {
-        if (key in targetChar) delete targetChar[key];
-      });
-    
-      // 🤝 4. 後半のソート＆出力処理（ファイル内も画面もID大きい順で一貫性を保ちます）
-      window.characterMaster.sort(function (a, b) {
-        return Number(b.id) - Number(a.id);
-      });
-    
-      closePerfEditor(); 
-      renderGridHTML(window.characterMaster); 
-      exportUpdatedJsonFile(); 
-    
-      alert(`✨ 【性能データ保存完了！】\n「${targetChar.name}」のデータ構造を既存の正しいデータ形式（ID小）へ100%完全統合し、最新のJSONファイルを出力しました！\nassets/json/ に上書き配置してください。`);
+function savePerformanceData() {
+  const charId = document.getElementById("pe-charId").value;
+  if (!charId) return alert("キャラクターIDが見つかりません。");
+
+  const targetChar = window.characterMaster.find(
+    (c) => String(c.id) === String(charId),
+  );
+  if (!targetChar) return alert("対象のキャラクターデータが見つかりません。");
+
+  // 1. 完了フラグ（既存の文字列 "TRUE" / "FALSE" 形式に統一）
+  const isChecked = document.getElementById("isFinished").checked;
+  targetChar.isFinished = isChecked ? "TRUE" : "FALSE";
+
+  // 2. 📊 基礎パラメータの回収
+  targetChar.status = {
+    str: String(document.getElementById("pe-str").value || 0),
+    dex: String(document.getElementById("pe-dex").value || 0),
+    mag: String(document.getElementById("pe-mag").value || 0),
+    sta: String(document.getElementById("pe-sta").value || 0),
+    speed: String(document.getElementById("pe-speed").value || 0),
+    defInitial: String(document.getElementById("pe-defInitial").value || 0),
+    penCustom: String(document.getElementById("pe-penCustom").value || 0),
+  };
+
+  // 3. 🏷️ 特徴タグの回収
+  targetChar.tags = document.getElementById("pe-charTags").value.trim();
+
+  // 4. 🔮 5大スキル回収
+  const ALL_SKILL_TYPES = ["A1", "A2", "P1", "P2", "WP"];
+  targetChar.skills = [];
+
+  ALL_SKILL_TYPES.forEach((type) => {
+    const is_active = type === "A1" || type === "A2";
+    const ct_el = document.getElementById(`pe-sk-${type}-ct`);
+    const ct_val = is_active ? (ct_el ? ct_el.value : "") : "";
+
+    targetChar.skills.push({
+      type: type,
+      name: document.getElementById(`pe-sk-${type}-name`).value.trim(),
+      ct: ct_val ? Number(ct_val) : null,
+      nomalText: document.getElementById(`pe-sk-${type}-nomalText`).value || "",
+      astarothText:
+        document.getElementById(`pe-sk-${type}-astarothText`).value || "",
+      michaelText:
+        document.getElementById(`pe-sk-${type}-michaelText`).value || "",
+      metatronText:
+        document.getElementById(`pe-sk-${type}-metatronText`).value || "",
+    });
+  });
+
+  // 5. 🛡️ 専用武器エディタ回収（valキーは永久追放し、既存マスタ通りの stat へ一本化！）
+  targetChar.weapon = {
+    name: document.getElementById("pe-w-name").value.trim(),
+  };
+
+  const WEAPON_STAGES = ["astaroth", "michael", "metatron"];
+  WEAPON_STAGES.forEach((m) => {
+    targetChar.weapon[m] = {
+      stat: document.getElementById(`pe-w-${m}-stat`).value.trim(), // ⭕️ statのみで美しく回収
+    };
+
+    for (let num = 1; num <= 3; num++) {
+      const type = document.getElementById(
+        `pe-w-${m}-passive${num}-type`,
+      ).value;
+      const numVal =
+        document.getElementById(`pe-w-${m}-passive${num}-num`).value || "0";
+
+      const suffix = type.includes("%") ? "%" : "";
+      const combinedPassiveStr =
+        type === "未設定" ? "未設定+0" : `${type}+${numVal}${suffix}`;
+
+      // ⭕️ 正しい既存形式「passive1〜3」にのみ格納！
+      targetChar.weapon[m][`passive${num}`] = combinedPassiveStr;
     }
-    
+  });
+
+  // 🧹 6. ルート直下にこびり付いていた古いゴミ文字（str, spd等）および新規マスタ側の不要キーを抹消
+  const trashKeys = [
+    "str",
+    "dex",
+    "mag",
+    "sta",
+    "spd",
+    "def",
+    "pen",
+    "defInitial",
+    "penCustom",
+    "speed",
+  ];
+  trashKeys.forEach((key) => {
+    if (key in targetChar) delete targetChar[key];
+  });
+
+  // 🤝 7. 後半のソート、リフレッシュ、ファイル自動ダウンロード
+  window.characterMaster.sort(function (a, b) {
+    return Number(b.id) - Number(a.id);
+  });
+
+  closePerfEditor();
+  renderGridHTML(window.characterMaster);
+  exportUpdatedJsonFile();
+
+  alert(
+    `✨ 【性能データ保存大成功！】\n「${targetChar.name}」のデータ構造を100%既存ルール（stat）に最適化し、最新のJSONファイルを出力しました！`,
+  );
+}
 
 /* =========================================================================
          🌐 HTML側（onclick / onchange）への関数公開
