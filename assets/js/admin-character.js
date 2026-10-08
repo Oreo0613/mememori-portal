@@ -992,22 +992,30 @@ function closePerfEditor() {
 }
 
 /* -------------------------------------------------------------------------
-     ✨ 【性能データ保存 ＆ 最新JSON自動エクスポート：既存マスタ（stat）100%準拠版】
+     ✨ 【性能データ保存 ＆ 最新JSON自動エクスポート：ディープコピー防衛型】
      ------------------------------------------------------------------------- */
 function savePerformanceData() {
   const charId = document.getElementById("pe-charId").value;
   if (!charId) return alert("キャラクターIDが見つかりません。");
 
-  const targetChar = window.characterMaster.find(
+  // 1️⃣ 大元の配列から編集対象のキャラを探す
+  const originalChar = window.characterMaster.find(
     (c) => String(c.id) === String(charId),
   );
-  if (!targetChar) return alert("対象のキャラクターデータが見つかりません。");
+  if (!originalChar) return alert("対象のキャラクターデータが見つかりません。");
 
-  // 1. 完了フラグ（既存の文字列 "TRUE" / "FALSE" 形式に統一）
+  // 2️⃣ 【最重要】対象キャラ1人分の「完全なクローン（複製）」を作成して隔離！
+  // これにより、ここから下の処理で万が一バグが起きても他のキャラは物理的に100%守られます。
+  const targetChar = JSON.parse(JSON.stringify(originalChar));
+
+  // 🕒 【追加】変更のあったこのキャラの更新日時だけを現在時刻に書き換える
+  targetChar.updatedAt = new Date().toLocaleString("ja-JP");
+
+  // 3. 完了フラグ（既存の文字列 "TRUE" / "FALSE" 形式に統一）
   const isChecked = document.getElementById("isFinished").checked;
   targetChar.isFinished = isChecked ? "TRUE" : "FALSE";
 
-  // 2. 📊 基礎パラメータの回収
+  // 4. 📊 基礎パラメータの回収（隔離したクローンに対して書き込みます）
   targetChar.status = {
     str: String(document.getElementById("pe-str").value || 0),
     dex: String(document.getElementById("pe-dex").value || 0),
@@ -1018,10 +1026,10 @@ function savePerformanceData() {
     penCustom: String(document.getElementById("pe-penCustom").value || 0),
   };
 
-  // 3. 🏷️ 特徴タグの回収
+  // 5. 🏷️ 特徴タグの回収
   targetChar.tags = document.getElementById("pe-charTags").value.trim();
 
-  // 4. 🔮 5大スキル回収
+  // 6. 🔮 5大スキル回収
   const ALL_SKILL_TYPES = ["A1", "A2", "P1", "P2", "WP"];
   targetChar.skills = [];
 
@@ -1044,7 +1052,7 @@ function savePerformanceData() {
     });
   });
 
-  // 5. 🛡️ 専用武器エディタ回収（valキーは永久追放し、既存マスタ通りの stat へ一本化！）
+  // 7. 🛡️ 専用武器エディタ回収
   targetChar.weapon = {
     name: document.getElementById("pe-w-name").value.trim(),
   };
@@ -1052,7 +1060,7 @@ function savePerformanceData() {
   const WEAPON_STAGES = ["astaroth", "michael", "metatron"];
   WEAPON_STAGES.forEach((m) => {
     targetChar.weapon[m] = {
-      stat: document.getElementById(`pe-w-${m}-stat`).value.trim(), // ⭕️ statのみで美しく回収
+      stat: document.getElementById(`pe-w-${m}-stat`).value.trim(),
     };
 
     for (let num = 1; num <= 3; num++) {
@@ -1066,12 +1074,11 @@ function savePerformanceData() {
       const combinedPassiveStr =
         type === "未設定" ? "未設定+0" : `${type}+${numVal}${suffix}`;
 
-      // ⭕️ 正しい既存形式「passive1〜3」にのみ格納！
       targetChar.weapon[m][`passive${num}`] = combinedPassiveStr;
     }
   });
 
-  // 🧹 6. ルート直下にこびり付いていた古いゴミ文字（str, spd等）および新規マスタ側の不要キーを抹消
+  // 🧹 8. ルート直下にこびり付いていた古いゴミ文字（str, spd等）をクローン側から完全抹消
   const trashKeys = [
     "str",
     "dex",
@@ -1088,7 +1095,15 @@ function savePerformanceData() {
     if (key in targetChar) delete targetChar[key];
   });
 
-  // 🤝 7. 後半のソート、リフレッシュ、ファイル自動ダウンロード
+  // 🤝 9. 【安全対策の要】完成した綺麗なクローンデータを、大元の配列の「対象の場所」だけに入れ替える
+  const targetIndex = window.characterMaster.findIndex(
+    (c) => String(c.id) === String(charId),
+  );
+  if (targetIndex !== -1) {
+    window.characterMaster[targetIndex] = targetChar;
+  }
+
+  // 10. 全体のソート、画面リフレッシュ、ファイル自動ダウンロード
   window.characterMaster.sort(function (a, b) {
     return Number(b.id) - Number(a.id);
   });
@@ -1098,7 +1113,7 @@ function savePerformanceData() {
   exportUpdatedJsonFile();
 
   alert(
-    `✨ 【性能データ保存大成功！】\n「${targetChar.name}」のデータ構造を100%既存ルール（stat）に最適化し、最新のJSONファイルを出力しました！`,
+    `✨ 【性能データ保存大成功！】\n「${targetChar.name}」のデータをディープコピーで安全に分離して最適化し、最新のJSONファイルを出力しました！`,
   );
 }
 
