@@ -49,48 +49,6 @@ var TYPE_IMAGES = [
   },
 ];
 
-// キャラクター詳細データのモック（読み込みテスト用）
-var cachedDetailPackage = {
-  status: {
-    id: "1",
-    speed: 120,
-    str: 500,
-    dex: 450,
-    mag: 200,
-    sta: 600,
-    defInitial: 100,
-    hpCustom: 15000,
-    penCustom: 50,
-    tags: "アタッカー",
-  },
-  skills: {
-    A1: {
-      name: "アクティブスキル1",
-      normal: "敵単体に300%の物理ダメージ",
-      ct: "4",
-    },
-    A2: {
-      name: "アクティブスキル2",
-      normal: "敵全体に150%の物理ダメージ",
-      ct: "6",
-    },
-    P1: { name: "パッシブスキル1", normal: "戦闘開始時、自身の攻撃力+10%" },
-    P2: {
-      name: "パッシブスキル2",
-      normal: "自身のHPが50%以下の時、回避率+15%",
-    },
-  },
-  weapon: {
-    name: "ヴァルキリースピア",
-    mika: {
-      val: "腕力+100",
-      p1: "攻撃力(%)+10",
-      p2: "クリティカル(%)+5",
-      p3: "未設定",
-    },
-  },
-};
-
 var currentDetailIndex = -1; // 現在詳細を見ているキャラのインデックス番
 
 /* =========================================================================
@@ -270,14 +228,17 @@ function toggleDD(id) {
   if (e) e.style.display = e.style.display === "block" ? "none" : "block";
 }
 
+var currentWeaponMode = "nomal"; // 💡 現在選択されている武器段階を保持する変数
+
 /* -------------------------------------------------------------------------
-     4. キャラクター詳細・性能確認モーダルの制御
-     ------------------------------------------------------------------------- */
+        4. キャラクター詳細・性能確認モーダルの制御
+------------------------------------------------------------------------- */
 function openCharacterDetail(idx) {
   currentDetailIndex = idx;
-  const baseInfo = characterMaster[idx];
+  const baseInfo = characterMaster[idx]; // ⭕️ 読み込んだJSONのリアルなデータを直接取得
   if (!baseInfo) return;
 
+  // 基本情報の反映
   document.getElementById("cd-avatar").src = baseInfo.iconUrl;
   document.getElementById("cd-name").innerText = baseInfo.name;
   document.getElementById("cd-attr").innerText = baseInfo.attr;
@@ -293,90 +254,186 @@ function openCharacterDetail(idx) {
     ? "🏷️ " + cleanTags
     : "";
 
-  runStatusCalculationEngine(cachedDetailPackage.status, baseInfo.type);
-  switchWeaponTrigger("mika");
+  // ⭕️ ステータス計算エンジンに、JSON内のリアルな数値を流し込む
+  if (baseInfo.status) {
+    runStatusCalculationEngine(baseInfo.status, baseInfo.type);
+  }
+
+  // ⭕️ モーダルを開いたときは、まず「通常武器（nomal）」の状態で初期描画
+  switchWeaponTrigger("nomal");
 
   document.getElementById("charDetailModal").classList.add("is-active");
 }
 
 function runStatusCalculationEngine(status, type) {
+  // 数値計算のために、文字列を数字（Number）に変換
+  const spd = Number(status.speed || 0);
+  const str = Number(status.str || 0);
+  const dex = Number(status.dex || 0);
+  const mag = Number(status.mag || 0);
+  const sta = Number(status.sta || 0);
+  const hpCustom = Number(status.hpCustom || 0);
+  const defInitial = Number(status.defInitial || 0);
+
   let atkVal = 0;
-  if (type === "ウォーリアー" || type === "ウォーリア") atkVal = status.str;
-  else if (type === "スナイパー") atkVal = status.dex;
-  else if (type === "ソーサラー") atkVal = status.mag;
+  if (type === "ウォーリアー" || type === "ウォーリア") atkVal = str;
+  else if (type === "スナイパー") atkVal = dex;
+  else if (type === "ソーサラー") atkVal = mag;
 
-  const hitVal = Math.floor(status.str * 0.5);
-  const critVal = Math.floor(status.dex * 0.5);
-  const debuffVal = Math.floor(status.mag * 0.5);
+  const hitVal = Math.floor(str * 0.5);
+  const critVal = Math.floor(dex * 0.5);
+  const debuffVal = Math.floor(mag * 0.5);
 
-  document.getElementById("v-stat-speed").innerText =
-    status.speed.toLocaleString();
+  document.getElementById("v-stat-speed").innerText = spd.toLocaleString();
   document.getElementById("v-stat-atk").innerText = atkVal.toLocaleString();
   document.getElementById("v-stat-hit").innerText = hitVal.toLocaleString();
   document.getElementById("v-stat-crit").innerText = critVal.toLocaleString();
   document.getElementById("v-stat-debuff").innerText =
     debuffVal.toLocaleString();
 
-  const physDef = status.str;
-  const magDef = status.mag;
-  const evadeVal = Math.floor(status.dex * 0.5);
-  const staVal = Math.floor(status.sta * 0.5);
+  const physDef = str;
+  const magDef = mag;
+  const evadeVal = Math.floor(dex * 0.5);
+  const staVal = Math.floor(sta * 0.5);
 
-  document.getElementById("v-stat-hp").innerText = (
-    status.hpCustom || 0
-  ).toLocaleString();
-  document.getElementById("v-stat-def").innerText =
-    status.defInitial.toLocaleString();
+  document.getElementById("v-stat-hp").innerText = hpCustom.toLocaleString();
+  document.getElementById("v-stat-def").innerText = defInitial.toLocaleString();
   document.getElementById("v-stat-pdef").innerText = physDef.toLocaleString();
   document.getElementById("v-stat-mdef").innerText = magDef.toLocaleString();
   document.getElementById("v-stat-evade").innerText = evadeVal.toLocaleString();
   document.getElementById("v-stat-critres").innerText = staVal.toLocaleString();
 }
 
+// 専用装備ボタンの切り替えによる読込データの操作
 function switchWeaponTrigger(mode) {
+  currentWeaponMode = mode;
+
+  // 1. タブボタンのアクティブ状態切り替え
   document
-    .querySelectorAll("#charDetailModal .admin-btn")
+    .querySelectorAll("#charDetailModal .ar-btn") // 💡 HTMLに合わせて .admin-btn から .ar-btn に修正
     .forEach((b) => b.classList.remove("active"));
-  const targetBtn = document.getElementById(`btn-wp-${mode}`);
+
+  // HTMLのid（btn-wp-normal, btn-wp-asta, btn-wp-mika, btn-wp-meta）と完全に同期
+  let btnId = `btn-wp-${mode}`;
+  const targetBtn = document.getElementById(btnId);
   if (targetBtn) targetBtn.classList.add("active");
 
-  ["A1", "A2", "P1", "P2"].forEach((slot) => {
-    const sk = cachedDetailPackage.skills[slot] || {
-      name: "未設定",
-      normal: "",
-    };
-    document.getElementById(`sk-${slot}-name`).innerText = sk.name;
-    document.getElementById(`sk-${slot}-text`).innerText =
-      sk.normal || "未登録";
+  const baseInfo = characterMaster[currentDetailIndex];
+  if (!baseInfo) return;
 
-    const ctArea = document.getElementById(`sk-${slot}-ct-area`);
+  // 2. スキル・専用武器効果（5つの引き出し）の流し込み
+  const skills = baseInfo.skills || [];
+  skills.forEach((skill) => {
+    const type = skill.type; // "A1", "A2", "P1", "P2", "WP"
+
+    // スキル名の反映
+    const nameElem = document.getElementById(`sk-${type}-name`);
+    if (nameElem) nameElem.innerText = skill.name || "-";
+
+    // クールタイム(CT)の反映
+    const ctArea = document.getElementById(`sk-${type}-ct-area`);
     if (ctArea) {
-      ctArea.innerHTML =
-        sk.ct && sk.ct !== "0"
-          ? `<span class="tag-badge" style="background:#1e1b4b; color:#a5b4fc; border:1px solid #4338ca;">CT: ${sk.ct}</span>`
-          : "";
+      if (
+        skill.ct !== null &&
+        skill.ct !== undefined &&
+        String(skill.ct) !== "0"
+      ) {
+        ctArea.innerHTML = `<span class="tag-badge" style="background:#1e1b4b; color:#a5b4fc; border:1px solid #4338ca;">CT: ${skill.ct}</span>`;
+      } else {
+        ctArea.innerHTML = "";
+      }
+    }
+
+    // スキルテキストの反映（★段階的なフォールバック処理を実装）
+    const textElem = document.getElementById(`sk-${type}-text`);
+    if (textElem) {
+      // 基準として通常武器のテキストをセット
+      let displayText = skill.nomalText || "";
+
+      // ➔ 【サタン(asta)選択時】
+      if (mode === "asta") {
+        displayText = skill.astarothText || skill.nomalText || "";
+      }
+      // ➔ 【ミカエル(mika)選択時】ミカエルが無ければサタン、それも無ければ通常
+      else if (mode === "mika") {
+        displayText =
+          skill.michaelText || skill.astarothText || skill.nomalText || "";
+      }
+      // ➔ 【メタトロン(meta)選択時】メタトロンが無ければミカエル ➔ サタン ➔ 通常
+      else if (mode === "meta") {
+        displayText =
+          skill.metatronText ||
+          skill.michaelText ||
+          skill.astarothText ||
+          skill.nomalText ||
+          "";
+      }
+
+      // 画面に改行付きで反映
+      if (displayText) {
+        textElem.innerHTML = displayText.replace(/\n/g, "<br>");
+      } else {
+        textElem.innerHTML = "未登録";
+      }
+
+      // ✨ 専用武器効果(WP)のすべてが空欄ならカードごと非表示にする
+      if (type === "WP") {
+        // 全てのテキスト項目が空っぽ（"" または無い）かどうか判定
+        const isAllEmpty =
+          !skill.nomalText &&
+          !skill.astarothText &&
+          !skill.michaelText &&
+          !skill.metatronText;
+
+        // HTML上のスキルカード全体（md-card__skill-box）を取得
+        const skillBox = textElem.closest(".md-card__skill-box");
+
+        if (skillBox) {
+          if (isAllEmpty) {
+            // 4段階すべてが空っぽなら、存在ごと綺麗に消し去る！
+            skillBox.style.display = "none";
+          } else {
+            // どこか1つでも文字が書き込まれていれば、通常通り表示する
+            skillBox.style.display = "block"; // または元々のCSSに合わせて "flex" など
+          }
+        }
+      }
     }
   });
 
-  const w = cachedDetailPackage.weapon || { name: "" };
-  if (mode === "normal") {
+  // 3. 専用武器基本ステータス（パッシブ効果）の表示制御
+  const w = baseInfo.weapon;
+  if (!w || mode === "normal" || mode === "nomal") {
     document.getElementById("v-w-name").innerText = "専用武器なし (未装備)";
     document.getElementById("v-w-val").innerText = "固有値: -";
     document.getElementById("v-w-passives-lbl").style.display = "none";
     document.getElementById("v-w-passives").innerHTML =
       "<li>パッシブ効果はありません</li>";
   } else {
-    const wd = w[mode] || { val: "", p1: "", p2: "", p3: "" };
+    // 引数（mode）を JSON内の武器オブジェクトのキー名に翻訳（旧名の安全なマッピング）
+    let searchMode = mode;
+    if (mode === "asta") searchMode = "astaroth";
+    if (mode === "mika") searchMode = "michael";
+    if (mode === "meta") searchMode = "metatron";
+
+    const wd = w[searchMode] || {
+      stat: "",
+      passive1: "",
+      passive2: "",
+      passive3: "",
+    };
+
     document.getElementById("v-w-name").innerText = w.name
       ? w.name
       : "専用武器名未設定";
-    document.getElementById("v-w-val").innerText = `固有値: ${wd.val || "-"}`;
+    document.getElementById("v-w-val").innerText = `固有値: ${wd.stat || "-"}`;
     document.getElementById("v-w-passives-lbl").style.display = "block";
 
     const pUl = document.getElementById("v-w-passives");
     pUl.innerHTML = "";
-    [wd.p1, wd.p2, wd.p3].forEach((pStr) => {
-      if (pStr && pStr !== "未設定") {
+
+    [wd.passive1, wd.passive2, wd.passive3].forEach((pStr) => {
+      if (pStr && pStr !== "未設定" && pStr !== "") {
         const li = document.createElement("li");
         li.innerText = `● ${pStr}`;
         pUl.appendChild(li);
