@@ -188,6 +188,14 @@ body {
   overflow: hidden;
 }
 
+.filter-section__label {
+  opacity: 0.3;
+}
+
+.filter-section__label.is-active {
+  opacity: 1;
+}
+
 .filter-options .form-icon img {
   width: 100%;
   height: 100%;
