@@ -231,7 +231,7 @@ function toggleDD(id) {
 var currentWeaponMode = "nomal"; // 💡 現在選択されている武器段階を保持する変数
 
 /* -------------------------------------------------------------------------
-        4. キャラクター詳細・性能確認モーダルの制御
+        4. キャラクター詳細・性能　確認モーダルの制御
 ------------------------------------------------------------------------- */
 function openCharacterDetail(idx) {
   currentDetailIndex = idx;
@@ -272,36 +272,46 @@ function runStatusCalculationEngine(status, type) {
   const dex = Number(status.dex || 0);
   const mag = Number(status.mag || 0);
   const sta = Number(status.sta || 0);
-  const hpCustom = Number(status.hpCustom || 0);
   const defInitial = Number(status.defInitial || 0);
 
+  // 📋 タイプ別に攻撃力を自動判定
   let atkVal = 0;
   if (type === "ウォーリアー" || type === "ウォーリア") atkVal = str;
   else if (type === "スナイパー") atkVal = dex;
   else if (type === "ソーサラー") atkVal = mag;
 
+  // 📊 二次ステータスの自動計算
   const hitVal = Math.floor(str * 0.5);
   const critVal = Math.floor(dex * 0.5);
   const debuffVal = Math.floor(mag * 0.5);
-
-  document.getElementById("v-stat-speed").innerText = spd.toLocaleString();
-  document.getElementById("v-stat-atk").innerText = atkVal.toLocaleString();
-  document.getElementById("v-stat-hit").innerText = hitVal.toLocaleString();
-  document.getElementById("v-stat-crit").innerText = critVal.toLocaleString();
-  document.getElementById("v-stat-debuff").innerText =
-    debuffVal.toLocaleString();
-
+  const calculatedHP = sta * 10; // ✨ HPは純粋に耐久力の10倍！
   const physDef = str;
   const magDef = mag;
   const evadeVal = Math.floor(dex * 0.5);
   const staVal = Math.floor(sta * 0.5);
 
-  document.getElementById("v-stat-hp").innerText = hpCustom.toLocaleString();
-  document.getElementById("v-stat-def").innerText = defInitial.toLocaleString();
-  document.getElementById("v-stat-pdef").innerText = physDef.toLocaleString();
-  document.getElementById("v-stat-mdef").innerText = magDef.toLocaleString();
-  document.getElementById("v-stat-evade").innerText = evadeVal.toLocaleString();
-  document.getElementById("v-stat-critres").innerText = staVal.toLocaleString();
+  // OFFENSE パラメータ
+  document.getElementById("calculated-speed").innerText = spd.toLocaleString();
+  document.getElementById("calculated-atk").innerText = atkVal.toLocaleString();
+  document.getElementById("calculated-hit").innerText = hitVal.toLocaleString();
+  document.getElementById("calculated-crit").innerText =
+    critVal.toLocaleString();
+  document.getElementById("calculated-debuff").innerText =
+    debuffVal.toLocaleString();
+
+  // DEFENSE パラメータ
+  document.getElementById("calculated-hp").innerText =
+    calculatedHP.toLocaleString();
+  document.getElementById("calculated-def").innerText =
+    defInitial.toLocaleString();
+  document.getElementById("calculated-pdef").innerText =
+    physDef.toLocaleString();
+  document.getElementById("calculated-mdef").innerText =
+    magDef.toLocaleString();
+  document.getElementById("calculated-evade").innerText =
+    evadeVal.toLocaleString();
+  document.getElementById("calculated-critres").innerText =
+    staVal.toLocaleString();
 }
 
 // 専用装備ボタンの切り替えによる読込データの操作
@@ -770,18 +780,34 @@ window.addEventListener("click", function (event) {
 window.toggleDD = toggleDD;
 window.setDDValue = setDDValue;
 
-/* =========================================================================
-       🌐 HTML側（onclick / onchange）への関数公開
-       ========================================================================= */
-window.openModalForCreate = openModalForCreate;
-window.execFiltering = execFiltering;
-window.openCharacterDetail = openCharacterDetail;
-window.closeDetailModal = closeDetailModal;
-window.switchWeaponTrigger = switchWeaponTrigger;
-window.openPerformanceEditor = openPerformanceEditor;
-window.closePerfEditor = closePerfEditor;
-window.savePerformanceData = savePerformanceData;
-window.openAdminEditFromDetail = openAdminEditFromDetail;
-window.closeModal = closeModal;
-window.saveMasterData = saveMasterData;
-window.calculateElapsedDays = calculateElapsedDays;
+
+/* -------------------------------------------------------------------------
+   消えていたエディタを閉じる関数
+   ------------------------------------------------------------------------- */
+   function closePerfEditor() {
+    document.getElementById("charPerfEditModal").classList.remove("is-active");
+  }
+  
+  /* -------------------------------------------------------------------------
+     消えていた仮の保存関数（あとで本物化します）
+     ------------------------------------------------------------------------- */
+  function savePerformanceData() {
+    alert("保存処理の準備中");
+  }
+  
+  /* =========================================================================
+         🌐 HTML側（onclick / onchange）への関数公開
+     ========================================================================= */
+  window.openModalForCreate = openModalForCreate;
+  window.execFiltering = execFiltering;
+  window.openCharacterDetail = openCharacterDetail;
+  window.closeDetailModal = closeDetailModal;
+  window.switchWeaponTrigger = switchWeaponTrigger;
+  window.openPerformanceEditor = openPerformanceEditor;
+  window.closePerfEditor = closePerfEditor;
+  window.savePerformanceData = savePerformanceData;
+  window.openAdminEditFromDetail = openAdminEditFromDetail;
+  window.closeModal = closeModal;
+  window.saveMasterData = saveMasterData;
+  window.calculateElapsedDays = calculateElapsedDays;
+  
