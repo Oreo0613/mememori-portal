@@ -17,6 +17,7 @@
 .md-card--column {
   flex-direction: column;
 }
+
 .md-card--light-border {
   border-color: var(--border-light);
 }
@@ -30,11 +31,13 @@
   justify-content: space-between;
   flex-shrink: 0;
 }
+
 .md-card__profile {
   display: flex;
   align-items: center;
   gap: 15px;
 }
+
 .md-card__avatar {
   width: 55px;
   height: 55px;
@@ -42,26 +45,31 @@
   border: 2px solid var(--border-light);
   cursor: default;
 }
+
 .md-card__meta {
   display: flex;
   flex-direction: column;
 }
+
 .md-card__name-row {
   display: flex;
   align-items: center;
 }
+
 .md-card__title {
   margin: 0;
   font-size: 18px;
   font-weight: 800;
   color: #f9fafb;
 }
+
 .md-card__tag-display {
   font-size: 11px;
   color: #38bdf8;
   font-weight: 600;
   margin-left: 10px;
 }
+
 .md-card__badges {
   display: flex;
   gap: 6px;
@@ -89,6 +97,7 @@
   flex: 1;
   align-items: flex-start;
 }
+
 .md-card__side-col {
   width: 240px;
   flex-shrink: 0;
@@ -96,6 +105,7 @@
   flex-direction: column;
   gap: 12px;
 }
+
 .md-card__main-col {
   flex: 1;
   display: flex;
@@ -111,20 +121,24 @@
   border-radius: var(--radius-sm);
   padding: 8px 12px;
 }
+
 .md-card__stat-heading {
   margin: 0 0 6px 0;
   font-size: 11px;
   padding-left: 6px;
   font-weight: bold;
 }
+
 .md-card__stat-heading--danger {
   color: var(--danger);
   border-left: 3px solid var(--danger);
 }
+
 .md-card__stat-heading--success {
   color: var(--success);
   border-left: 3px solid var(--success);
 }
+
 .md-card__stat-heading--accent {
   margin-bottom: 4px;
   color: var(--accent);
@@ -136,6 +150,7 @@
   grid-template-columns: 1fr;
   gap: 2px;
 }
+
 .md-card__stat-row {
   display: flex;
   justify-content: space-between;
@@ -143,12 +158,15 @@
   padding: 2px 0;
   font-size: 12px;
 }
+
 .md-card__stat-row--last {
   border-bottom: none;
 }
+
 .md-card__stat-label {
   color: var(--text-sub);
 }
+
 .md-card__stat-val {
   font-weight: bold;
 }
@@ -160,11 +178,13 @@
   color: #f9fafb;
   margin-bottom: 2px;
 }
+
 .md-card__weapon-val {
   font-size: 11px;
   color: var(--text-sub);
   display: block;
 }
+
 .md-card__weapon-passive-lbl {
   font-size: 11px;
   font-weight: bold;
@@ -174,12 +194,17 @@
   border-top: 1px dashed var(--border);
   padding-top: 4px;
 }
+
 .md-card__weapon-passive-list {
   list-style: none;
   padding: 0;
   margin: 2px 0 0 0;
   font-size: 11px;
   color: #38bdf8;
+}
+
+.md-card__weapon-passive-list li {
+  margin-top: 4px;
 }
 
 /* 4大スキルカード */
@@ -189,6 +214,7 @@
   border-radius: var(--radius-sm);
   padding: 12px;
 }
+
 .md-card__skill-header {
   display: flex;
   justify-content: space-between;
@@ -197,11 +223,13 @@
   padding-bottom: 6px;
   margin-bottom: 6px;
 }
+
 .md-card__skill-name {
   font-weight: 800;
   font-size: 14px;
   color: var(--warning);
 }
+
 .md-card__skill-text {
   font-size: 12.5px;
   line-height: 1.6;
@@ -227,6 +255,7 @@
   flex: 1;
   overflow: hidden;
 }
+
 .perf-form__body {
   display: flex;
   gap: 20px;
@@ -235,6 +264,7 @@
   flex: 1;
   align-items: flex-start;
 }
+
 .perf-form__side-col {
   width: 240px;
   flex-shrink: 0;
@@ -242,6 +272,7 @@
   flex-direction: column;
   gap: 12px;
 }
+
 .perf-form__main-col {
   flex: 1;
   display: flex;
@@ -249,6 +280,7 @@
   gap: 16px;
   min-width: 0;
 }
+
 .perf-form__group-box {
   background: var(--card-bg);
   border: 1px solid var(--border);
@@ -258,21 +290,18 @@
   flex-direction: column;
   gap: 8px;
 }
+
 .perf-form__group-box--padding-lg {
   padding: 14px;
   gap: 10px;
 }
+
 .perf-form__group-heading {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: bold;
   border-bottom: 1px solid var(--border);
   padding-bottom: 4px;
   margin-bottom: 4px;
-}
-.perf-form__group-heading--info { color: #38bdf8; }
-.perf-form__group-heading--purple { color: #a855f7; }
-.perf-form__group-heading--info-sub {
-  font-size: 12px;
   color: #38bdf8;
 }
 
@@ -282,6 +311,7 @@
   align-items: center;
   gap: 10px;
 }
+
 .perf-form__input-num {
   text-align: right;
   width: 100px !important;
@@ -310,16 +340,21 @@
 
 /* 🔲 チェックボックス本体のベーススタイル */
 .perf-form__checkbox {
-  appearance: none; /* 💡 ブラウザ標準の野暮ったい枠線を消す */
+  appearance: none;
+  /* 💡 ブラウザ標準の野暮ったい枠線を消す */
   -webkit-appearance: none;
-  width: 20px !important; /* 押しやすいように少しだけサイズアップ */
+  width: 20px !important;
+  /* 押しやすいように少しだけサイズアップ */
   height: 20px !important;
   cursor: pointer;
   background-color: #ffffff;
-  border: 2px solid #cbd5e1; /* 落ち着いたグレーの枠線 */
-  border-radius: 4px; /* ほんのり角丸にして今風に */
+  border: 2px solid #cbd5e1;
+  /* 落ち着いたグレーの枠線 */
+  border-radius: 4px;
+  /* ほんのり角丸にして今風に */
   position: relative;
-  transition: all 0.2s ease; /* 変化をなめらかに */
+  transition: all 0.2s ease;
+  /* 変化をなめらかに */
   margin-right: 4px;
 }
 
@@ -330,7 +365,8 @@
 
 /* 🟦 チェックが入ったとき（is-active）のボックス自体の変化 */
 .perf-form__checkbox-label.is-active .perf-form__checkbox {
-  background-color: #3b82f6; /* 💡 綺麗なブルー（お好みの色に変えられます） */
+  background-color: #3b82f6;
+  /* 💡 綺麗なブルー（お好みの色に変えられます） */
   border-color: #3b82f6;
 }
 
@@ -344,9 +380,12 @@
   left: 6px;
   width: 5px;
   height: 10px;
-  border: solid #ffffff; /* 白色のレ点 */
-  border-width: 0 2px 2px 0; /* 下と右の線だけを残す */
-  transform: rotate(45deg); /* 45度回転させて「✔」にする */
+  border: solid #ffffff;
+  /* 白色のレ点 */
+  border-width: 0 2px 2px 0;
+  /* 下と右の線だけを残す */
+  transform: rotate(45deg);
+  /* 45度回転させて「✔」にする */
 }
 
 
@@ -363,6 +402,7 @@
   flex-direction: column;
   gap: 16px;
 }
+
 .perf-form__field-grid-single {
   display: grid;
   grid-template-columns: 1fr;
@@ -370,11 +410,13 @@
   align-items: center;
   margin-bottom: 6px;
 }
+
 .perf-form__rarity-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
+
 .perf-form__footer {
   display: flex;
   justify-content: flex-end;
@@ -410,6 +452,7 @@
   border: 1px solid var(--border);
   font-size: 11px;
 }
+
 .master-form__preview-img {
   width: 100%;
   height: 100%;
@@ -423,22 +466,26 @@
   gap: 12px;
   align-items: end;
 }
+
 .master-form__dropdown {
   position: relative;
   width: 100%;
   user-select: none;
   cursor: pointer;
 }
+
 .master-form__dd-icon {
   width: 22px;
   height: 22px;
   object-fit: contain;
 }
+
 .master-form__dd-arrow {
   margin-left: auto;
   font-size: 10px;
   color: var(--text-sub);
 }
+
 .master-form__dd-menu {
   display: none;
   position: absolute;
@@ -464,8 +511,10 @@
 
 /* 🗳️ セレクトボックスの選択肢（プルダウンの中身）の文字をクッキリ見せる対策 */
 #formRarity option {
-  background-color: #2a2a35; /* 💡 選択肢の背景をダークな色（モーダルに近い色）にします */
-  color: #ffffff;            /* 💡 文字色を白にして、文字がハッキリ読めるようにします */
+  background-color: #2a2a35;
+  /* 💡 選択肢の背景をダークな色（モーダルに近い色）にします */
+  color: #ffffff;
+  /* 💡 文字色を白にして、文字がハッキリ読めるようにします */
 }
 
 .manual-link {
@@ -482,7 +531,8 @@
   font-size: 12px;
   background-color: #374151;
   padding: 4px 8px;
-  border-radius: 4px;;
+  border-radius: 4px;
+  ;
 }
 
 /* ==================================
@@ -501,6 +551,7 @@
   justify-content: center;
   align-items: center;
 }
+
 .perf-form__heading-area {
   width: 100%;
   display: flex;
@@ -511,14 +562,109 @@
 
 .perf-form__input-text.ct {
   border-radius: var(--radius-sm);
-    border: 1px solid var(--border-light);
-    background: var(--input-bg);
-    color: var(--text-main);
-    font-size: 14px;
-    text-align: right;
-    max-width: 60px;
+  border: 1px solid var(--border-light);
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-size: 14px;
+  text-align: right;
+  max-width: 60px;
 }
 
 .perf-form__field-sub {
   margin-top: 12px;
+}
+
+/* =========================================================================
+   🛡️ 専用武器エディタ（パッシブ横並び＆文字色対策）の追加スタイル
+   ========================================================================= */
+.perf-form__weapon-stage-box {
+  border: 1px solid var(--border-light);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.perf-form__weapon-empty-text {
+  font-size: 11px;
+  color: #4b5563;
+  text-align: center;
+  padding: 45px 0;
+}
+
+.perf-form__field--flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.perf-form__field-label,
+.perf-form__field-sub-label {
+  font-size: 11px;
+  font-weight: bold;
+  color: #64748b;
+}
+
+.perf-form__field-sub-label {
+  display: block;
+  margin: 10px 0 6px 0;
+}
+
+.perf-form__input-text-short {
+  color: #1e293b;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 12px;
+  text-align: right;
+}
+
+.perf-form__weapon-stage-box .perf-form__input-text-short {
+  width: 120px !important;
+}
+
+.perf-form__passive-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+  align-items: center;
+  width: 100%;
+}
+
+.perf-form__select-box {
+  flex: 1;
+}
+
+.perf-form__select {
+  color: var(--text-main);
+  background-color: var(--input-bg);
+  border: 1px solid var(--border-light);
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 12px;
+  width: 100%;
+}
+
+/* のoptionに色を強制適用する */
+.perf-form__select option {
+  color: #1e293b;
+  background-color: #ffffff;
+
+}
+
+.perf-form__value-box {
+  width: 70px;
+  flex-shrink: 0;
+}
+
+.perf-form__input-num-short {
+  width: 100%;
+  color: var(--text-main);
+  background-color: var(--bg-main);
+  border: 1px solid var(--border-light);
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 12px;
+  text-align: right;
 }

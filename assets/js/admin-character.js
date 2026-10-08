@@ -528,7 +528,7 @@ function openPerformanceEditor() {
 
   // 🔮 2. 5つのスキル情報（A1, A2, P1, P2, WP）を編集欄へ全自動セット
   // =========================================================================
-  // ✨ 【スキル入力エリアの自動生成：A1・A2のみクールタイム入力欄を確実に出現させる】
+  // ✨ 【スキル入力エリアの自動生成：A1・A2のみクールタイム入力欄を出現させる】
   // =========================================================================
   const skillsArea = document.getElementById("pe-skills-area");
   if (skillsArea) {
@@ -542,7 +542,7 @@ function openPerformanceEditor() {
 
     skillsArea.innerHTML = Object.keys(SKILL_LABELS)
       .map((type) => {
-        // ⏳ A1・A2の時だけ、前と同じinputタグの文字列を作る
+        // ⏳ A1・A2の時だけクールタイム（CT）の入力タグを作る
         let ctInputHtml = "";
         if (type === "A1" || type === "A2") {
           ctInputHtml = `<input type="number" id="pe-sk-${type}-ct" class="perf-form__input-text ct" min="0" placeholder="0" />`;
@@ -567,12 +567,105 @@ function openPerformanceEditor() {
       .join("");
   }
 
-  // 🔮 組み立てたばかりの入力欄へ、今選んだキャラのデータを100%確実にセット
+  // =========================================================================
+  // ✨ 【専用武器エディタの自動生成 ＆ リアルデータ流し込み：CSSクラス完全対応版】
+  // =========================================================================
+  const weaponContainer = document.getElementById("pe-w-rarity-container");
+  if (weaponContainer) {
+    const WEAPON_STAGES = {
+      normal: {
+        label: "専用武器なし (normal)",
+        hasFields: false,
+      },
+      astaroth: {
+        label: "サタン (astaroth)",
+        hasFields: true,
+      },
+      michael: { label: "ミカエル (michael)", hasFields: true, color: "blue" },
+      metatron: {
+        label: "メタトロン (metatron)",
+        hasFields: true,
+      },
+    };
+
+    const w = s.weapon || {};
+    let finalHtml = "";
+
+    const stages = Object.keys(WEAPON_STAGES);
+    for (let j = 0; j < stages.length; j++) {
+      const m = stages[j];
+      const cfg = WEAPON_STAGES[m];
+
+      if (m === "normal") {
+        finalHtml += `
+          <div class="perf-form__weapon-stage-box perf-form__weapon-stage-box--disabled">
+            <span class="perf-form__group-heading perf-form__group-heading--${cfg.color}">${cfg.label}</span>
+            <div class="perf-form__weapon-empty-text">専用武器なし (枠線のみ)</div>
+          </div>
+        `;
+        continue;
+      }
+
+      const wd = w[m] || { val: "", p1: "", p2: "", p3: "" };
+      let passivePairsHtml = "";
+
+      for (let num = 1; num <= 3; num++) {
+        const pStr = wd[`p${num}`] || wd[`passive${num}`] || "未設定+0";
+        let type = "未設定";
+        let val = "0";
+
+        if (pStr.indexOf("+") !== -1) {
+          const parts = pStr.split("+");
+          type = parts[0];
+          val = parts[1].replace("%", "");
+        } else if (pStr !== "") {
+          type = pStr;
+        }
+
+        let selectOptionsHtml = "";
+        for (let o = 0; o < PASSIVE_OPTIONS.length; o++) {
+          const opt = PASSIVE_OPTIONS[o];
+          const isSelected = opt === type ? "selected" : "";
+          selectOptionsHtml += `<option value="${opt}" ${isSelected}>${opt}</option>`;
+        }
+
+        // 💡 インラインスタイルを全撤去！横並び用の専用クラスを付与
+        passivePairsHtml += `
+          <div class="perf-form__passive-row">
+            <div class="perf-form__select-box">
+              <select id="pe-w-${m}-p${num}-type" class="perf-form__select">
+                ${selectOptionsHtml}
+              </select>
+            </div>
+            <div class="perf-form__value-box">
+              <input type="number" id="pe-w-${m}-p${num}-num" class="perf-form__input-num-short" value="${val}" placeholder="0" />
+            </div>
+          </div>
+        `;
+      }
+
+      finalHtml += `
+        <div class="perf-form__weapon-stage-box">
+          <span class="perf-form__group-heading perf-form__group-heading--${cfg.color}">${cfg.label}</span>
+          <div class="perf-form__field perf-form__field--flex-between">
+            <label class="perf-form__field-label">武具固有値</label>
+            <input type="text" id="pe-w-${m}-val" class="perf-form__input-text-short" value="${wd.val || wd.stat || ""}" placeholder="未設定" />
+          </div>
+          <span class="perf-form__field-sub-label">専用パッシブ効果</span>
+          <div class="perf-form__passive-container">
+            ${passivePairsHtml}
+          </div>
+        </div>
+      `;
+    }
+    weaponContainer.innerHTML = finalHtml;
+  }
+
+  // 🔮 組み立てたばかりのスキル入力欄へ、JSONデータを100%確実に流し込む
   const ALL_SKILL_TYPES = ["A1", "A2", "P1", "P2", "WP"];
   const skills = s.skills || [];
 
   ALL_SKILL_TYPES.forEach((type) => {
-    // 🔍 今選んだキャラのJSONデータから、この枠のスキル情報を探す（無ければ空データをセット）
     const skill = skills.find((sk) => sk.type === type) || {
       name: "",
       ct: "",
@@ -582,11 +675,9 @@ function openPerformanceEditor() {
       metatronText: "",
     };
 
-    // 🏷️ スキル名称のセット
     const nameInput = document.getElementById(`pe-sk-${type}-name`);
     if (nameInput) nameInput.value = skill.name || "";
 
-    // ⏳ クールタイム(CT)の数値をセット（未入力キャラなら空っぽにして、前回の残像を完全に上書き消去！）
     const ctInput = document.getElementById(`pe-sk-${type}-ct`);
     if (ctInput) {
       ctInput.value =
@@ -595,18 +686,18 @@ function openPerformanceEditor() {
           : "";
     }
 
-    // 📄 各武器段階のテキストエリアへのセット
-    const tNormal = document.getElementById(`pe-sk-${type}-nomalText`);
-    if (tNormal) tNormal.value = skill.nomalText || "";
-
-    const tAsta = document.getElementById(`pe-sk-${type}-astarothText`);
-    if (tAsta) tAsta.value = skill.astarothText || "";
-
-    const tMika = document.getElementById(`pe-sk-${type}-michaelText`);
-    if (tMika) tMika.value = skill.michaelText || "";
-
-    const tMeta = document.getElementById(`pe-sk-${type}-metatronText`);
-    if (tMeta) tMeta.value = skill.metatronText || "";
+    if (document.getElementById(`pe-sk-${type}-nomalText`))
+      document.getElementById(`pe-sk-${type}-nomalText`).value =
+        skill.nomalText || "";
+    if (document.getElementById(`pe-sk-${type}-astarothText`))
+      document.getElementById(`pe-sk-${type}-astarothText`).value =
+        skill.astarothText || "";
+    if (document.getElementById(`pe-sk-${type}-michaelText`))
+      document.getElementById(`pe-sk-${type}-michaelText`).value =
+        skill.michaelText || "";
+    if (document.getElementById(`pe-sk-${type}-metatronText`))
+      document.getElementById(`pe-sk-${type}-metatronText`).value =
+        skill.metatronText || "";
   });
 
   document.getElementById("charPerfEditModal").classList.add("is-active");

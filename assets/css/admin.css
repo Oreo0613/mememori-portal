@@ -489,7 +489,7 @@ body {
   padding: 9px 12px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-light);
-  background: var(--input-bg);
+  background: var(--bg-main);
   color: var(--text-main);
   font-size: 14px;
   font-family: inherit;
