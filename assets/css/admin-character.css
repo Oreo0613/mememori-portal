@@ -668,3 +668,7 @@
   font-size: 12px;
   text-align: right;
 }
+
+#pe-sk-WP-name {
+  display: none;
+}
