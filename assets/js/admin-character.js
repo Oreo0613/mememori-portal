@@ -147,26 +147,27 @@ function exportUpdatedJsonFile() {
 /* -------------------------------------------------------------------------
       絞り込みフィルター ＆ カスタムドロップダウンの構築
      ------------------------------------------------------------------------- */
-function buildFilterButtons() {
-  const aOpt = document.getElementById("filterAttrOptions");
-  if (aOpt) {
-    aOpt.innerHTML =
-      `<label><input type="radio" name="filterAttr" value="ALL" checked onchange="execFiltering()"><div class="form-icon"><img src="assets/images/filter-icon/icon-all.png" alt="ALL"></div></label>` +
-      ATTR_IMAGES.map(
-        (i) =>
-          `<label><input type="radio" name="filterAttr" value="${i.name}" onchange="execFiltering()"><div class="form-icon"><img src="${i.url}"></div></label>`,
-      ).join("");
-  }
-  const tOpt = document.getElementById("filterTypeOptions");
-  if (tOpt) {
-    tOpt.innerHTML =
-      `<label><input type="radio" name="filterType" value="ALL" checked onchange="execFiltering()"><div class="form-icon"><img src="assets/images/filter-icon/icon-all.png" alt="ALL"></div></label>` +
-      TYPE_IMAGES.map(
-        (i) =>
-          `<label><input type="radio" name="filterType" value="${i.name}" onchange="execFiltering()"><div class="form-icon"><img src="${i.url}"></div></label>`,
-      ).join("");
-  }
-}
+     function buildFilterButtons() {
+      const aOpt = document.getElementById("filterAttrOptions");
+      if (aOpt) {
+        aOpt.innerHTML =
+          `<label class="filter-section__label is-active"><input type="radio" name="filterAttr" value="ALL" checked onchange="execFiltering()"><div class="form-icon"><img src="assets/images/filter-icon/icon-all.png" alt="ALL"></div></label>` +
+          ATTR_IMAGES.map(
+            (i) =>
+              `<label class="filter-section__label"><input type="radio" name="filterAttr" value="${i.name}" onchange="execFiltering()"><div class="form-icon"><img src="${i.url}"></div></label>`,
+          ).join("");
+      }
+      const tOpt = document.getElementById("filterTypeOptions");
+      if (tOpt) {
+        tOpt.innerHTML =
+          `<label class="filter-section__label is-active"><input type="radio" name="filterType" value="ALL" checked onchange="execFiltering()"><div class="form-icon"><img src="assets/images/filter-icon/icon-all.png" alt="ALL"></div></label>` +
+          TYPE_IMAGES.map(
+            (i) =>
+              `<label class="filter-section__label"><input type="radio" name="filterType" value="${i.name}" onchange="execFiltering()"><div class="form-icon"><img src="${i.url}"></div></label>`,
+          ).join("");
+      }
+    }
+    
 
 function execFiltering() {
   const attrRadio = document.querySelector('input[name="filterAttr"]:checked');
@@ -176,6 +177,31 @@ function execFiltering() {
   const a = attrRadio.value;
   const t = typeRadio.value;
 
+  // =========================================================================
+  // ✨ クリックされた選択肢の見た目をアクティブにする
+  // =========================================================================
+  // 1. 属性フィルターの周りの見た目をリセットして、選ばれた要素の親（labelなど）に付与
+  if (attrRadio) {
+    attrRadio.parentElement.parentElement
+      .querySelectorAll("label")
+      .forEach((lbl) => {
+        lbl.classList.remove("is-active");
+      });
+    attrRadio.parentElement.classList.add("is-active");
+  }
+
+  // 2. タイプフィルターの周りの見た目をリセットして、選ばれた要素の親（labelなど）に付与
+  if (typeRadio) {
+    typeRadio.parentElement.parentElement
+      .querySelectorAll("label")
+      .forEach((lbl) => {
+        lbl.classList.remove("is-active");
+      });
+    typeRadio.parentElement.classList.add("is-active");
+  }
+  // =========================================================================
+
+  // 135件のカードの表示・非表示切り替え
   document.querySelectorAll(".char-card").forEach((c) => {
     c.style.display =
       (a === "ALL" || c.dataset.attr === a) &&
@@ -780,34 +806,32 @@ window.addEventListener("click", function (event) {
 window.toggleDD = toggleDD;
 window.setDDValue = setDDValue;
 
-
 /* -------------------------------------------------------------------------
    消えていたエディタを閉じる関数
    ------------------------------------------------------------------------- */
-   function closePerfEditor() {
-    document.getElementById("charPerfEditModal").classList.remove("is-active");
-  }
-  
-  /* -------------------------------------------------------------------------
-     消えていた仮の保存関数（あとで本物化します）
+function closePerfEditor() {
+  document.getElementById("charPerfEditModal").classList.remove("is-active");
+}
+
+/* -------------------------------------------------------------------------
+     消えていた仮の保存関数
      ------------------------------------------------------------------------- */
-  function savePerformanceData() {
-    alert("保存処理の準備中");
-  }
-  
-  /* =========================================================================
+function savePerformanceData() {
+  alert("保存処理の準備中");
+}
+
+/* =========================================================================
          🌐 HTML側（onclick / onchange）への関数公開
      ========================================================================= */
-  window.openModalForCreate = openModalForCreate;
-  window.execFiltering = execFiltering;
-  window.openCharacterDetail = openCharacterDetail;
-  window.closeDetailModal = closeDetailModal;
-  window.switchWeaponTrigger = switchWeaponTrigger;
-  window.openPerformanceEditor = openPerformanceEditor;
-  window.closePerfEditor = closePerfEditor;
-  window.savePerformanceData = savePerformanceData;
-  window.openAdminEditFromDetail = openAdminEditFromDetail;
-  window.closeModal = closeModal;
-  window.saveMasterData = saveMasterData;
-  window.calculateElapsedDays = calculateElapsedDays;
-  
+window.openModalForCreate = openModalForCreate;
+window.execFiltering = execFiltering;
+window.openCharacterDetail = openCharacterDetail;
+window.closeDetailModal = closeDetailModal;
+window.switchWeaponTrigger = switchWeaponTrigger;
+window.openPerformanceEditor = openPerformanceEditor;
+window.closePerfEditor = closePerfEditor;
+window.savePerformanceData = savePerformanceData;
+window.openAdminEditFromDetail = openAdminEditFromDetail;
+window.closeModal = closeModal;
+window.saveMasterData = saveMasterData;
+window.calculateElapsedDays = calculateElapsedDays;
