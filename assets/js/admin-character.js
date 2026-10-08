@@ -259,8 +259,8 @@ function openCharacterDetail(idx) {
     runStatusCalculationEngine(baseInfo.status, baseInfo.type);
   }
 
-  // ⭕️ モーダルを開いたときは、まず「通常武器（nomal）」の状態で初期描画
-  switchWeaponTrigger("nomal");
+  // ⭕️ モーダルを開いたときは、まず「ミカエル武器（mika）」の状態で初期描画
+  switchWeaponTrigger("mika");
 
   document.getElementById("charDetailModal").classList.add("is-active");
 }
@@ -311,12 +311,12 @@ function switchWeaponTrigger(mode) {
   // 1. タブボタンのアクティブ状態切り替え
   document
     .querySelectorAll("#charDetailModal .ar-btn") // 💡 HTMLに合わせて .admin-btn から .ar-btn に修正
-    .forEach((b) => b.classList.remove("active"));
+    .forEach((b) => b.classList.remove("is-active"));
 
   // HTMLのid（btn-wp-normal, btn-wp-asta, btn-wp-mika, btn-wp-meta）と完全に同期
   let btnId = `btn-wp-${mode}`;
   const targetBtn = document.getElementById(btnId);
-  if (targetBtn) targetBtn.classList.add("active");
+  if (targetBtn) targetBtn.classList.add("is-active");
 
   const baseInfo = characterMaster[currentDetailIndex];
   if (!baseInfo) return;
@@ -447,10 +447,10 @@ function closeDetailModal() {
 }
 
 /* -------------------------------------------------------------------------
-   5. 性能編集エディタ（性能編集モーダル）の制御
+   5. 性能編集エディタ（性能編集モーダル）の制御（本物データ完全同期版）
    ------------------------------------------------------------------------- */
 function openPerformanceEditor() {
-  const s = characterMaster[currentDetailIndex];
+  const s = characterMaster[currentDetailIndex]; // ⭕️ 選択中のキャラの本物データ
   if (!s) return;
 
   document.getElementById("charDetailModal").classList.remove("is-active");
@@ -475,50 +475,55 @@ function openPerformanceEditor() {
     }
   }
 
-  const realStatus = cachedDetailPackage.status;
-  document.getElementById("pe-str").value = realStatus.str;
-  document.getElementById("pe-dex").value = realStatus.dex;
-  document.getElementById("pe-mag").value = realStatus.mag;
-  document.getElementById("pe-sta").value = realStatus.sta;
-  document.getElementById("pe-speed").value = realStatus.speed;
-  document.getElementById("pe-defInitial").value = realStatus.defInitial;
+  // 📊 1. 基本パラメータ（ステータス）をフォームへ流し込む
+  const realStatus = s.status || {
+    str: 0,
+    dex: 0,
+    mag: 0,
+    sta: 0,
+    speed: 0,
+    defInitial: 0,
+    penCustom: 0,
+  };
+  document.getElementById("pe-str").value = realStatus.str || "";
+  document.getElementById("pe-dex").value = realStatus.dex || "";
+  document.getElementById("pe-mag").value = realStatus.mag || "";
+  document.getElementById("pe-sta").value = realStatus.sta || "";
+  document.getElementById("pe-speed").value = realStatus.speed || "";
+  document.getElementById("pe-defInitial").value = realStatus.defInitial || "";
   document.getElementById("pe-penCustom").value = realStatus.penCustom || 0;
   document.getElementById("pe-charTags").value = s.tags || "";
+
+  // 専用武器の名前
   document.getElementById("pe-w-name").value =
-    cachedDetailPackage.weapon.name || "";
+    (s.weapon && s.weapon.name) || "";
+
+  // 🔮 2. 5つのスキル情報（A1, A2, P1, P2, WP）を編集欄へ全自動セット
+  // もしHTML側に各スキルの入力欄（例: id="pe-sk-A1-name" や id="pe-sk-A1-nomalText" など）が
+  // 用意されていれば、以下の処理で開いた瞬間に自動で中身がカチッとセットされます！
+  const skills = s.skills || [];
+  skills.forEach((skill) => {
+    const type = skill.type; // "A1", "A2", "P1", "P2", "WP"
+
+    // スキル名入力欄へのセット
+    const nameInput = document.getElementById(`pe-sk-${type}-name`);
+    if (nameInput) nameInput.value = skill.name || "";
+
+    // 各武器段階のテキストエリアへのセット
+    const tNormal = document.getElementById(`pe-sk-${type}-nomalText`);
+    if (tNormal) tNormal.value = skill.nomalText || "";
+
+    const tAsta = document.getElementById(`pe-sk-${type}-astarothText`);
+    if (tAsta) tAsta.value = skill.astarothText || "";
+
+    const tMika = document.getElementById(`pe-sk-${type}-michaelText`);
+    if (tMika) tMika.value = skill.michaelText || "";
+
+    const tMeta = document.getElementById(`pe-sk-${type}-metatronText`);
+    if (tMeta) tMeta.value = skill.metatronText || "";
+  });
 
   document.getElementById("charPerfEditModal").classList.add("is-active");
-}
-
-function closePerfEditor() {
-  document.getElementById("charPerfEditModal").classList.remove("is-active");
-}
-
-// ─── 🚀 Firestoreへの書き込みを廃止し、ローカルメモリ更新＆自動ダウンロードへ変更 ───
-function savePerformanceData() {
-  const s = characterMaster[currentDetailIndex];
-  if (!s) return alert("キャラクターの指定が正しくありません");
-
-  const checkboxEl = document.getElementById("isFinished");
-  const currentStatusText = checkboxEl
-    ? checkboxEl.getAttribute("checked")
-    : "FALSE";
-
-  // ローカルのデータ配列を上書き更新
-  window.characterMaster[currentDetailIndex].isFinished = currentStatusText;
-  window.characterMaster[currentDetailIndex].tags = document
-    .getElementById("pe-charTags")
-    .value.trim();
-
-  closePerfEditor();
-  renderGridHTML(window.characterMaster);
-
-  // 💡 変更が加わった最新のJSONファイルを自動ダウンロードさせる
-  exportUpdatedJsonFile();
-
-  alert(
-    `✨ 「${s.name}」の性能データを更新し、最新のJSONファイルをダウンロードしました！assets/json/ に上書き配置してください。`,
-  );
 }
 
 /* =========================================================================
