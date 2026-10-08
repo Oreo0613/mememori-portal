@@ -147,27 +147,26 @@ function exportUpdatedJsonFile() {
 /* -------------------------------------------------------------------------
       絞り込みフィルター ＆ カスタムドロップダウンの構築
      ------------------------------------------------------------------------- */
-     function buildFilterButtons() {
-      const aOpt = document.getElementById("filterAttrOptions");
-      if (aOpt) {
-        aOpt.innerHTML =
-          `<label class="filter-section__label is-active"><input type="radio" name="filterAttr" value="ALL" checked onchange="execFiltering()"><div class="form-icon"><img src="assets/images/filter-icon/icon-all.png" alt="ALL"></div></label>` +
-          ATTR_IMAGES.map(
-            (i) =>
-              `<label class="filter-section__label"><input type="radio" name="filterAttr" value="${i.name}" onchange="execFiltering()"><div class="form-icon"><img src="${i.url}"></div></label>`,
-          ).join("");
-      }
-      const tOpt = document.getElementById("filterTypeOptions");
-      if (tOpt) {
-        tOpt.innerHTML =
-          `<label class="filter-section__label is-active"><input type="radio" name="filterType" value="ALL" checked onchange="execFiltering()"><div class="form-icon"><img src="assets/images/filter-icon/icon-all.png" alt="ALL"></div></label>` +
-          TYPE_IMAGES.map(
-            (i) =>
-              `<label class="filter-section__label"><input type="radio" name="filterType" value="${i.name}" onchange="execFiltering()"><div class="form-icon"><img src="${i.url}"></div></label>`,
-          ).join("");
-      }
-    }
-    
+function buildFilterButtons() {
+  const aOpt = document.getElementById("filterAttrOptions");
+  if (aOpt) {
+    aOpt.innerHTML =
+      `<label class="filter-section__label is-active"><input type="radio" name="filterAttr" value="ALL" checked onchange="execFiltering()"><div class="form-icon"><img src="assets/images/filter-icon/icon-all.png" alt="ALL"></div></label>` +
+      ATTR_IMAGES.map(
+        (i) =>
+          `<label class="filter-section__label"><input type="radio" name="filterAttr" value="${i.name}" onchange="execFiltering()"><div class="form-icon"><img src="${i.url}"></div></label>`,
+      ).join("");
+  }
+  const tOpt = document.getElementById("filterTypeOptions");
+  if (tOpt) {
+    tOpt.innerHTML =
+      `<label class="filter-section__label is-active"><input type="radio" name="filterType" value="ALL" checked onchange="execFiltering()"><div class="form-icon"><img src="assets/images/filter-icon/icon-all.png" alt="ALL"></div></label>` +
+      TYPE_IMAGES.map(
+        (i) =>
+          `<label class="filter-section__label"><input type="radio" name="filterType" value="${i.name}" onchange="execFiltering()"><div class="form-icon"><img src="${i.url}"></div></label>`,
+      ).join("");
+  }
+}
 
 function execFiltering() {
   const attrRadio = document.querySelector('input[name="filterAttr"]:checked');
@@ -357,82 +356,75 @@ function switchWeaponTrigger(mode) {
   const baseInfo = characterMaster[currentDetailIndex];
   if (!baseInfo) return;
 
-  // 2. スキル・専用武器効果（5つの引き出し）の流し込み
+  // 2. スキル・専用武器効果（5つの引き出し）のデータを100%再取得して流し込み
+  const ALL_SKILL_TYPES = ["A1", "A2", "P1", "P2", "WP"];
   const skills = baseInfo.skills || [];
-  skills.forEach((skill) => {
-    const type = skill.type; // "A1", "A2", "P1", "P2", "WP"
 
-    // スキル名の反映
+  // 定義されている5つの枠（A1〜WP）をベースに、今選んだキャラのデータを毎回100%上書き取得
+  ALL_SKILL_TYPES.forEach((type) => {
+    // 🔍 今選んだキャラのJSONからスキルデータを再取得（無ければ空データをセット）
+    const skill = skills.find((sk) => sk.type === type) || {
+      name: "",
+      ct: 0,
+      nomalText: "",
+      astarothText: "",
+      michaelText: "",
+      metatronText: "",
+    };
+
+    // 🏷️ スキル名の反映（今選んだキャラのデータで完全に上書き）
     const nameElem = document.getElementById(`sk-${type}-name`);
     if (nameElem) nameElem.innerText = skill.name || "-";
 
-    // クールタイム(CT)の反映
+    // ⏳ クールタイム(CT)の反映
     const ctArea = document.getElementById(`sk-${type}-ct-area`);
     if (ctArea) {
       if (
         skill.ct !== null &&
         skill.ct !== undefined &&
-        String(skill.ct) !== "0"
+        String(skill.ct) !== "0" &&
+        String(skill.ct) !== ""
       ) {
         ctArea.innerHTML = `<span class="tag-badge" style="background:#1e1b4b; color:#a5b4fc; border:1px solid #4338ca;">CT: ${skill.ct}</span>`;
       } else {
-        ctArea.innerHTML = "";
+        ctArea.innerHTML = ""; // 今選んだキャラにCTがなければエリアを空にする
       }
     }
 
-    // スキルテキストの反映（★段階的なフォールバック処理を実装）
+    // 📄 スキルテキストの反映（段階的なフォールバックを適用して上書き）
     const textElem = document.getElementById(`sk-${type}-text`);
     if (textElem) {
-      // 基準として通常武器のテキストをセット
       let displayText = skill.nomalText || "";
-
-      // ➔ 【サタン(asta)選択時】
-      if (mode === "asta") {
+      if (mode === "asta")
         displayText = skill.astarothText || skill.nomalText || "";
-      }
-      // ➔ 【ミカエル(mika)選択時】ミカエルが無ければサタン、それも無ければ通常
-      else if (mode === "mika") {
+      else if (mode === "mika")
         displayText =
           skill.michaelText || skill.astarothText || skill.nomalText || "";
-      }
-      // ➔ 【メタトロン(meta)選択時】メタトロンが無ければミカエル ➔ サタン ➔ 通常
-      else if (mode === "meta") {
+      else if (mode === "meta")
         displayText =
           skill.metatronText ||
           skill.michaelText ||
           skill.astarothText ||
           skill.nomalText ||
           "";
-      }
 
-      // 画面に改行付きで反映
-      if (displayText) {
+      // 文字が書き込まれていればそれを表示、未入力なら「未登録」という文字で前のキャラの残像を完全に潰す！
+      if (displayText && displayText.trim() !== "") {
         textElem.innerHTML = displayText.replace(/\n/g, "<br>");
       } else {
-        textElem.innerHTML = "未登録";
+        textElem.innerHTML =
+          '<span style="color: #64748b; font-style: italic;">未登録</span>';
       }
 
-      // ✨ 専用武器効果(WP)のすべてが空欄ならカードごと非表示にする
+      // ✨ 専用武器効果(WP)カードの表示・非表示の自動切り替え
       if (type === "WP") {
-        // 全てのテキスト項目が空っぽ（"" または無い）かどうか判定
         const isAllEmpty =
           !skill.nomalText &&
           !skill.astarothText &&
           !skill.michaelText &&
           !skill.metatronText;
-
-        // HTML上のスキルカード全体（md-card__skill-box）を取得
         const skillBox = textElem.closest(".md-card__skill-box");
-
-        if (skillBox) {
-          if (isAllEmpty) {
-            // 4段階すべてが空っぽなら、存在ごと綺麗に消し去る！
-            skillBox.style.display = "none";
-          } else {
-            // どこか1つでも文字が書き込まれていれば、通常通り表示する
-            skillBox.style.display = "block"; // または元々のCSSに合わせて "flex" など
-          }
-        }
+        if (skillBox) skillBox.style.display = isAllEmpty ? "none" : "block";
       }
     }
   });
