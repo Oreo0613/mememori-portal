@@ -61,7 +61,7 @@
     </div>
   </div>
   <!-- ============================================================
-    🔲 1. キャラクター詳細・性能確認モーダル（黒基調）
+    🔲 1. キャラクター性能　確認モーダル
     =========================================================== -->
   <div class="md-overlay" id="charDetailModal" onclick="closeDetailModal()">
     <!-- 💡 BEM化: モーダルカードに修飾子（--column）を追加 -->
@@ -195,7 +195,6 @@
         <!-- 💡 BEM化: md-card__main-col -->
         <div class="md-card__main-col">
           <!-- スキルカード1 -->
-          <!-- 💡 BEM化: md-card__skill-box -->
           <div class="md-card__skill-box">
             <div class="md-card__skill-header">
               <span id="sk-A1-name" class="md-card__skill-name">-</span>
@@ -231,6 +230,15 @@
             </div>
             <div id="sk-P2-text" class="md-card__skill-text"></div>
           </div>
+          <!-- スキルカード5（専用武器効果） -->
+          <div class="md-card__skill-box">
+            <div class="md-card__skill-header">
+              <span id="sk-WP-name" class="md-card__skill-name">-</span>
+              <span class="tag-badge">その他</span>
+              <span id="sk-WP-ct-area"></span>
+            </div>
+            <div id="sk-WP-text" class="md-card__skill-text"></div>
+          </div>
         </div>
       </div>
 
@@ -246,7 +254,7 @@
     </div>
   </div>
   <!-- ========================================
-  🔲 2. キャラクター性能編集モーダル（黒基調）
+  🔲 2. キャラクター性能　編集モーダル
   ========================================= -->
   <div class="md-overlay" id="charPerfEditModal" onclick="closePerfEditor()">
     <!-- 💡 BEM化: 枠線用のModifier（--light-border）と縦並び用の（--column）を付与 -->
@@ -460,7 +468,8 @@
                   " />
             </div>
             <div class="manual-link">
-              <a target="_blank" href="https://app.notion.com/p/3f1ba36becc0802597aeeba9141b2b9c?source=copy_link">画像の作成手順はこちら</a>
+              <a target="_blank"
+                href="https://app.notion.com/p/3f1ba36becc0802597aeeba9141b2b9c?source=copy_link">画像の作成手順はこちら</a>
             </div>
 
           </div>
