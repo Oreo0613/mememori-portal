@@ -470,3 +470,14 @@
   font-size: 12px;
   text-align: end;
 }
+
+/* ==================================
+性能確認モーダル
+================================== */
+.md-card__skill-box .tag-badge {
+  margin: 0 auto 0 16px;
+  font-size: 12px;
+  background-color: #374151;
+  padding: 4px 8px;
+  border-radius: 4px;;
+}
