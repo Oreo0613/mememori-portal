@@ -122,9 +122,9 @@ function renderGridHTML(charList) {
       💡 最新のJSONデータをパソコンへ自動エクスポート（保存）する共通関数
      ------------------------------------------------------------------------- */
 function exportUpdatedJsonFile() {
-  // 保存する前に、JSON内の並び順を綺麗な「ID昇順（数字の小さい順）」に並び替えて整える
+  // ➔ ✨ 【ここを修正！】JSON内の並び順を、ご希望通りの「ID降順（数字の大きい順・最新順）」に整える
   const outputData = [].concat(characterMaster).sort(function (a, b) {
-    return Number(a.id) - Number(b.id);
+    return Number(b.id) - Number(a.id); // ⭕️ b - a にすることで、IDの大きい順（135→134...）に固定します！
   });
 
   const jsonString = JSON.stringify(outputData, null, 4);
@@ -140,7 +140,7 @@ function exportUpdatedJsonFile() {
   URL.revokeObjectURL(url);
 
   console.log(
-    "💾 最新の character-master.json をローカルに出力しました。これを差し替えてください。",
+    "💾 最新の character-master.json をID降順（大きい順）でローカルに出力しました。これを差し替えてください。",
   );
 }
 
@@ -1010,11 +1010,105 @@ function closePerfEditor() {
 }
 
 /* -------------------------------------------------------------------------
-     消えていた仮の保存関数
+     ✨ 【性能データ保存 ＆ 最新JSON自動エクスポート：既存マスタ完全準拠版】
      ------------------------------------------------------------------------- */
-function savePerformanceData() {
-  alert("保存処理の準備中");
-}
+     function savePerformanceData() {
+      const charId = document.getElementById("pe-charId").value;
+      if (!charId) return alert("キャラクターIDが見つかりません。");
+    
+      // 👤 1. 配列から現在編集中のキャラクター（本物データ）の参照を特定
+      const targetChar = window.characterMaster.find(c => String(c.id) === String(charId));
+      if (!targetChar) return alert("対象のキャラクターデータが見つかりません。");
+    
+      // 📝 2. 性能編集フォーム内の入力値を、既存マスタ（IDの小さい方）の形式で上書き回収
+      
+      // ⭕️ フォルティナと同じ文字列の "TRUE" / "FALSE" に強制統一！
+      const isChecked = document.getElementById("isFinished").checked;
+      targetChar.isFinished = isChecked ? "TRUE" : "FALSE";
+    
+      // 📊 基礎パラメータ（statusオブジェクトの中へ集約）
+      targetChar.status = {
+        str: String(document.getElementById("pe-str").value || 0),
+        dex: String(document.getElementById("pe-dex").value || 0),
+        mag: String(document.getElementById("pe-mag").value || 0),
+        sta: String(document.getElementById("pe-sta").value || 0),
+        speed: String(document.getElementById("pe-speed").value || 0),
+        defInitial: String(document.getElementById("pe-defInitial").value || 0),
+        penCustom: String(document.getElementById("pe-penCustom").value || 0)
+      };
+    
+      // 🏷️ 特徴タグ
+      targetChar.tags = document.getElementById("pe-charTags").value.trim();
+    
+      // 🔮 5つのスキル情報（A1, A2, P1, P2, WP）を回収
+      const ALL_SKILL_TYPES = ["A1", "A2", "P1", "P2", "WP"];
+      targetChar.skills = []; // 配列を一度リセット
+    
+      ALL_SKILL_TYPES.forEach((type) => {
+        const is_active = (type === "A1" || type === "A2");
+        const ct_el = document.getElementById(`pe-sk-${type}-ct`);
+        const ct_val = is_active ? (ct_el ? ct_el.value : "") : "";
+    
+        targetChar.skills.push({
+          type: type,
+          name: document.getElementById(`pe-sk-${type}-name`).value.trim(),
+          ct: ct_val ? Number(ct_val) : null,
+          nomalText: document.getElementById(`pe-sk-${type}-nomalText`).value || "",
+          astarothText: document.getElementById(`pe-sk-${type}-astarothText`).value || "",
+          michaelText: document.getElementById(`pe-sk-${type}-michaelText`).value || "",
+          metatronText: document.getElementById(`pe-sk-${type}-metatronText`).value || ""
+        });
+      });
+    
+      // 🛡️ 専用武器エディタの回収
+      targetChar.weapon = {
+        name: document.getElementById("pe-w-name").value.trim()
+      };
+    
+      const WEAPON_STAGES = ["astaroth", "michael", "metatron"];
+      WEAPON_STAGES.forEach((m) => {
+        targetChar.weapon[m] = {
+          // ⭕️ フォルティナと同じキー名（旧フォールバックも考慮し両方セット）
+          val: document.getElementById(`pe-w-${m}-val`).value.trim(),
+          stat: document.getElementById(`pe-w-${m}-val`).value.trim()
+        };
+    
+        // 1〜3個目のパッシブ行をループ
+        for (let num = 1; num <= 3; num++) {
+          const type = document.getElementById(`pe-w-${m}-p${num}-type`).value;
+          const numVal = document.getElementById(`pe-w-${m}-p${num}-num`).value || "0";
+          
+          const suffix = type.includes("%") ? "%" : "";
+          const combinedPassiveStr = (type === "未設定") ? "未設定+0" : `${type}+${numVal}${suffix}`;
+          
+          // ⭕️ 【ここが最重要！】p1 ではなく、既存データの正しい持ち方である「passive1」形式に完全に統一します！
+          targetChar.weapon[m][`passive${num}`] = combinedPassiveStr;
+          
+          // もし不具合防止用に新キー(p1)を残したければ残せますが、今回は既存に合わせるため消去（またはマージ）
+          if (`p${num}` in targetChar.weapon[m]) {
+            delete targetChar.weapon[m][`p${num}`];
+          }
+        }
+      });
+    
+      // 🧹 3. クーシーの末尾に残ってしまっていたルート直下の古いゴミ文字（str や spd）を完全自動デリート
+      const trashKeys = ["str", "dex", "mag", "sta", "spd", "def", "pen"];
+      trashKeys.forEach(key => {
+        if (key in targetChar) delete targetChar[key];
+      });
+    
+      // 🤝 4. 後半のソート＆出力処理（ファイル内も画面もID大きい順で一貫性を保ちます）
+      window.characterMaster.sort(function (a, b) {
+        return Number(b.id) - Number(a.id);
+      });
+    
+      closePerfEditor(); 
+      renderGridHTML(window.characterMaster); 
+      exportUpdatedJsonFile(); 
+    
+      alert(`✨ 【性能データ保存完了！】\n「${targetChar.name}」のデータ構造を既存の正しいデータ形式（ID小）へ100%完全統合し、最新のJSONファイルを出力しました！\nassets/json/ に上書き配置してください。`);
+    }
+    
 
 /* =========================================================================
          🌐 HTML側（onclick / onchange）への関数公開
