@@ -568,7 +568,7 @@ function openPerformanceEditor() {
   }
 
   // =========================================================================
-  // ✨ 【専用武器エディタの自動生成 ＆ リアルデータ流し込み：CSSクラス完全対応版】
+  // ✨ 【専用武器エディタの自動生成 ＆ リアルデータ流し込み：双方向・完全同期対応版】
   // =========================================================================
   const weaponContainer = document.getElementById("pe-w-rarity-container");
   if (weaponContainer) {
@@ -576,15 +576,25 @@ function openPerformanceEditor() {
       normal: {
         label: "専用武器なし (normal)",
         hasFields: false,
+        color: "muted",
       },
       astaroth: {
         label: "サタン (astaroth)",
         hasFields: true,
+        color: "orange",
+        defaultVal: "529560",
       },
-      michael: { label: "ミカエル (michael)", hasFields: true, color: "blue" },
+      michael: {
+        label: "ミカエル (michael)",
+        hasFields: true,
+        color: "blue",
+        defaultVal: "794343",
+      },
       metatron: {
         label: "メタトロン (metatron)",
         hasFields: true,
+        color: "purple",
+        defaultVal: "953210",
       },
     };
 
@@ -629,27 +639,33 @@ function openPerformanceEditor() {
           selectOptionsHtml += `<option value="${opt}" ${isSelected}>${opt}</option>`;
         }
 
-        // 💡 インラインスタイルを全撤去！横並び用の専用クラスを付与
+        // 💡 セレクトボックス（効果名）にも、数値入力欄（数字）にも、リアルタイム同期イベントを配置！
         passivePairsHtml += `
           <div class="perf-form__passive-row">
             <div class="perf-form__select-box">
-              <select id="pe-w-${m}-p${num}-type" class="perf-form__select">
+              <select id="pe-w-${m}-p${num}-type" class="perf-form__select" onchange="syncWeaponPassiveDropdowns(this)">
                 ${selectOptionsHtml}
               </select>
             </div>
             <div class="perf-form__value-box">
-              <input type="number" id="pe-w-${m}-p${num}-num" class="perf-form__input-num-short" value="${val}" placeholder="0" />
+              <input type="number" id="pe-w-${m}-p${num}-num" class="perf-form__input-num-short" value="${val}" placeholder="0" oninput="syncWeaponPassiveNumbers(this)" />
             </div>
           </div>
         `;
       }
+
+      const currentVal = wd.val || wd.stat || "";
+      const displayVal =
+        currentVal !== "" && currentVal !== undefined
+          ? currentVal
+          : cfg.defaultVal;
 
       finalHtml += `
         <div class="perf-form__weapon-stage-box">
           <span class="perf-form__group-heading perf-form__group-heading--${cfg.color}">${cfg.label}</span>
           <div class="perf-form__field perf-form__field--flex-between">
             <label class="perf-form__field-label">武具固有値</label>
-            <input type="text" id="pe-w-${m}-val" class="perf-form__input-text-short" value="${wd.val || wd.stat || ""}" placeholder="未設定" />
+            <input type="text" id="pe-w-${m}-val" class="perf-form__input-text-short" value="${displayVal}" placeholder="未設定" />
           </div>
           <span class="perf-form__field-sub-label">専用パッシブ効果</span>
           <div class="perf-form__passive-container">
@@ -702,6 +718,45 @@ function openPerformanceEditor() {
 
   document.getElementById("charPerfEditModal").classList.add("is-active");
 }
+
+// 🔄 【効果名の完全同期】サタン・ミカエル・メタトロンのどこを触っても、同じスロット行の効果名をリアルタイムに双方向同期
+function syncWeaponPassiveDropdowns(changedSelect) {
+  const idParts = changedSelect.id.split("-"); // 例: ["pe", "w", "michael", "p2", "type"]
+  const pSlot = idParts[3]; // 💡 インデックス[3]を指定して "p1"〜"p3" を正確に引き出す！
+
+  const targetStages = ["astaroth", "michael", "metatron"];
+  for (let k = 0; k < targetStages.length; k++) {
+    const stageName = targetStages[k];
+    const targetSelect = document.getElementById(
+      `pe-w-${stageName}-${pSlot}-type`,
+    );
+
+    if (targetSelect && targetSelect !== changedSelect) {
+      targetSelect.value = changedSelect.value;
+    }
+  }
+}
+
+// 🔄 【数値の完全同期】サタン・ミカエル・メタトロンのどこを触っても、同じスロット行の数値をリアルタイムに双方向同期
+function syncWeaponPassiveNumbers(changedInput) {
+  const idParts = changedInput.id.split("-"); // 例: ["pe", "w", "metatron", "p1", "num"]
+  const pSlot = idParts[3]; // "p1"〜"p3" を正確に引き出す
+
+  const targetStages = ["astaroth", "michael", "metatron"];
+  for (let k = 0; k < targetStages.length; k++) {
+    const stageName = targetStages[k];
+    const targetInput = document.getElementById(
+      `pe-w-${stageName}-${pSlot}-num`,
+    );
+
+    if (targetInput && targetInput !== changedInput) {
+      targetInput.value = changedInput.value;
+    }
+  }
+}
+
+window.syncWeaponPassiveDropdowns = syncWeaponPassiveDropdowns;
+window.syncWeaponPassiveNumbers = syncWeaponPassiveNumbers;
 
 /* =========================================================================
    ☑️ 完了チェックボックス（isFinished）のクリックイベント制御
