@@ -527,17 +527,75 @@ function openPerformanceEditor() {
     (s.weapon && s.weapon.name) || "";
 
   // 🔮 2. 5つのスキル情報（A1, A2, P1, P2, WP）を編集欄へ全自動セット
-  // もしHTML側に各スキルの入力欄（例: id="pe-sk-A1-name" や id="pe-sk-A1-nomalText" など）が
-  // 用意されていれば、以下の処理で開いた瞬間に自動で中身がカチッとセットされます！
-  const skills = s.skills || [];
-  skills.forEach((skill) => {
-    const type = skill.type; // "A1", "A2", "P1", "P2", "WP"
+  // =========================================================================
+  // ✨ 【スキル入力エリアの自動生成：A1・A2のみクールタイム入力欄を確実に出現させる】
+  // =========================================================================
+  const skillsArea = document.getElementById("pe-skills-area");
+  if (skillsArea) {
+    const SKILL_LABELS = {
+      A1: "ACTIVE 1",
+      A2: "ACTIVE 2",
+      P1: "PASSIVE 1",
+      P2: "PASSIVE 2",
+      WP: "専用武器効果",
+    };
 
-    // スキル名入力欄へのセット
+    skillsArea.innerHTML = Object.keys(SKILL_LABELS)
+      .map((type) => {
+        // ⏳ A1・A2の時だけ、前と同じinputタグの文字列を作る
+        let ctInputHtml = "";
+        if (type === "A1" || type === "A2") {
+          ctInputHtml = `<input type="number" id="pe-sk-${type}-ct" class="perf-form__input-text ct" min="0" placeholder="0" />`;
+        }
+
+        return `
+          <div class="perf-form__group-box">
+            <div class="perf-form__heading-area">
+              <div class="perf-form__group-heading-tag">${SKILL_LABELS[type]}</div>
+              <input type="text" id="pe-sk-${type}-name" class="perf-form__input-text" placeholder="スキル名を入力" />
+              ${ctInputHtml}
+            </div>
+            <div class="perf-form__field-grid-quad">
+              <div class="perf-form__field-sub"><label class="perf-form__label-normal">通常テキスト</label><textarea id="pe-sk-${type}-nomalText" rows="4" class="perf-form__textarea"></textarea></div>
+              <div class="perf-form__field-sub"><label class="perf-form__label-satan">サタン効果 (astaroth)</label><textarea id="pe-sk-${type}-astarothText" rows="4" class="perf-form__textarea"></textarea></div>
+              <div class="perf-form__field-sub"><label class="perf-form__label-michael">ミカエル効果 (michael)</label><textarea id="pe-sk-${type}-michaelText" rows="4" class="perf-form__textarea"></textarea></div>
+              <div class="perf-form__field-sub"><label class="perf-form__label-metatron">メタトロン効果 (metatron)</label><textarea id="pe-sk-${type}-metatronText" rows="4" class="perf-form__textarea"></textarea></div>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
+  }
+
+  // 🔮 組み立てたばかりの入力欄へ、今選んだキャラのデータを100%確実にセット
+  const ALL_SKILL_TYPES = ["A1", "A2", "P1", "P2", "WP"];
+  const skills = s.skills || [];
+
+  ALL_SKILL_TYPES.forEach((type) => {
+    // 🔍 今選んだキャラのJSONデータから、この枠のスキル情報を探す（無ければ空データをセット）
+    const skill = skills.find((sk) => sk.type === type) || {
+      name: "",
+      ct: "",
+      nomalText: "",
+      astarothText: "",
+      michaelText: "",
+      metatronText: "",
+    };
+
+    // 🏷️ スキル名称のセット
     const nameInput = document.getElementById(`pe-sk-${type}-name`);
     if (nameInput) nameInput.value = skill.name || "";
 
-    // 各武器段階のテキストエリアへのセット
+    // ⏳ クールタイム(CT)の数値をセット（未入力キャラなら空っぽにして、前回の残像を完全に上書き消去！）
+    const ctInput = document.getElementById(`pe-sk-${type}-ct`);
+    if (ctInput) {
+      ctInput.value =
+        skill.ct !== undefined && skill.ct !== null && String(skill.ct) !== "0"
+          ? skill.ct
+          : "";
+    }
+
+    // 📄 各武器段階のテキストエリアへのセット
     const tNormal = document.getElementById(`pe-sk-${type}-nomalText`);
     if (tNormal) tNormal.value = skill.nomalText || "";
 

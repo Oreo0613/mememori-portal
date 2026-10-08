@@ -285,7 +285,10 @@
 .perf-form__input-num {
   text-align: right;
   width: 100px !important;
+  background-color: var(--input-bg-sub);
+  border-radius: 6px;
 }
+
 .perf-form__input-text {
   text-align: left;
   padding: 8px !important;
@@ -480,4 +483,42 @@
   background-color: #374151;
   padding: 4px 8px;
   border-radius: 4px;;
+}
+
+/* ==================================
+性能編集モーダル
+================================== */
+.perf-form__group-heading-tag {
+  font-size: 10px;
+  background: #504f4d;
+  color: #f3f4f6;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.perf-form__heading-area {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+}
+
+.perf-form__input-text.ct {
+  border-radius: var(--radius-sm);
+    border: 1px solid var(--border-light);
+    background: var(--input-bg);
+    color: var(--text-main);
+    font-size: 14px;
+    text-align: right;
+    max-width: 60px;
+}
+
+.perf-form__field-sub {
+  margin-top: 12px;
 }
