@@ -673,13 +673,41 @@
   display: none;
 }
 
+
+/* =========================================================================
+   🌐 エクスポートボタン（hover / active）の立体エフェクト
+   ========================================================================= */
+
 .ar-btn.export-btn {
   position: absolute;
   right: 10vw;
   bottom: 5vh;
   font-size: 14px;
   letter-spacing: 0.1em;
-  background-color: #40616e;
+  background: linear-gradient(180deg, #edf2f7 0%, #cbd5e0 100%);;
+  color: var(--bg-main);
   gap: 8px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* 1. マウスホバー時：光が当たったように少し明るくなり、浮き上がる */
+.ar-btn.export-btn:hover {
+  cursor: pointer;
+  /* 上下のグラデーションを一段階明るくリファイン */
+  background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
+  /* ボタンをわずかに上に浮かせ、外側の影を少し広げて立体感を強調 */
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  /* じわっと滑らかに変化させるためのトリガー */
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* 2. ボタンクリック時：物理的に押し込まれたような沈み込みを再現 */
+.ar-btn.export-btn:active {
+  /* 押し込まれたことで、わずかに元の位置（または少し下）に沈む */
+  transform: translateY(1px);
+  /* 外側の影をギュッと縮め、内側にリアルな影（inset）を落として凹みを表現 */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  /* クリックの瞬間は一瞬で反応させる */
+  transition: transform 0.05s;
 }
