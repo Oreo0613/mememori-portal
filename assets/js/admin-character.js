@@ -52,17 +52,44 @@ var TYPE_IMAGES = [
 var currentDetailIndex = -1; // 現在詳細を見ているキャラのインデックス番
 
 /* =========================================================================
-   🧙‍♀️ ログイン成功後の初期化処理（JSON読み込み）
+   🧙‍♀️ ログイン成功後の初期化処理（LocalStorage自動復元 ＆ JSON読み込み）
    ========================================================================= */
 window.onAdminAuthSuccess = function (user) {
-  console.log(
-    "admin.js からの通知：ローカルJSONによるキャラクターページの描画を開始します。",
-  );
+  console.log("admin.js からの通知：キャラクターページの描画を開始します。");
 
   if (typeof showLoading === "function") showLoading();
 
-  const charJsonUrl = "assets/json/character-master.json";
+  // 1️⃣ まずはブラウザのLocalStorageに「編集途中の最新バックアップデータ」が無いか確認
+  const localBackup = localStorage.getItem("mememori_character_master_backup");
 
+  if (localBackup) {
+    try {
+      if (typeof characterMaster === "undefined") window.characterMaster = [];
+      window.characterMaster = JSON.parse(localBackup);
+
+      console.log(
+        "✨ [LocalStorage] 前回編集途中の最新バックアップデータをブラウザから自動復元しました！件数:",
+        window.characterMaster.length,
+      );
+
+      // ID降順ソートをかけて画面に即座に描画
+      window.characterMaster.sort((a, b) => Number(b.id) - Number(a.id));
+      renderGridHTML(window.characterMaster);
+
+      if (typeof buildFilterButtons === "function") buildFilterButtons();
+      if (typeof buildCustomDropdowns === "function") buildCustomDropdowns();
+      if (typeof hideLoading === "function") hideLoading();
+      return; // 💡 バックアップから復元できたので、サーバー（Fetch）への通信はスキップして終了
+    } catch (e) {
+      console.error(
+        "LocalStorageデータのパースに失敗したため、初期JSON読み込みへフォールバックします。",
+        e,
+      );
+    }
+  }
+
+  // 2️⃣ ローカルにバックアップが無い場合のみ、元の character-master.json を読み込む
+  const charJsonUrl = "assets/json/character-master.json";
   fetch(charJsonUrl)
     .then((response) => {
       if (!response.ok)
@@ -71,18 +98,15 @@ window.onAdminAuthSuccess = function (user) {
     })
     .then(function (charData) {
       if (typeof characterMaster === "undefined") window.characterMaster = [];
-      characterMaster = charData;
+      window.characterMaster = charData;
 
-      // 👤 キャラクター一覧をIDの大きい順（降順）にソート
-      characterMaster.sort(function (a, b) {
-        return Number(b.id) - Number(a.id);
-      });
+      window.characterMaster.sort((a, b) => Number(b.id) - Number(a.id));
       console.log(
-        "🌸 [JSON] キャラクターデータを読み込み、ID降順にソートしました！件数:",
-        characterMaster.length,
+        "🌸 [JSON] 初期マスターファイルを読み込み、ID降順にソートしました！件数:",
+        window.characterMaster.length,
       );
 
-      renderGridHTML(characterMaster);
+      renderGridHTML(window.characterMaster);
 
       if (typeof buildFilterButtons === "function") buildFilterButtons();
       if (typeof buildCustomDropdowns === "function") buildCustomDropdowns();
@@ -116,32 +140,6 @@ function renderGridHTML(charList) {
       `;
     })
     .join("");
-}
-
-/* -------------------------------------------------------------------------
-      💡 最新のJSONデータをパソコンへ自動エクスポート（保存）する共通関数
-     ------------------------------------------------------------------------- */
-function exportUpdatedJsonFile() {
-  // ➔ ✨ 【ここを修正！】JSON内の並び順を、ご希望通りの「ID降順（数字の大きい順・最新順）」に整える
-  const outputData = [].concat(characterMaster).sort(function (a, b) {
-    return Number(b.id) - Number(a.id); // ⭕️ b - a にすることで、IDの大きい順（135→134...）に固定します！
-  });
-
-  const jsonString = JSON.stringify(outputData, null, 4);
-  const blob = new Blob([jsonString], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "character-master.json";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-
-  console.log(
-    "💾 最新の character-master.json をID降順（大きい順）でローカルに出力しました。これを差し替えてください。",
-  );
 }
 
 /* -------------------------------------------------------------------------
@@ -640,7 +638,7 @@ function openPerformanceEditor() {
           selectOptionsHtml += `<option value="${opt}" ${isSelected}>${opt}</option>`;
         }
 
-        // 💡 id名に正確な「passive\${num}」を付与して双方向同期に備える
+        // 💡 id名に正確な「passive\${num}」を付与して双方向同期に備える（数値同期oninputは完全に撤去）
         passivePairsHtml += `
            <div class="perf-form__passive-row">
              <div class="perf-form__select-box">
@@ -649,7 +647,7 @@ function openPerformanceEditor() {
                </select>
              </div>
              <div class="perf-form__value-box">
-               <input type="number" id="pe-w-${m}-passive${num}-num" class="perf-form__input-num-short" value="${val}" placeholder="0" oninput="syncWeaponPassiveNumbers(this)" />
+               <input type="number" id="pe-w-${m}-passive${num}-num" class="perf-form__input-num-short" value="${val}" placeholder="0" />
              </div>
            </div>
          `;
@@ -843,7 +841,7 @@ function closeModal() {
   document.getElementById("charModal").classList.remove("is-active");
 }
 
-// ─── 🚀 マスタ情報の追加・更新：変更のあるキャラだけをディープコピーで隔離する防衛型 ───
+// ─── 🚀 マスタ情報の追加・更新：ディープコピー ＆ LocalStorage自動保存型 ───
 function saveMasterData() {
   const formId = document.getElementById("formId").value;
   const formName = document.getElementById("formName").value.trim();
@@ -859,7 +857,6 @@ function saveMasterData() {
     return;
   }
 
-  // 1️⃣ 既存のキャラクターかどうかを大元の配列から探す
   const existingIdx = window.characterMaster.findIndex(function (c) {
     return String(c.id) === String(formId);
   });
@@ -867,22 +864,35 @@ function saveMasterData() {
   let targetChar = {};
 
   if (existingIdx !== -1) {
-    // 2️⃣ 【既存編集の場合】対象キャラだけをディープコピー（完全複製）で隔離！
-    // 💡 これにより、深い階層にある既存のスキルテキストや武器パラメータを100%無傷で保護します。
-    targetChar = JSON.parse(JSON.stringify(window.characterMaster[existingIdx]));
+    targetChar = JSON.parse(
+      JSON.stringify(window.characterMaster[existingIdx]),
+    );
   } else {
-    // 3️⃣ 【新規追加の場合】新しいキャラクターオブジェクトの土台を作成
     targetChar = {
       id: formId,
-      str: "", dex: "", mag: "", sta: "", spd: "", def: "", pen: "", tags: "",
+      str: "",
+      dex: "",
+      mag: "",
+      sta: "",
+      spd: "",
+      def: "",
+      pen: "",
+      tags: "",
       isFinished: "FALSE",
-      status: { str: "0", dex: "0", mag: "0", sta: "0", speed: "0", defInitial: "0", penCustom: "0" },
+      status: {
+        str: "0",
+        dex: "0",
+        mag: "0",
+        sta: "0",
+        speed: "0",
+        defInitial: "0",
+        penCustom: "0",
+      },
       weapon: { name: "" },
-      skills: []
+      skills: [],
     };
   }
 
-  // 4️⃣ 隔離したクローンデータに対して、マスタの基本情報を安全に上書き
   targetChar.name = formName;
   targetChar.attr = formAttr;
   targetChar.type = formType;
@@ -890,17 +900,14 @@ function saveMasterData() {
   targetChar.releaseDate = formStartDate || "";
   targetChar.iconUrl = formIconUrl || "https://placehold.co";
   targetChar.coverUrl = formCoverUrl || "https://placehold.co";
-  targetChar.updatedAt = new Date().toLocaleString("ja-JP"); // 🕒 更新日時を最新に
+  targetChar.updatedAt = new Date().toLocaleString("ja-JP");
 
   if (existingIdx !== -1) {
-    // 5️⃣ 完成したクローンデータを大元の配列へピンポイントで合流させる（他キャラは一切触らない）
     window.characterMaster[existingIdx] = targetChar;
   } else {
-    // 新規キャラクターの場合は配列の末尾に追加
     window.characterMaster.push(targetChar);
   }
 
-  // 6️⃣ 画面の降順ソート（最新が上）を維持
   window.characterMaster.sort(function (a, b) {
     return Number(b.id) - Number(a.id);
   });
@@ -908,16 +915,17 @@ function saveMasterData() {
   closeModal();
   renderGridHTML(window.characterMaster);
 
-  // 💡 最新状態のJSONファイルを自動保存（ダウンロード）
-  exportUpdatedJsonFile();
-
-  alert(
-    `🎉 キャラクター基本情報を反映し、最新のJSONをダウンロードしました！\n「${targetChar.name}」のデータを更新して保存しました。`
+  // 💾 ファイルダウンロードを廃止し、LocalStorageへ瞬時に自動バックアップ
+  localStorage.setItem(
+    "mememori_character_master_backup",
+    JSON.stringify(window.characterMaster),
+  );
+  console.log(
+    `📝 [Auto Save] 「${targetChar.name}」のマスタ基本情報をブラウザに自動保存しました。`,
   );
 }
 
-
-// ─── 🚀 マスタ削除時のFirestore送信を完全廃止 ───
+// ─── 🚀 マスタ削除：LocalStorage連動型 ───
 function deleteMasterCharacter() {
   const formId = document.getElementById("formId").value;
   const formName = document.getElementById("formName").value.trim();
@@ -932,7 +940,6 @@ function deleteMasterCharacter() {
     return;
   }
 
-  // メモリ配列から削除
   window.characterMaster = window.characterMaster.filter(function (c) {
     return String(c.id) !== String(formId);
   });
@@ -940,11 +947,13 @@ function deleteMasterCharacter() {
   closeModal();
   renderGridHTML(window.characterMaster);
 
-  // 💡 削除完了後の最新JSONを自動保存
-  exportUpdatedJsonFile();
-
-  alert(
-    `✨ 「${formName}」をマスタから消去し、最新のJSONをダウンロードしました。ファイルを上書き配置してください。`,
+  // 💾 削除後の状態をLocalStorageへ即座に反映
+  localStorage.setItem(
+    "mememori_character_master_backup",
+    JSON.stringify(window.characterMaster),
+  );
+  console.log(
+    `🧹 [Auto Save] 「${formName}」をマスタから消去し、バックアップを更新しました。`,
   );
 }
 
@@ -997,30 +1006,25 @@ function closePerfEditor() {
 }
 
 /* -------------------------------------------------------------------------
-     ✨ 【性能データ保存 ＆ 最新JSON自動エクスポート：ディープコピー防衛型】
-     ------------------------------------------------------------------------- */
+     ✨ 【性能データ保存：ディープコピー ＆ LocalStorage自動保存型】
+------------------------------------------------------------------------- */
 function savePerformanceData() {
   const charId = document.getElementById("pe-charId").value;
   if (!charId) return alert("キャラクターIDが見つかりません。");
 
-  // 1️⃣ 大元の配列から編集対象のキャラを探す
   const originalChar = window.characterMaster.find(
     (c) => String(c.id) === String(charId),
   );
   if (!originalChar) return alert("対象のキャラクターデータが見つかりません。");
 
-  // 2️⃣ 【最重要】対象キャラ1人分の「完全なクローン（複製）」を作成して隔離！
-  // これにより、ここから下の処理で万が一バグが起きても他のキャラは物理的に100%守られます。
   const targetChar = JSON.parse(JSON.stringify(originalChar));
 
-  // 🕒 【追加】変更のあったこのキャラの更新日時だけを現在時刻に書き換える
+  // 🕒 変更のあったこのキャラの更新日時だけを現在時刻に書き換える
   targetChar.updatedAt = new Date().toLocaleString("ja-JP");
 
-  // 3. 完了フラグ（既存の文字列 "TRUE" / "FALSE" 形式に統一）
   const isChecked = document.getElementById("isFinished").checked;
   targetChar.isFinished = isChecked ? "TRUE" : "FALSE";
 
-  // 4. 📊 基礎パラメータの回収（隔離したクローンに対して書き込みます）
   targetChar.status = {
     str: String(document.getElementById("pe-str").value || 0),
     dex: String(document.getElementById("pe-dex").value || 0),
@@ -1031,10 +1035,8 @@ function savePerformanceData() {
     penCustom: String(document.getElementById("pe-penCustom").value || 0),
   };
 
-  // 5. 🏷️ 特徴タグの回収
   targetChar.tags = document.getElementById("pe-charTags").value.trim();
 
-  // 6. 🔮 5大スキル回収
   const ALL_SKILL_TYPES = ["A1", "A2", "P1", "P2", "WP"];
   targetChar.skills = [];
 
@@ -1057,7 +1059,6 @@ function savePerformanceData() {
     });
   });
 
-  // 7. 🛡️ 専用武器エディタ回収
   targetChar.weapon = {
     name: document.getElementById("pe-w-name").value.trim(),
   };
@@ -1083,7 +1084,6 @@ function savePerformanceData() {
     }
   });
 
-  // 🧹 8. ルート直下にこびり付いていた古いゴミ文字（str, spd等）をクローン側から完全抹消
   const trashKeys = [
     "str",
     "dex",
@@ -1100,7 +1100,6 @@ function savePerformanceData() {
     if (key in targetChar) delete targetChar[key];
   });
 
-  // 🤝 9. 【安全対策の要】完成した綺麗なクローンデータを、大元の配列の「対象の場所」だけに入れ替える
   const targetIndex = window.characterMaster.findIndex(
     (c) => String(c.id) === String(charId),
   );
@@ -1108,22 +1107,59 @@ function savePerformanceData() {
     window.characterMaster[targetIndex] = targetChar;
   }
 
-  // 10. 全体のソート、画面リフレッシュ、ファイル自動ダウンロード
   window.characterMaster.sort(function (a, b) {
     return Number(b.id) - Number(a.id);
   });
 
   closePerfEditor();
   renderGridHTML(window.characterMaster);
-  exportUpdatedJsonFile();
 
-  alert(
-    `✨ 【性能データ保存大成功！】\n「${targetChar.name}」のデータをディープコピーで安全に分離して最適化し、最新のJSONファイルを出力しました！`,
+  // 💾 ファイルダウンロードを廃止し、LocalStorageへ瞬時に自動バックアップ
+  localStorage.setItem(
+    "mememori_character_master_backup",
+    JSON.stringify(window.characterMaster),
+  );
+  console.log(
+    `🔮 [Auto Save] 「${targetChar.name}」の性能データをブラウザに自動保存しました。`,
   );
 }
 
 /* =========================================================================
-         🌐 HTML側（onclick / onchange）への関数公開
+   💾 新設された「Json出力」ボタン（手動一括エクスポート）の実態
+   ========================================================================= */
+function exportJsonFile() {
+  if (!window.characterMaster || window.characterMaster.length === 0) {
+    return alert("出力するキャラクターデータがありません。");
+  }
+
+  // 1️⃣ ご希望通りの「ID降順（数字の大きい順・最新順）」に一貫性を保って整える
+  const outputData = [].concat(window.characterMaster).sort(function (a, b) {
+    return Number(b.id) - Number(a.id);
+  });
+
+  const jsonString = JSON.stringify(outputData, null, 4);
+  const blob = new Blob([jsonString], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  // 2️⃣ ブラウザのダウンロードリンクを生成してパチッと自動クリック
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "character-master.json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  console.log(
+    "💾 [Manual Export] 編集済みの全キャラクターデータをID降順でローカルに出力しました！",
+  );
+  alert(
+    `✨ 【JSONファイルの一括出力大成功！】\n最新の「character-master.json」を出力しました。\nプロジェクトの「assets/json/」に上書き配置してください。`,
+  );
+}
+
+/* =========================================================================
+           🌐 HTML側（onclick / onchange）への関数公開
      ========================================================================= */
 window.openModalForCreate = openModalForCreate;
 window.execFiltering = execFiltering;
@@ -1137,3 +1173,4 @@ window.openAdminEditFromDetail = openAdminEditFromDetail;
 window.closeModal = closeModal;
 window.saveMasterData = saveMasterData;
 window.calculateElapsedDays = calculateElapsedDays;
+window.exportJsonFile = exportJsonFile; 
