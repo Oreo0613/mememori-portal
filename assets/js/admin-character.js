@@ -1150,11 +1150,12 @@ function exportJsonFile() {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 
+  // 📝 【修正】実情に即した、裏の仕組みが正確に伝わる文面へアップデート
   console.log(
-    "💾 [Manual Export] 編集済みの全キャラクターデータをID降順でローカルに出力しました！",
+    "💾 [Manual Export] 編集内容を反映した「全キャラクターの最新データ（全体）」をID降順で一括出力しました！",
   );
   alert(
-    `✨ 【JSONファイルの一括出力大成功！】\n最新の「character-master.json」を出力しました。\nプロジェクトの「assets/json/」に上書き配置してください。`,
+    `✨ 【マスターJSONの一括出力大成功！】\n最新の全キャラデータ「character-master.json」を出力しました。\nプロジェクトの「assets/json/」に上書き配置してください。`,
   );
 }
 
@@ -1173,4 +1174,4 @@ window.openAdminEditFromDetail = openAdminEditFromDetail;
 window.closeModal = closeModal;
 window.saveMasterData = saveMasterData;
 window.calculateElapsedDays = calculateElapsedDays;
-window.exportJsonFile = exportJsonFile; 
+window.exportJsonFile = exportJsonFile;
