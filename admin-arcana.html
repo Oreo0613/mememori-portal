@@ -21,14 +21,16 @@
 <body>
   <!-- 管理者用の専用ヘッダー -->
   <header class="admin-header">
-    <div class="header-logo">マスタ管理</div>
-    <nav class="header-nav">
-      <ul>
-        <li><a href="#" class="active">アルカナマスタ</a></li>
-        <li><a href="admin-character.html">キャラクターマスタ</a></li>
-        <li><button id="globalLogoutBtn" class="ar-btn btn-muted admin-logout-btn">🚪 ログアウト</button></li>
-      </ul>
-    </nav>
+    <div class="admin-header-container">
+      <div class="header-logo">マスタ管理</div>
+      <nav class="header-nav">
+        <ul>
+          <li><a href="#" class="active">アルカナマスタ</a></li>
+          <li><a href="admin-character.html">キャラクターマスタ</a></li>
+          <li><button id="globalLogoutBtn" class="ar-btn btn-muted admin-logout-btn">🚪 ログアウト</button></li>
+        </ul>
+      </nav>
+    </div>
   </header>
 
   <!-- =======================================
@@ -112,13 +114,20 @@
           <div class="pk-side__title">キャラクター選択</div>
           <div class="pk-side__sub-title" id="slbl">枠を選んでください</div>
           <div class="pk-flx">
-            <button class="pk-btn is-active" onclick="flt('all', this)"><img class="pk-filter-img" src="assets/images/filter-icon/icon-all.png" alt="ALL"></button>
-            <button class="pk-btn" onclick="flt('藍', this)"><img class="pk-filter-img" src="assets/images/filter-icon/icon-attr-blue.png" alt="藍"></button>
-            <button class="pk-btn" onclick="flt('紅', this)"><img class="pk-filter-img" src="assets/images/filter-icon/icon-attr-red.png" alt="紅"></button>
-            <button class="pk-btn" onclick="flt('翠', this)"><img class="pk-filter-img" src="assets/images/filter-icon/icon-attr-green.png" alt="翠"></button>
-            <button class="pk-btn" onclick="flt('黄', this)"><img class="pk-filter-img" src="assets/images/filter-icon/icon-attr-yellow.png" alt="黄"></button>
-            <button class="pk-btn" onclick="flt('天', this)"><img class="pk-filter-img" src="assets/images/filter-icon/icon-attr-holy.png" alt="聖"></button>
-            <button class="pk-btn" onclick="flt('冥', this)"><img class="pk-filter-img" src="assets/images/filter-icon/icon-attr-dark.png" alt="冥"></button>
+            <button class="pk-btn is-active" onclick="flt('all', this)"><img class="pk-filter-img"
+                src="assets/images/filter-icon/icon-all.png" alt="ALL"></button>
+            <button class="pk-btn" onclick="flt('藍', this)"><img class="pk-filter-img"
+                src="assets/images/filter-icon/icon-attr-blue.png" alt="藍"></button>
+            <button class="pk-btn" onclick="flt('紅', this)"><img class="pk-filter-img"
+                src="assets/images/filter-icon/icon-attr-red.png" alt="紅"></button>
+            <button class="pk-btn" onclick="flt('翠', this)"><img class="pk-filter-img"
+                src="assets/images/filter-icon/icon-attr-green.png" alt="翠"></button>
+            <button class="pk-btn" onclick="flt('黄', this)"><img class="pk-filter-img"
+                src="assets/images/filter-icon/icon-attr-yellow.png" alt="黄"></button>
+            <button class="pk-btn" onclick="flt('天', this)"><img class="pk-filter-img"
+                src="assets/images/filter-icon/icon-attr-holy.png" alt="聖"></button>
+            <button class="pk-btn" onclick="flt('冥', this)"><img class="pk-filter-img"
+                src="assets/images/filter-icon/icon-attr-dark.png" alt="冥"></button>
           </div>
           <div class="pk-grid" id="pGrid"></div>
           <div class="pk-side__footer">

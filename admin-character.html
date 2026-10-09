@@ -18,14 +18,16 @@
 
 <body>
   <header class="admin-header">
-    <div class="header-logo">マスタ管理</div>
-    <nav class="header-nav">
-      <ul>
-        <li><a href="admin-arcana.html">アルカナマスタ</a></li>
-        <li><a href="#" class="active">キャラクターマスタ</a></li>
-        <li><button id="globalLogoutBtn" class="ar-btn btn-muted admin-logout-btn">🚪 ログアウト</button></li>
-      </ul>
-    </nav>
+    <div class="admin-header-container">
+      <div class="header-logo">マスタ管理</div>
+      <nav class="header-nav">
+        <ul>
+          <li><a href="admin-arcana.html">アルカナマスタ</a></li>
+          <li><a href="#" class="active">キャラクターマスタ</a></li>
+          <li><button id="globalLogoutBtn" class="ar-btn btn-muted admin-logout-btn">🚪 ログアウト</button></li>
+        </ul>
+      </nav>
+    </div>
   </header>
 
   <!-- =======================================
@@ -59,6 +61,7 @@
     <div class="character-grid" id="charGrid">
       <div class="character-grid__loading">データ通信中...</div>
     </div>
+
   </div>
   <!-- ============================================================
     🔲 1. キャラクター性能　確認モーダル
@@ -486,6 +489,11 @@
       </form>
     </div>
   </div>
+
+  <!-- JSON出力用ボタン -->
+  <button type="button" class="ar-btn export-btn" onclick="">
+    <i class="fa-solid fa-file"></i>Json出力
+  </button>
 
   <script type="module" src="assets/js/admin.js"></script>
   <script type="module" src="assets/js/admin-character.js"></script>
