@@ -679,15 +679,13 @@
    ========================================================================= */
 
 .ar-btn.export-btn {
-  position: absolute;
-  right: 10vw;
-  bottom: 5vh;
   font-size: 14px;
   letter-spacing: 0.1em;
   background: linear-gradient(180deg, #edf2f7 0%, #cbd5e0 100%);;
   color: var(--bg-main);
   gap: 8px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  margin-right: 16px;
 }
 
 /* 1. マウスホバー時：光が当たったように少し明るくなり、浮き上がる */

@@ -37,6 +37,9 @@
     <div class="header-controls">
       <h2>キャラクターマスタ</h2>
       <div class="header-right-actions">
+        <button type="button" class="ar-btn export-btn" onclick="exportJsonFile()">
+          <i class="fa-solid fa-file"></i>Json出力
+        </button>
         <button class="ar-btn btn-primary" onclick="openModalForCreate()">
           ＋ 新規キャラ登録
         </button>
@@ -489,10 +492,6 @@
       </form>
     </div>
   </div>
-  <!-- JSON出力用ボタン -->
-  <button type="button" class="ar-btn export-btn" onclick="exportJsonFile()">
-    <i class="fa-solid fa-file"></i>Json出力
-  </button>
 
   <script type="module" src="assets/js/admin.js"></script>
   <script type="module" src="assets/js/admin-character.js"></script>
