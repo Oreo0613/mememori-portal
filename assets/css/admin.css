@@ -429,6 +429,7 @@ body {
   min-height: 450px;
   max-height: 90vh;
   overflow: hidden;
+  margin-top: 40px;
 }
 
 /* 縦長スクロール用コンテナ（キャラマスタ用） */
