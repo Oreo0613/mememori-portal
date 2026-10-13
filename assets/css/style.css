@@ -310,7 +310,18 @@ svg {
 /* ====================================================
    FOOTER NAVIGATION COMPONENT（アイランド型×浮き出るカプセル）
    ==================================================== */
+   .c-footer {
+       padding: 18px;
+   }
+
 @scope(.c-footer) {
+    .c-footer__copyright-text {
+        font-size: 1.2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        color: var(--theme-text-muted);
+    }
 
     .c-footer-nav {
         position: fixed;
