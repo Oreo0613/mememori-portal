@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await insertFooter(); 
     setActiveNavigation(); 
 
-    // 💡 2. 共通ワールドセレクター（ヘッダー・モーダル）の挿入とイベント設定（完了を待つ）
+    // 💡 2. 共通ワールドセレクター（ヘッダーまたは専用コンテナ）の挿入とイベント設定（完了を待つ）
     await insertWorldSelector();
     initWorldSelectorEvent();
 });
@@ -45,7 +45,7 @@ function setActiveNavigation() {
                 link.classList.remove('is-active');
             }
         } 
-        // 通常のページ（character.html, arcana.html, diamond.html）の判定
+        // 通常のページ（admin系など）の判定
         else {
             if (currentPath.includes(targetHref)) {
                 link.classList.add('is-active');
@@ -57,16 +57,21 @@ function setActiveNavigation() {
 }
 
 /**
- * 🌐 関数③：ワールドセレクター（アイコン＆モーダル）をヘッダーに挿入する関数
+ * 🌐 関数③：ワールドセレクター（アイコン＆モーダル）を適切なコンテナに挿入する関数
  */
 async function insertWorldSelector() {
-    const headerContainer = document.getElementById("js-header-container");
-    if (!headerContainer) return;
+    // 挿入先の候補（ヘッダー、またはindex用の別コンテナがあればそれを使う）
+    const targetContainer = document.getElementById("js-header-container") || 
+                            document.getElementById("js-world-selector-container");
+    
+    // どちらのコンテナもページ内に存在しない場合は、この機能が不要なページ（管理者画面など）と判断してスルー
+    if (!targetContainer) return;
 
     try {
         const response = await fetch("assets/includes/world-selector.html");
         if (!response.ok) throw new Error("ワールドセレクターの読み込みに失敗しました");
-        headerContainer.innerHTML = await response.text();
+        
+        targetContainer.innerHTML = await response.text();
     } catch (error) {
         console.error("ワールドセレクターの読み込みエラー:", error);
     }
@@ -85,6 +90,7 @@ function initWorldSelectorEvent() {
     const currentWorldBadge = document.getElementById("js-current-world-badge"); // 左上ヘッダー用
     const modalWorldText = document.getElementById("js-modal-world-text");       // モーダル内ヘッダー用
 
+    // 画面内に要素がなければ、イベント設定をせず安全に終了（分岐処理）
     if (!modal || !openBtn) return;
 
     // 💡 初期状態（閉じているとき）は inert 属性を付与して中身のボタンを完全に無効化しておく
@@ -93,10 +99,9 @@ function initWorldSelectorEvent() {
     // 🔓 1. 左上のキャラアイコン型ボタンをクリックしてモーダルを開く
     openBtn.addEventListener("click", () => {
         modal.classList.add("is-open");
-        modal.removeAttribute("aria-hidden"); // 既存の古い隠し属性をクリア
+        modal.removeAttribute("aria-hidden"); 
         modal.removeAttribute("inert");       // 💡 inertを外して、中のボタンを操作可能にする
         
-        // 【オマケのプロ技】開いた瞬間に、現在アクティブなワールドボタンにフォーカスを当てて操作しやすくする
         const activeBtn = modal.querySelector(".js-world-choice.is-active");
         if (activeBtn) activeBtn.focus();
     });
@@ -104,9 +109,7 @@ function initWorldSelectorEvent() {
     // 🔒 2. モーダルを閉じる共通処理
     const closeModal = () => {
         modal.classList.remove("is-open");
-        modal.setAttribute("inert", ""); // 💡 inertを付与！これで中のボタンから強制的にフォーカスが外れ、眠状態になります
-        
-        // モーダルが閉じたので、フォーカスを「開くボタン（左上のアイコン）」へ安全に戻す（これでエラーが完全消失します）
+        modal.setAttribute("inert", ""); // 💡 inertを付与してスリープ状態にする
         openBtn.focus();
     };
     if (closeBtn) closeBtn.addEventListener("click", closeModal);
@@ -130,9 +133,10 @@ function initWorldSelectorEvent() {
 
             console.log(`🌍 アクティブワールドを変更しました: ${selectedWorld}`);
 
-            // 最後にモーダルをフワッと閉じる（中で自動的に inert になります）
+            // 💡 ここに、ワールド変更時に各タブのデータを再読み込みするカスタムイベントなどを後々挟めます
+
+            // 最後にモーダルをフワッと閉じる
             closeModal();
         });
     });
 }
-
