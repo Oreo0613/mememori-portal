@@ -1,0 +1,129 @@
+/* ====================================================
+   ベースのスタイル・デザインシステム定義
+   ==================================================== */
+   :root {
+    /* ----------------------------------------------------
+       ① GLOBAL PALETTE (色パレット：純粋な色と明るさの定義)
+       ---------------------------------------------------- */
+    --color-gray-50: rgb(243, 244, 240);  /* 💻 メイン背景用の薄いグレー */
+    --color-gray-900: #333333;           /* 基本の文字（炭黒） */
+    --color-white: #ffffff;              /* 純白 */
+    
+    --color-green-100: #f0f7f4;          /* アクティブ・ホバー用の薄い緑 */
+    --color-green-500: #498b6d;          /* 🟢 メメリグリーン（アクセント） */
+    --color-green-700: #58665f;          /* サブ文字用の深いグリーングレー */
+    --color-green-500-alpha15: rgba(73, 139, 109, 0.15); /* 透明度15%の緑 */
+
+    /* ----------------------------------------------------
+       ② SEMANTIC THEME (使い道：パレットから役割に紐付ける)
+       ---------------------------------------------------- */
+    /* スキンA：画面全体の基本土台セット */
+    --theme-bg-main: var(--color-gray-50);
+    --theme-text-main: var(--color-gray-900);
+
+    /* スキンB：カードやフッターなど、浮き出る要素のセット */
+    --theme-bg-surface: var(--color-white);
+    --theme-text-muted: var(--color-green-700);
+    --theme-border-main: var(--color-green-500-alpha15);
+
+    /* スキンC：クリック等のインタラクション（状態変化）セット */
+    --theme-interactive: var(--color-green-500);       /* 選択中の文字色など */
+    --theme-interactive-hover: var(--color-green-100); /* ホバー・アクティブ時の薄い緑背景 */
+
+    /* ----------------------------------------------------
+       ③ TYPOGRAPHY (フォント基本定義)
+       ---------------------------------------------------- */
+    --font-family-base: "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", "UD Digital Kyokyasho NK-R", "UD デジタル教科書体 NK-R", "YakuHanJP", "BIZ UDPGothic", sans-serif;
+    --font-size-base: 1.4rem;
+    --line-height-base: 1.4;
+}
+
+/* ====================================================
+   APPLICATION BASE STYLES
+   ==================================================== */
+html {
+    font-size: 62.5%;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    letter-spacing: 0.05em;
+    text-align: left;
+    color: var(--theme-text-main);
+    background-color: var(--theme-bg-main);
+}
+
+img,
+svg {
+    width: 100%;
+}
+
+/* ====================================================
+   FOOTER NAVIGATION COMPONENT
+   ==================================================== */
+@scope(.c-footer) {
+
+    .c-footer-nav {
+        position: fixed;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+
+        width: 90%;
+        max-width: 320px;
+
+        background-color: var(--theme-bg-surface);
+        border: 1px solid var(--theme-border-main);
+        border-radius: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+
+        padding: 6px 12px;
+        z-index: 100;
+    }
+
+    .c-footer-nav__list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+        gap: 4px;
+    }
+
+    .c-footer-nav__item {
+        display: flex;
+        justify-content: center;
+    }
+
+    .c-footer-nav__link {
+        font-size: 1.1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        color: var(--theme-text-muted);
+        padding: 8px 4px; 
+        width: 100%;
+        border-radius: 20px;       
+        transition: color 0.3s ease, background-color 0.3s ease, transform 0.2s ease; 
+    }
+
+    .c-footer-nav svg {
+        width: 1.6rem;
+        height: 1.6rem;
+        font-size: 1.6rem;
+        transition: transform 0.3s ease; 
+    }
+
+    .c-footer-nav__link.is-active,
+    .c-footer-nav__link:hover {
+        color: var(--theme-interactive);
+        background-color: var(--theme-interactive-hover); 
+        font-weight: bold;
+    }
+
+    .c-footer-nav__link:hover svg,
+    .c-footer-nav__link.is-active svg {
+        transform: translateY(-2px);
+    }
+}
