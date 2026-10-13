@@ -1,18 +1,25 @@
 /* ====================================================
    ベースのスタイル・デザインシステム定義
    ==================================================== */
-   :root {
+:root {
     /* ----------------------------------------------------
        ① GLOBAL PALETTE (色パレット：純粋な色と明るさの定義)
        ---------------------------------------------------- */
-    --color-gray-50: rgb(243, 244, 240);  /* 💻 メイン背景用の薄いグレー */
-    --color-gray-900: #333333;           /* 基本の文字（炭黒） */
-    --color-white: #ffffff;              /* 純白 */
-    
-    --color-green-100: #f0f7f4;          /* アクティブ・ホバー用の薄い緑 */
-    --color-green-500: #498b6d;          /* 🟢 メメリグリーン（アクセント） */
-    --color-green-700: #58665f;          /* サブ文字用の深いグリーングレー */
-    --color-green-500-alpha15: rgba(73, 139, 109, 0.15); /* 透明度15%の緑 */
+    --color-gray-50: rgb(243, 244, 240);
+    /* 💻 メイン背景用の薄いグレー */
+    --color-gray-900: #333333;
+    /* 基本の文字（炭黒） */
+    --color-white: #ffffff;
+    /* 純白 */
+
+    --color-green-100: #f0f7f4;
+    /* アクティブ・ホバー用の薄い緑 */
+    --color-green-500: #498b6d;
+    /* 🟢 メメリグリーン（アクセント） */
+    --color-green-700: #58665f;
+    /* サブ文字用の深いグリーングレー */
+    --color-green-500-alpha15: rgba(73, 139, 109, 0.15);
+    /* 透明度15%の緑 */
 
     /* ----------------------------------------------------
        ② SEMANTIC THEME (使い道：パレットから役割に紐付ける)
@@ -27,8 +34,10 @@
     --theme-border-main: var(--color-green-500-alpha15);
 
     /* スキンC：クリック等のインタラクション（状態変化）セット */
-    --theme-interactive: var(--color-green-500);       /* 選択中の文字色など */
-    --theme-interactive-hover: var(--color-green-100); /* ホバー・アクティブ時の薄い緑背景 */
+    --theme-interactive: var(--color-green-500);
+    /* 選択中の文字色など */
+    --theme-interactive-hover: var(--color-green-100);
+    /* ホバー・アクティブ時の薄い緑背景 */
 
     /* ----------------------------------------------------
        ③ TYPOGRAPHY (フォント基本定義)
@@ -61,8 +70,245 @@ svg {
     width: 100%;
 }
 
+
 /* ====================================================
-   FOOTER NAVIGATION COMPONENT
+   HEADER & WORLD SELECTOR COMPONENT（縦並びステータス付き）
+   ==================================================== */
+@scope(.c-world-selector) {
+    :scope {
+        display: block;
+        padding: 8px 16px;
+    }
+
+    /* アイコンとテキストを包むボタン */
+    .c-world-selector__btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        text-align: left;
+        background: transparent;
+        border: none;
+        padding: 0;
+    }
+
+    /* キャラアイコンを丸く切り抜く枠 */
+    .c-world-selector__icon-wrap {
+        width: 60px;
+        height: 60px;
+        background-color: var(--theme-bg-surface);
+        border: 2px solid var(--theme-interactive);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.0rem;
+        color: var(--theme-interactive);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        transition: transform 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .c-world-selector__btn:hover .c-world-selector__icon-wrap {
+        transform: scale(1.05);
+    }
+
+    /* 文字を上下の縦並びにする領域 */
+    .c-world-selector__info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    /* 上段：選択中のワールド名 */
+    .c-world-selector__world {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: var(--theme-interactive);
+        line-height: 1.2;
+    }
+
+    /* 下段：ユーザー名 */
+    .c-world-selector__name {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: var(--theme-text-muted);
+        line-height: 1.2;
+    }
+}
+
+
+/* ====================================================
+   WORLD CHOICE MODAL COMPONENT (ワールド選択モーダル)
+   ==================================================== */
+.c-world-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.c-world-modal.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.c-world-modal__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(51, 51, 51, 0.3);
+    backdrop-filter: blur(4px);
+}
+
+.c-world-modal__container {
+    position: relative;
+    width: 85%;
+    max-width: 320px;
+    background-color: var(--theme-bg-surface);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    padding: 20px;
+    transition: transform 0.3s ease;
+}
+
+@media (min-width: 768px) {
+    .c-world-modal__container {
+        max-width: 640px;
+    }
+}
+
+.c-world-modal__content {
+    transform: translateY(20px);
+    height: 60vh;
+    overflow-y: scroll;
+    padding-right: 20px;
+
+}
+
+.c-world-modal.is-open .c-world-modal__content {
+    transform: translateY(0);
+}
+
+/* 💡 【修正】モーダルヘッダー：横並びのレイアウト調整 */
+.c-world-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--theme-border-main);
+    padding-bottom: 12px;
+}
+
+/* 💡 【新設】モーダル内のステータス表示（アイコン＋縦並びテキストの親） */
+.c-world-modal__status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 💡 【新設】モーダル内専用のキャラアイコン枠 */
+.c-world-modal__icon-wrap {
+    width: 40px;
+    height: 40px;
+    background-color: var(--theme-bg-main);
+    /* モーダル内は背景を少し落としてシックに */
+    border: 2px solid var(--theme-interactive);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: var(--theme-interactive);
+    flex-shrink: 0;
+}
+
+/* 💡 【新設】モーダル内専用のテキスト領域 */
+.c-world-modal__info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* 上段：選択中のワールド名 */
+.c-world-modal__world {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--theme-interactive);
+    line-height: 1.2;
+}
+
+/* 下段：ユーザー名 */
+.c-world-modal__name {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--theme-text-muted);
+    line-height: 1.2;
+}
+
+/* バツボタン */
+.c-world-modal__close-btn {
+    font-size: 2.4rem;
+    color: var(--theme-text-muted);
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    padding: 0 4px;
+    align-self: flex-start;
+    /* 💡 バツボタンだけ少し上に配置して美しく */
+    margin-top: -4px;
+}
+
+/* （以下、.c-world-modal__list 以降のボタンのスタイルは前のままで完璧です！） */
+.c-world-modal__list {
+    display: grid;
+    gap: 8px;
+}
+
+@media (min-width: 768px) {
+    .c-world-modal__list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.c-world-modal__choice-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--theme-text-main);
+    background-color: var(--theme-bg-main);
+    border: none;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.c-world-modal__choice-btn:hover {
+    background-color: var(--theme-interactive-hover);
+    color: var(--theme-interactive);
+}
+
+.c-world-modal__choice-btn.is-active {
+    background-color: var(--theme-interactive);
+    color: var(--color-white);
+    font-weight: bold;
+}
+
+
+/* ====================================================
+   FOOTER NAVIGATION COMPONENT（アイランド型×浮き出るカプセル）
    ==================================================== */
 @scope(.c-footer) {
 
@@ -102,27 +348,29 @@ svg {
         align-items: center;
         gap: 6px;
         color: var(--theme-text-muted);
-        padding: 8px 4px; 
+        padding: 8px 4px;
         width: 100%;
-        border-radius: 20px;       
-        transition: color 0.3s ease, background-color 0.3s ease, transform 0.2s ease; 
+        border-radius: 20px;
+        transition: color 0.3s ease, background-color 0.3s ease, transform 0.2s ease;
+        text-decoration: none;
     }
 
     .c-footer-nav svg {
         width: 1.6rem;
         height: 1.6rem;
         font-size: 1.6rem;
-        transition: transform 0.3s ease; 
+        transition: transform 0.3s ease;
     }
 
+    /* ホバー・アクティブ（選択中）時のカプセルエフェクト */
     .c-footer-nav__link.is-active,
     .c-footer-nav__link:hover {
         color: var(--theme-interactive);
-        background-color: var(--theme-interactive-hover); 
+        background-color: var(--theme-interactive-hover);
         font-weight: bold;
     }
 
-    .c-footer-nav__link:hover svg,
+    /* 選択中の時だけアイコンがぴょこっと上に持ち上がる演出 */
     .c-footer-nav__link.is-active svg {
         transform: translateY(-2px);
     }
