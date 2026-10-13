@@ -15,11 +15,19 @@
     --color-green-100: #f0f7f4;
     /* アクティブ・ホバー用の薄い緑 */
     --color-green-500: #498b6d;
-    /* 🟢 メメリグリーン（アクセント） */
+    /* 🟢 メメリグリーン（メイン） */
     --color-green-700: #58665f;
     /* サブ文字用の深いグリーングレー */
     --color-green-500-alpha15: rgba(73, 139, 109, 0.15);
     /* 透明度15%の緑 */
+
+    /* 💎 視認性・調和特化型のスカイブルーパレット */
+    --color-blue-400: #3e9ed6;
+    /* 新規登録・更新等の最重要アクション（通常時） */
+    --color-blue-500: #2584be;
+    /* 最重要アクション（ホバー時：少し深みを増すブルー） */
+    --color-blue-600: #1a6694;
+    /* 最重要アクション（アクティブ・クリックの瞬間） */
 
     /* ----------------------------------------------------
        ② SEMANTIC THEME (使い道：パレットから役割に紐付ける)
@@ -38,6 +46,15 @@
     /* 選択中の文字色など */
     --theme-interactive-hover: var(--color-green-100);
     /* ホバー・アクティブ時の薄い緑背景 */
+
+    /* 💡 新設スキンD：埋没を防ぎ、ユーザーを迷わせない「最重要アクション」セット */
+    --theme-accent-action: var(--color-blue-400);
+    /* 新規登録ボタンなどの背景色 */
+    --theme-accent-action-hover: var(--color-blue-500);
+    /* ホバー時の背景色 */
+    --theme-accent-action-active: var(--color-blue-600);
+    /* クリックした瞬間の背景色 */
+
 
     /* ----------------------------------------------------
        ③ TYPOGRAPHY (フォント基本定義)
@@ -275,6 +292,13 @@ svg {
     gap: 8px;
 }
 
+.c-world-modal__add-btn-area {
+    padding-top: 16px;
+    border-top: 1px solid var(--theme-border-main);
+    margin-top: 20px;
+    ;
+}
+
 @media (min-width: 768px) {
     .c-world-modal__list {
         grid-template-columns: repeat(2, 1fr);
@@ -310,9 +334,9 @@ svg {
 /* ====================================================
    FOOTER NAVIGATION COMPONENT（アイランド型×浮き出るカプセル）
    ==================================================== */
-   .c-footer {
-       padding: 18px;
-   }
+.c-footer {
+    padding: 18px;
+}
 
 @scope(.c-footer) {
     .c-footer__copyright-text {
@@ -385,4 +409,61 @@ svg {
     .c-footer-nav__link.is-active svg {
         transform: translateY(-2px);
     }
+}
+
+
+/* ==========================================================================
+   ベースボタンコンポーネント (.c-btn)
+   ========================================================================== */
+.c-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.5;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    user-select: none;
+}
+
+.c-btn:hover {
+    box-shadow: 0 4px 10px rgba(37, 132, 190, 0.4);
+}
+
+.c-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 2px rgba(37, 132, 190, 0.2);
+}
+
+/* ==========================================================================
+   ワールドモーダル専用：新規追加ボタン
+   ========================================================================== */
+
+/* ボタンを配置するエリア（上のリストとの境界線の色も、定義済みの透過ボーダー変数に統一） */
+.c-world-modal__add-btn-area {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--theme-border-main);
+    text-align: center;
+}
+
+/* 新規追加ボタン本体（確定スカイブルーテーマ） */
+.c-world-modal__add-btn {
+    background-color: var(--theme-accent-action);
+    color: var(--color-white);
+    width: 100%;
+    max-width: 280px;
+    box-shadow: 0 2px 6px rgba(62, 158, 214, 0.3);
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+/* マウスを載せたとき（ホバー） */
+.c-world-modal__add-btn:hover {
+    background-color: var(--theme-accent-action-hover);
 }
