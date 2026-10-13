@@ -52,14 +52,43 @@ mememori-portal/ (プロジェクトのルートフォルダ)
 これまでの「スプレッドシートの行」を廃止し、Googleログイン時に発行される「ユーザー固有のID（UID）」を親フォルダにした構造でFirestore（クラウド）に安全に保存します。
 
 ```text
-📁 users (コレクション)
- └── 📄 【ユーザーのGoogle UID】 (ドキュメント)
-      ├── 📁 dailyAsset (サブコレクション：ダイヤ資産推移)
-      │    └── 📄 2026-05-27 (日付ごとのデータ) ➔ { diamond: 50000, unmei: 10, michibiki: 5, memo: "..." }
-      ├── 📁 ownedCharacters (サブコレクション：図鑑の所持・在庫)
-      │    └── 📄 c1 (キャラID) ➔ { rarity: "LR+3", srStock: 2, note: "アタッカー" }
-      └── 📁 arcanaStatus (サブコレクション：アルカナ進捗)
-           └── 📄 w175 (ワールド番号) ➔ { "1": "最優先", "2": "解放済み" }
+🔥 Cloud Firestore（データベース全体）
+ │
+ ├── 📁 authMappings (コレクション：ログインの総合受付)
+ │    ├── 📄 google_UID_AAAAA (ユーザー01のGoogle ID) ➔ { appUserId: "user_01" }
+ │    └── 📄 google_UID_BBBBB (ユーザー02のGoogle ID) ➔ { appUserId: "user_02" } 
+ │
+ └── 📁 users (コレクション：全ユーザーの部屋が集まるマンション)
+      │
+      ├── 📄 user_01 (ドキュメント：ユーザー01の部屋)
+      │    ├── 🔹 共通情報：{ appUserId: "user_01", createdAt: Timestamp }
+      │    └── 📁 worlds (サブコレクション：ワールドごとの引き出し)
+      │         ├── 📄 w1 (ドキュメント)
+      │         │    └── 📁 dailyAsset ➔ 📄 2026-10-13 ➔ { diamond: 5000, ... }
+      │         └── 📄 w175 (ドキュメント)
+      │              └── 📁 dailyAsset ➔ 📄 2026-10-13 ➔ { diamond: 85000, ... }
+      │
+      └── 📄 user_02 (ドキュメント：★ユーザー02の部屋★) 
+           ├── 🔹 共通情報：{ appUserId: "user_02", createdAt: Timestamp }
+           │
+           └── 📁 worlds (サブコレクション：ユーザー02専用のワールド引き出し)
+                │
+                ├── 📄 w175 (ドキュメント：ユーザー02のW175のデータ) ➔ ※user_01のW175とは完全に別物！
+                │    ├── 🔹 フィールド：{ worldId: "w175", lastPlayed: Timestamp }
+                │    │
+                │    ├── 📁 dailyAsset (サブコレクション：日々のダイヤ)
+                │    │    └── 📄 2026-10-13 ➔ { diamond: 12000, unmei: 5, michibiki: 0, memo: "無課金進行" }
+                │    │
+                │    ├── 📁 ownedCharacters (サブコレクション：キャラ育成)
+                │    │    └── 📄 c001 (フローレンス) ➔ { rarity: "SSR", srStock: 0, note: "まだ進化途中" }
+                │    │
+                │    └── 📁 arcanaStatus (サブコレクション：アルカナ進捗)
+                │         └── 📄 status ➔ { statusMap: { "arcana_01": "未解放" } }
+                │
+                └── 📄 w177 (ドキュメント：ユーザー02のW177のデータ) ➔ ユーザー02だけが遊んでいるワールド
+                     ├── 🔹 フィールド：{ worldId: "w177", lastPlayed: Timestamp }
+                     └── 📁 dailyAsset
+                          └── 📄 2026-10-13 ➔ { diamond: 300, unmei: 0, michibiki: 0, memo: "ガチャ引いちゃった" }
 ```
 ※全ユーザー共通の「キャラクター名」や「アルカナの組み合わせ」は、アプリ内の軽量なJSONデータとして管理します。
 
