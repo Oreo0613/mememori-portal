@@ -87,6 +87,9 @@ svg {
     width: 100%;
 }
 
+.is-hidden {
+    display: none !important;
+}
 
 /* ===============================================
    ベースボタンコンポーネント (.c-btn)
@@ -142,7 +145,7 @@ svg {
 
     width: 100%;
     height: 100%;
-    background-color: rgba(51, 51, 51, 0.3);
+    background-color: rgba(51, 51, 51, 0.7);
     backdrop-filter: blur(4px);
 
     z-index: 1;
@@ -150,6 +153,87 @@ svg {
 
 .c-modal__container {
     z-index: 2;
+}
+
+/* ====================================================
+   フォーム共通コンポーネント (.c-form)
+   ==================================================== */
+   .c-form {
+    display: block;
+    width: 100%;
+    text-align: left; /* 入力ラベルが左揃えになるように強制 */
+}
+
+.c-form__group {
+    margin-bottom: 20px;
+}
+
+.c-form__label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--theme-text-main);
+    margin-bottom: 8px;
+}
+
+/* 🟥 「必須」の赤バッジ */
+.c-form__required {
+    font-size: 1.0rem;
+    font-weight: 700;
+    color: var(--color-white);
+    background-color: #e65353;
+    padding: 2px 6px;
+    border-radius: 4px;
+    line-height: 1;
+}
+
+/* ⌨️ 入力エリア（destyle.css の初期化を完全に打ち消すサイズと境界線定義） */
+.c-form__input {
+    display: block;
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 1.4rem;
+    color: var(--theme-text-main);
+    background-color: var(--theme-bg-main);
+    border: 1px solid var(--theme-border-main);
+    border-radius: 10px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* 入力欄にフォーカス（選択）したときの綺麗に光るエフェクト */
+.c-form__input:focus {
+    outline: none;
+    border-color: var(--theme-accent-action);
+    box-shadow: 0 0 0 3px rgba(62, 158, 214, 0.2);
+    background-color: var(--color-white);
+}
+
+/* 決定ボタン配置エリア */
+.c-form__action-area {
+    margin-top: 28px;
+    text-align: center;
+}
+
+/* 🟦 新規登録の最重要アクションボタン（色パレット連動） */
+.c-form__submit-btn {
+    background-color: var(--theme-accent-action);
+    color: var(--color-white);
+    width: 100%;
+    padding: 12px 24px;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 12px rgba(62, 158, 214, 0.3);
+}
+
+.c-form__submit-btn:hover {
+    background-color: var(--theme-accent-action-hover);
+    box-shadow: 0 6px 16px rgba(37, 132, 190, 0.4);
+}
+
+.c-form__submit-btn:active {
+    background-color: var(--theme-accent-action-active);
+    transform: translateY(2px);
 }
 
 /* ====================================================
@@ -483,12 +567,15 @@ svg {
 .c-create-modal__container {
     position: relative;
     width: 85%;
+    max-width: 480px;
     background-color: var(--theme-bg-surface);
     border-radius: 20px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
     padding: 20px;
     transition: transform 0.3s ease;
+    margin-bottom: 10vh;
 }
+
 
 .c-create-modal__header {
     display: flex;
@@ -502,3 +589,4 @@ svg {
 .c-create-modal__title {
     font-weight: 700;
 }
+

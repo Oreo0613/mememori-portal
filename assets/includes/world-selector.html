@@ -7,8 +7,8 @@
             <i class="fa-solid fa-user-astronaut"></i>
         </div>
         <div class="c-world-selector__info">
-            <span id="js-current-world-badge" class="c-world-selector__world">ワールド 175</span>
-            <span id="js-user-name" class="c-world-selector__name">ゲスト ユーザー</span>
+            <span id="js-current-world-badge" class="c-world-selector__world">未登録</span>
+            <span id="js-user-name" class="c-world-selector__name">ゲスト</span>
         </div>
     </button>
 
@@ -23,8 +23,8 @@
                 <div class="c-world-modal__status">
                     <div class="c-world-modal__icon-wrap"><i class="fa-solid fa-user-astronaut"></i></div>
                     <div class="c-world-modal__info">
-                        <span id="js-modal-world-text" class="c-world-modal__world">ワールド 175</span>
-                        <span id="js-modal-user-text" class="c-world-modal__name">ゲスト ユーザー</span>
+                        <span id="js-modal-world-text" class="c-world-modal__world">未登録</span>
+                        <span id="js-modal-user-text" class="c-world-modal__name">ゲスト</span>
                     </div>
                 </div>
                 <button type="button" id="js-world-modal-close" class="c-world-modal__close-btn">&times;</button>
@@ -76,9 +76,32 @@
                 <h3 class="c-create-modal__title">ワールドの新規登録</h3>
                 <button type="button" id="js-create-world-close" class="c-create-modal__close-btn">&times;</button>
             </header>
-
             <div class="c-create-modal__content">
-                <p class="c-create-modal__text">登録するワールド番号を入力してください。</p>
+                <form id="js-create-world-form" class="c-form">
+
+                    <!-- ① ワールド番号（必須入力フィールド） -->
+                    <div class="c-form__group">
+                        <label for="js-input-world-number" class="c-form__label">
+                            ワールド番号 <span class="c-form__required">必須</span>
+                        </label>
+                        <input type="number" id="js-input-world-number" class="c-form__input" placeholder="例: 178"
+                            required min="1">
+                    </div>
+
+                    <!-- ② ワールド名（任意入力フィールド） -->
+                    <div class="c-form__group">
+                        <label for="js-input-world-name" class="c-form__label">ワールド名</label>
+                        <input type="text" id="js-input-world-name" class="c-form__input"
+                            placeholder="例: 新プレイヤー">
+                    </div>
+
+                    <!-- ③ 決定アクションボタン領域 -->
+                    <div class="c-form__action-area">
+                        <button type="submit" id="js-create-world-submit" class="c-btn c-form__submit-btn">
+                            <i class="fa-solid fa-check"></i>この内容で登録する
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
