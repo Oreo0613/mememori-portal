@@ -1,26 +1,36 @@
 // ==========================================================================
 // 🔥 Firebase初期化（Live Server専用・最新モジュール式）
 // ==========================================================================
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import {
   getFirestore,
   collection,
   addDoc,
   serverTimestamp,
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
+import {
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signOut,
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+
+// Firebaseの初期設定
 const firebaseConfig = {
-  apiKey: "AIzaSyCxPoxxpZMYJAF4I_HM-QeZxI120YOg5YA",
-  authDomain: "://firebaseapp.com",
-  projectId: "mememori-potal",
-  storageBucket: "mememori-potal.firebasestorage.app",
-  messagingSenderId: "773521822661",
-  appId: "1:773521822661:web:3d106588f9fcec7867b1ac",
-};
+    apiKey: "AIzaSyCxPoxxpZMYJAF4I_HM-QeZxI120YOg5YA",
+    authDomain: "mememori-potal.firebaseapp.com",
+    projectId: "mememori-potal",
+    storageBucket: "mememori-potal.firebasestorage.app",
+    messagingSenderId: "773521822661",
+    appId: "1:773521822661:web:3d106588f9fcec7867b1ac",
+  };
 
 // 💡 Firebaseアプリ オブジェクトの作成！
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 /**
  * 📄 ページが読み込まれたらすべてのインフラ関数を順番に実行する
@@ -190,12 +200,11 @@ function initWorldSelectorEvent() {
   });
 
   // ==========================================================================
-  // 📝 4. 【公式ステップ3】最新モジュール仕様によるデータ書き込み処理
+  // 📝 4. 【公式ステップ3】最新モジュール仕様によるデータ書き込み処理（本番ログイン連動版）
   // ==========================================================================
   const createWorldForm = document.getElementById("js-create-world-form");
 
   if (createWorldForm) {
-    // 💡 データベースの通信待ち（await）を行えるように、関数頭に「async」を付与
     createWorldForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
@@ -208,31 +217,42 @@ function initWorldSelectorEvent() {
 
       if (!inputNumber) return;
 
+      // 👤 【本番仕様】現在ログインしているGoogleユーザーの情報を取得
+      const user = auth.currentUser;
+
+      // 安全対策：もしログインしていない場合は、勝手に送信させずに処理を中断
+      if (!user) {
+        alert("ワールドを登録するには、まずGoogleログインを行ってください。");
+        return;
+      }
+
+      // 💡 ログイン中の本物のユーザーID（28文字のランダム英数字）を自動取得！
+      const currentUserId = user.uid;
+
       // ----------------------------------------------------------------------
-      // 🔥 【本番通信】Firebase Firestore への非同期書き込み処理
+      // 🔥 【本番通信】設計図通り「users/{userId}/worlds」の階層へ非同期書き込み
       // ----------------------------------------------------------------------
       try {
-        console.log("⏳ Firebaseへデータを送信中...");
+        console.log(`⏳ ユーザー「${currentUserId}」の領域へデータを送信中...`);
 
-        // 💡 インポートした最新の関数（addDoc、collection、serverTimestamp）を使用して送信
-        await addDoc(collection(db, "worlds"), {
-          worldNumber: Number(inputNumber), // 数値型に変換して保存
-          worldName: inputName || null, // 空っぽならnullとして保存
-          createdAt: serverTimestamp(), // サーバー側の正確な登録日時
+        // 💡 ログインした本人の個人部屋（users/本人のUID/worlds）に保存されるため、本番セキュリティルールを完璧にすり抜けます！
+        await addDoc(collection(db, "users", currentUserId, "worlds"), {
+          worldNumber: Number(inputNumber),
+          worldName: inputName || null,
+          createdAt: serverTimestamp(),
         });
 
-        console.log("✅ Firebaseへの書き込みが正常に完了しました！");
+        console.log(
+          "✅ ログインユーザーの領域への書き込みが正常に完了しました！",
+        );
 
         // ----------------------------------------------------------------------
-        // 🌍 ① ワールド番号の反映（通信成功時のみ実行）
+        // 🌍 ① ワールド番号・名前の画面反映 ➔ クローズ連動（中身は以前のままでOK）
         // ----------------------------------------------------------------------
         if (currentWorldBadge)
           currentWorldBadge.textContent = `W ${inputNumber}`;
         if (modalWorldText) modalWorldText.textContent = `W ${inputNumber}`;
 
-        // ----------------------------------------------------------------------
-        // 👤 ② ワールド名（ユーザー名エリア）の反映 ＆ 表示・非表示制御
-        // ----------------------------------------------------------------------
         const modalUserText = document.getElementById("js-modal-user-text");
         const headerUserName = document.getElementById("js-user-name");
 
@@ -250,23 +270,16 @@ function initWorldSelectorEvent() {
           if (headerUserName) headerUserName.classList.add("is-hidden");
         }
 
-        // ----------------------------------------------------------------------
-        // 🔒 ③ クローズ・リセット連動
-        // ----------------------------------------------------------------------
-        createWorldForm.reset(); // フォームをクリア
-
-        // モーダル2（追加）を閉じる
+        createWorldForm.reset();
         const modalAdd = document.getElementById("js-create-modal");
         if (modalAdd) {
           modalAdd.classList.remove("is-open");
           modalAdd.setAttribute("aria-hidden", "true");
           modalAdd.setAttribute("inert", "");
         }
-
-        // モーダル1（選択）も連鎖して閉じる
         closeSelectModal();
       } catch (error) {
-        console.error("❌ Firebaseへの保存に失敗しました。原因:", error);
+        console.error("❌ 本番階層への保存に失敗しました。原因:", error);
         alert(
           "ワールドの登録に失敗しました。設定や通信環境を確認してください。",
         );
