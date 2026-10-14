@@ -88,13 +88,80 @@ svg {
 }
 
 
+/* ===============================================
+   ベースボタンコンポーネント (.c-btn)
+   ================================================= */
+.c-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.5;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    user-select: none;
+}
+
+.c-btn:hover {
+    box-shadow: 0 4px 10px rgba(37, 132, 190, 0.4);
+}
+
+.c-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 2px rgba(37, 132, 190, 0.2);
+}
+
+/* ============================================================
+   共通モーダルベースコンポーネント (.c-modal)
+   ========================================================= */
+.c-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.c-modal__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+    background-color: rgba(51, 51, 51, 0.3);
+    backdrop-filter: blur(4px);
+
+    z-index: 1;
+}
+
+.c-modal__container {
+    z-index: 2;
+}
+
 /* ====================================================
-   HEADER & WORLD SELECTOR COMPONENT（縦並びステータス付き）
+   ワールドセレクター
    ==================================================== */
 @scope(.c-world-selector) {
     :scope {
         display: block;
         padding: 8px 16px;
+        position: fixed;
+        top: 0;
+        left: 0;
     }
 
     /* アイコンとテキストを包むボタン */
@@ -154,185 +221,8 @@ svg {
     }
 }
 
-
 /* ====================================================
-   WORLD CHOICE MODAL COMPONENT (ワールド選択モーダル)
-   ==================================================== */
-.c-world-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-}
-
-.c-world-modal.is-open {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.c-world-modal__overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(51, 51, 51, 0.3);
-    backdrop-filter: blur(4px);
-}
-
-.c-world-modal__container {
-    position: relative;
-    width: 85%;
-    max-width: 320px;
-    background-color: var(--theme-bg-surface);
-    border-radius: 20px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-    padding: 20px;
-    transition: transform 0.3s ease;
-}
-
-@media (min-width: 768px) {
-    .c-world-modal__container {
-        max-width: 640px;
-    }
-}
-
-.c-world-modal__content {
-    transform: translateY(20px);
-    height: 60vh;
-    overflow-y: scroll;
-    padding-right: 20px;
-
-}
-
-.c-world-modal.is-open .c-world-modal__content {
-    transform: translateY(0);
-}
-
-/* 💡 【修正】モーダルヘッダー：横並びのレイアウト調整 */
-.c-world-modal__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    border-bottom: 1px solid var(--theme-border-main);
-    padding-bottom: 12px;
-}
-
-/* 💡 【新設】モーダル内のステータス表示（アイコン＋縦並びテキストの親） */
-.c-world-modal__status {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-/* 💡 【新設】モーダル内専用のキャラアイコン枠 */
-.c-world-modal__icon-wrap {
-    width: 40px;
-    height: 40px;
-    background-color: var(--theme-bg-main);
-    /* モーダル内は背景を少し落としてシックに */
-    border: 2px solid var(--theme-interactive);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.8rem;
-    color: var(--theme-interactive);
-    flex-shrink: 0;
-}
-
-/* 💡 【新設】モーダル内専用のテキスト領域 */
-.c-world-modal__info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-/* 上段：選択中のワールド名 */
-.c-world-modal__world {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: var(--theme-interactive);
-    line-height: 1.2;
-}
-
-/* 下段：ユーザー名 */
-.c-world-modal__name {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: var(--theme-text-muted);
-    line-height: 1.2;
-}
-
-/* バツボタン */
-.c-world-modal__close-btn {
-    font-size: 2.4rem;
-    color: var(--theme-text-muted);
-    cursor: pointer;
-    background: transparent;
-    border: none;
-    padding: 0 4px;
-    align-self: flex-start;
-    /* 💡 バツボタンだけ少し上に配置して美しく */
-    margin-top: -4px;
-}
-
-/* （以下、.c-world-modal__list 以降のボタンのスタイルは前のままで完璧です！） */
-.c-world-modal__list {
-    display: grid;
-    gap: 8px;
-}
-
-.c-world-modal__add-btn-area {
-    padding-top: 16px;
-    border-top: 1px solid var(--theme-border-main);
-    margin-top: 20px;
-    ;
-}
-
-@media (min-width: 768px) {
-    .c-world-modal__list {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-.c-world-modal__choice-btn {
-    width: 100%;
-    padding: 12px;
-    font-size: 1.4rem;
-    font-weight: 500;
-    color: var(--theme-text-main);
-    background-color: var(--theme-bg-main);
-    border: none;
-    border-radius: 12px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.c-world-modal__choice-btn:hover {
-    background-color: var(--theme-interactive-hover);
-    color: var(--theme-interactive);
-}
-
-.c-world-modal__choice-btn.is-active {
-    background-color: var(--theme-interactive);
-    color: var(--color-white);
-    font-weight: bold;
-}
-
-
-/* ====================================================
-   FOOTER NAVIGATION COMPONENT（アイランド型×浮き出るカプセル）
+   フッター
    ==================================================== */
 .c-footer {
     padding: 18px;
@@ -411,41 +301,151 @@ svg {
     }
 }
 
+/* ====================================================
+   ワールドセレクター　選択モーダル（モーダル１）
+   ==================================================== */
+.c-world-modal {
+    z-index: 1000;
+}
 
-/* ==========================================================================
-   ベースボタンコンポーネント (.c-btn)
-   ========================================================================== */
-.c-btn {
-    display: inline-flex;
+/* 💡 【修正】詳細度を強化し、pointer-events: auto を確実に効かせます */
+.c-modal.c-world-modal.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.c-world-modal__container {
+    position: relative;
+    width: 85%;
+    max-width: 320px;
+    background-color: var(--theme-bg-surface);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    padding: 20px;
+    transition: transform 0.3s ease;
+    margin-bottom: 10vh;
+}
+
+@media (min-width: 768px) {
+    .c-world-modal__container {
+        max-width: 640px;
+    }
+}
+
+.c-world-modal__content {
+    transform: translateY(20px);
+    height: 40vh;
+    overflow-y: scroll;
+    padding-right: 20px;
+}
+
+.c-world-modal.is-open .c-world-modal__content {
+    transform: translateY(0);
+}
+
+.c-world-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--theme-border-main);
+    padding-bottom: 12px;
+}
+
+.c-world-modal__status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.c-world-modal__icon-wrap {
+    width: 40px;
+    height: 40px;
+    background-color: var(--theme-bg-main);
+
+    border: 2px solid var(--theme-interactive);
+    border-radius: 50%;
+    display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 10px 20px;
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 1.5;
-    text-align: center;
-    white-space: nowrap;
+    font-size: 1.8rem;
+    color: var(--theme-interactive);
+    flex-shrink: 0;
+}
+
+.c-world-modal__info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.c-world-modal__world {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--theme-interactive);
+    line-height: 1.2;
+}
+
+.c-world-modal__name {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--theme-text-muted);
+    line-height: 1.2;
+}
+
+.c-world-modal__close-btn {
+    font-size: 2.4rem;
+    color: var(--theme-text-muted);
     cursor: pointer;
+    background: transparent;
+    border: none;
+    padding: 0 4px;
+    align-self: flex-start;
+    margin-top: -4px;
+}
+
+.c-world-modal__list {
+    display: grid;
+    gap: 8px;
+}
+
+.c-world-modal__add-btn-area {
+    padding-top: 16px;
+    border-top: 1px solid var(--theme-border-main);
+    margin-top: 20px;
+}
+
+@media (min-width: 768px) {
+    .c-world-modal__list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.c-world-modal__choice-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--theme-text-main);
+    background-color: var(--theme-bg-main);
+    border: none;
     border-radius: 12px;
-    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
-    user-select: none;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.c-btn:hover {
-    box-shadow: 0 4px 10px rgba(37, 132, 190, 0.4);
+.c-world-modal__choice-btn:hover {
+    background-color: var(--theme-interactive-hover);
+    color: var(--theme-interactive);
 }
 
-.c-btn:active {
-    transform: translateY(2px);
-    box-shadow: 0 1px 2px rgba(37, 132, 190, 0.2);
+.c-world-modal__choice-btn.is-active {
+    background-color: var(--theme-interactive);
+    color: var(--color-white);
+    font-weight: bold;
 }
 
-/* ==========================================================================
-   ワールドモーダル専用：新規追加ボタン
-   ========================================================================== */
-
-/* ボタンを配置するエリア（上のリストとの境界線の色も、定義済みの透過ボーダー変数に統一） */
 .c-world-modal__add-btn-area {
     margin-top: 20px;
     padding-top: 16px;
@@ -453,12 +453,11 @@ svg {
     text-align: center;
 }
 
-/* 新規追加ボタン本体（確定スカイブルーテーマ） */
 .c-world-modal__add-btn {
     background-color: var(--theme-accent-action);
     color: var(--color-white);
     width: 100%;
-    max-width: 280px;
+    max-width: min-content;
     box-shadow: 0 2px 6px rgba(62, 158, 214, 0.3);
     transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
 }
@@ -466,4 +465,40 @@ svg {
 /* マウスを載せたとき（ホバー） */
 .c-world-modal__add-btn:hover {
     background-color: var(--theme-accent-action-hover);
+}
+
+/* ====================================================
+   ワールドセレクター　ワールド追加モーダル（モーダル２）
+   ==================================================== */
+
+.c-create-modal {
+    z-index: 2000;
+}
+
+.c-modal.c-create-modal.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.c-create-modal__container {
+    position: relative;
+    width: 85%;
+    background-color: var(--theme-bg-surface);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    padding: 20px;
+    transition: transform 0.3s ease;
+}
+
+.c-create-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--theme-border-main);
+    padding-bottom: 12px;
+}
+
+.c-create-modal__title {
+    font-weight: 700;
 }

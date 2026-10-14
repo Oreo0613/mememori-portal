@@ -1,6 +1,7 @@
 <!-- assets/includes/world-selector.html -->
 <div class="c-world-selector">
-    <!-- 左上のキャラアイコン型ボタン（クリックするとモーダルを開く） -->
+
+    <!-- 🟢 トリガー：左上のキャラアイコン型ボタン -->
     <button type="button" id="js-world-modal-open" class="c-world-selector__btn" aria-label="ワールド選択を開く">
         <div class="c-world-selector__icon-wrap">
             <i class="fa-solid fa-user-astronaut"></i>
@@ -11,34 +12,29 @@
         </div>
     </button>
 
-    <!-- 📥 ワールド選択モーダル本体 -->
-    <div id="js-world-modal" class="c-world-modal" aria-hidden="true">
-        <!-- 背景の暗幕（タップして閉じられる領域） -->
-        <div id="js-world-modal-overlay" class="c-world-modal__overlay"></div>
+    <!-- ===================================
+       📥 【モーダル1】ワールド選択モーダル
+       ================================== -->
+    <div id="js-world-modal" class="c-modal c-world-modal" aria-hidden="true">
+        <div id="js-world-modal-overlay" class="c-modal__overlay c-world-modal__overlay"></div>
 
-        <!-- モーダルのコンテンツカード -->
-        <div class="c-world-modal__container">
+        <div class="c-modal__container c-world-modal__container">
             <header class="c-world-modal__header">
                 <div class="c-world-modal__status">
-                    <!-- 左側：アイコン枠 -->
-                    <div class="c-world-modal__icon-wrap">
-                        <i class="fa-solid fa-user-astronaut"></i>
-                    </div>
-                    <!-- 右側：縦並びテキスト（JSで左上と同時に書き換わるように、同じIDを付与または連動させます） -->
+                    <div class="c-world-modal__icon-wrap"><i class="fa-solid fa-user-astronaut"></i></div>
                     <div class="c-world-modal__info">
                         <span id="js-modal-world-text" class="c-world-modal__world">ワールド 175</span>
                         <span id="js-modal-user-text" class="c-world-modal__name">ゲスト ユーザー</span>
                     </div>
                 </div>
-                <!-- 右端：閉じるバツボタン -->
                 <button type="button" id="js-world-modal-close" class="c-world-modal__close-btn">&times;</button>
             </header>
+
             <div class="c-world-modal__content">
-                <!-- ワールド選択ボタンのリスト -->
                 <ul class="c-world-modal__list">
                     <li class="c-world-modal__item">
-                        <button type="button" class="c-world-modal__choice-btn js-world-choice is-active"
-                            data-world="w175">ワールド 175</button>
+                        <button type="button" class="c-world-modal__choice-btn js-world-choice" data-world="w175">ワールド
+                            175</button>
                     </li>
                     <li class="c-world-modal__item">
                         <button type="button" class="c-world-modal__choice-btn js-world-choice" data-world="w176">ワールド
@@ -56,36 +52,10 @@
                         <button type="button" class="c-world-modal__choice-btn js-world-choice" data-world="w177">ワールド
                             177</button>
                     </li>
-                    <li class="c-world-modal__item">
-                        <button type="button" class="c-world-modal__choice-btn js-world-choice" data-world="w177">ワールド
-                            177</button>
-                    </li>
-                    <li class="c-world-modal__item">
-                        <button type="button" class="c-world-modal__choice-btn js-world-choice" data-world="w176">ワールド
-                            176</button>
-                    </li>
-                    <li class="c-world-modal__item">
-                        <button type="button" class="c-world-modal__choice-btn js-world-choice" data-world="w177">ワールド
-                            177</button>
-                    </li>
-                    <li class="c-world-modal__item">
-                        <button type="button" class="c-world-modal__choice-btn js-world-choice" data-world="w177">ワールド
-                            177</button>
-                    </li>
-                    <li class="c-world-modal__item">
-                        <button type="button" class="c-world-modal__choice-btn js-world-choice" data-world="w177">ワールド
-                            177</button>
-                    </li>
-                    <li class="c-world-modal__item">
-                        <button type="button" class="c-world-modal__choice-btn js-world-choice" data-world="w177">ワールド
-                            177</button>
-                    </li>
-                    <li class="c-world-modal__item">
-                        <button type="button" class="c-world-modal__choice-btn js-world-choice" data-world="w176">ワールド
-                            176</button>
-                    </li>
+
                 </ul>
             </div>
+
             <div class="c-world-modal__add-btn-area">
                 <div class="c-btn c-world-modal__add-btn js-create-world">
                     <i class="fa-solid fa-plus"></i>ワールドを新規追加
@@ -93,4 +63,24 @@
             </div>
         </div>
     </div>
+
+    <!-- =================================
+       📥 【モーダル2】 ワールド追加モーダル
+       =================================== -->
+
+    <div id="js-create-modal" class="c-modal c-create-modal" aria-hidden="true">
+        <div id="js-create-modal-overlay" class="c-modal__overlay c-create-modal__overlay"></div>
+
+        <div class="c-modal__container c-create-modal__container">
+            <header class="c-create-modal__header">
+                <h3 class="c-create-modal__title">ワールドの新規登録</h3>
+                <button type="button" id="js-create-world-close" class="c-create-modal__close-btn">&times;</button>
+            </header>
+
+            <div class="c-create-modal__content">
+                <p class="c-create-modal__text">登録するワールド番号を入力してください。</p>
+            </div>
+        </div>
+    </div>
+
 </div>
