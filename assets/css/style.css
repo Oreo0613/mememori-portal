@@ -1,33 +1,24 @@
+@charset "UTF-8";
+
 /* ====================================================
-   ベースのスタイル・デザインシステム定義
+   ① GLOBAL PALETTE (色パレット：純粋な色と明るさの定義)
    ==================================================== */
 :root {
-    /* ----------------------------------------------------
-       ① GLOBAL PALETTE (色パレット：純粋な色と明るさの定義)
-       ---------------------------------------------------- */
-    --color-gray-50: rgb(243, 244, 240);
-    /* 💻 メイン背景用の薄いグレー */
-    --color-gray-900: #333333;
-    /* 基本の文字（炭黒） */
-    --color-white: #ffffff;
-    /* 純白 */
+    --color-gray-50: rgb(243, 244, 240);       /* 💻 メイン背景用の薄いグレー */
+    --color-gray-200: #d1d1d6;                 /* 🪙 ボタン無効化などの明るいグレー */
+    --color-gray-400: #8e8e93;                 /* ⚙️ 無効化文字用の少し濃いグレー */
+    --color-gray-900: #333333;                 /* 基本の文字（炭黒） */
+    --color-white: #ffffff;                    /* 純白 */
 
-    --color-green-100: #f0f7f4;
-    /* アクティブ・ホバー用の薄い緑 */
-    --color-green-500: #498b6d;
-    /* 🟢 メメリグリーン（メイン） */
-    --color-green-700: #58665f;
-    /* サブ文字用の深いグリーングレー */
-    --color-green-500-alpha15: rgba(73, 139, 109, 0.15);
-    /* 透明度15%の緑 */
+    --color-green-100: #f0f7f4;                /* アクティブ・ホバー用の薄い緑 */
+    --color-green-500: #498b6d;                /* 🟢 メメリグリーン（メイン） */
+    --color-green-700: #58665f;                /* サブ文字用の深いグリーングレー */
+    --color-green-500-alpha15: rgba(73, 139, 109, 0.15); /* 透明度15%の緑 */
 
     /* 💎 視認性・調和特化型のスカイブルーパレット */
-    --color-blue-400: #3e9ed6;
-    /* 新規登録・更新等の最重要アクション（通常時） */
-    --color-blue-500: #2584be;
-    /* 最重要アクション（ホバー時：少し深みを増すブルー） */
-    --color-blue-600: #1a6694;
-    /* 最重要アクション（アクティブ・クリックの瞬間） */
+    --color-blue-400: #3e9ed6;                 /* 新規登録・更新等の最重要アクション（通常時） */
+    --color-blue-500: #2584be;                 /* 最重要アクション（ホバー時：少し深みを増すブルー） */
+    --color-blue-600: #1a6694;                 /* 最重要アクション（アクティブ・クリックの瞬間） */
 
     /* ----------------------------------------------------
        ② SEMANTIC THEME (使い道：パレットから役割に紐付ける)
@@ -42,19 +33,17 @@
     --theme-border-main: var(--color-green-500-alpha15);
 
     /* スキンC：クリック等のインタラクション（状態変化）セット */
-    --theme-interactive: var(--color-green-500);
-    /* 選択中の文字色など */
-    --theme-interactive-hover: var(--color-green-100);
-    /* ホバー・アクティブ時の薄い緑背景 */
+    --theme-interactive: var(--color-green-500);          /* 選択中の文字色など */
+    --theme-interactive-hover: var(--color-green-100);    /* ホバー・アクティブ時の薄い緑背景 */
 
     /* 💡 新設スキンD：埋没を防ぎ、ユーザーを迷わせない「最重要アクション」セット */
-    --theme-accent-action: var(--color-blue-400);
-    /* 新規登録ボタンなどの背景色 */
-    --theme-accent-action-hover: var(--color-blue-500);
-    /* ホバー時の背景色 */
-    --theme-accent-action-active: var(--color-blue-600);
-    /* クリックした瞬間の背景色 */
+    --theme-accent-action: var(--color-blue-400);         /* 新規登録ボタンなどの背景色 */
+    --theme-accent-action-hover: var(--color-blue-500);   /* ホバー時の背景色 */
+    --theme-accent-action-active: var(--color-blue-600);  /* クリックした瞬間の背景色 */
 
+    /* 💡 新設スキンE：操作を受け付けない要素の「無効化（Disabled）」 */
+    --theme-disabled-bg: var(--color-gray-200);           /* 無効化されたボタンの背景色 */
+    --theme-disabled-text: var(--color-gray-400);         /* 無効化されたボタンの文字色
 
     /* ----------------------------------------------------
        ③ TYPOGRAPHY (フォント基本定義)
@@ -119,7 +108,15 @@ svg {
     transform: translateY(2px);
     box-shadow: 0 1px 2px rgba(37, 132, 190, 0.2);
 }
-
+/* アカウント未登録のときはワールド新規追加ボタンを視覚的に薄くし、禁止マークにする */
+.c-btn.is-disabled {
+    background-color: var(--theme-disabled-bg) !important;
+    color: var(--theme-disabled-text) !important;
+    box-shadow: none !important;
+    cursor: not-allowed !important;
+    pointer-events: none; 
+    opacity: 0.6;
+}
 /* ============================================================
    共通モーダルベースコンポーネント (.c-modal)
    ========================================================= */
@@ -132,22 +129,25 @@ svg {
     display: flex;
     align-items: center;
     justify-content: center;
-
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
+}
+
+/* モーダル表示中の共通状態変化クラス */
+.c-modal.is-open {
+    opacity: 1 !important;
+    pointer-events: auto !important;
 }
 
 .c-modal__overlay {
     position: absolute;
     top: 0;
     left: 0;
-
     width: 100%;
     height: 100%;
     background-color: rgba(51, 51, 51, 0.7);
     backdrop-filter: blur(4px);
-
     z-index: 1;
 }
 
@@ -155,10 +155,19 @@ svg {
     z-index: 2;
 }
 
+.c-modal .c-modal__close-btn {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background-color: var(--color-gray-200);
+    color: #fff;
+    opacity: 0.7;
+}
+
 /* ====================================================
    フォーム共通コンポーネント (.c-form)
    ==================================================== */
-   .c-form {
+.c-form {
     display: block;
     width: 100%;
     text-align: left; /* 入力ラベルが左揃えになるように強制 */
@@ -189,7 +198,7 @@ svg {
     line-height: 1;
 }
 
-/* ⌨️ 入力エリア（destyle.css の初期化を完全に打ち消すサイズと境界線定義） */
+/* ⌨️ 入力エリア */
 .c-form__input {
     display: block;
     width: 100%;
@@ -236,8 +245,34 @@ svg {
     transform: translateY(2px);
 }
 
+
+
 /* ====================================================
-   ワールドセレクター
+   メインレイアウト基本構成 (.c-main)
+   ==================================================== */
+.c-main {
+    width: 100%;
+    min-height: 100vh;
+    padding-top: 80px; /* ワールドセレクター用の余白固定 */
+}
+
+.c-main__header {
+    width: 100%;
+}
+
+.c-main__hero {
+    width: 100%;
+}
+
+.c-main__container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* ====================================================
+   ワールドセレクター（画面左上トリガー）
    ==================================================== */
 @scope(.c-world-selector) {
     :scope {
@@ -246,6 +281,7 @@ svg {
         position: fixed;
         top: 0;
         left: 0;
+        z-index: 100;
     }
 
     /* アイコンとテキストを包むボタン */
@@ -306,10 +342,12 @@ svg {
 }
 
 /* ====================================================
-   フッター
+   フッターエリア ＆ 固定ナビゲーション
    ==================================================== */
 .c-footer {
     padding: 18px;
+    text-align: center;
+    margin-bottom: 80px; /* 固定ナビに隠れないための底上げ用マージン */
 }
 
 @scope(.c-footer) {
@@ -326,15 +364,12 @@ svg {
         bottom: 16px;
         left: 50%;
         transform: translateX(-50%);
-
         width: 90%;
         max-width: 320px;
-
         background-color: var(--theme-bg-surface);
         border: 1px solid var(--theme-border-main);
         border-radius: 30px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
-
         padding: 6px 12px;
         z-index: 100;
     }
@@ -386,16 +421,10 @@ svg {
 }
 
 /* ====================================================
-   ワールドセレクター　選択モーダル（モーダル１）
+   📥 【モーダル1】 ワールド選択モーダル
    ==================================================== */
 .c-world-modal {
     z-index: 1000;
-}
-
-/* 💡 【修正】詳細度を強化し、pointer-events: auto を確実に効かせます */
-.c-modal.c-world-modal.is-open {
-    opacity: 1;
-    pointer-events: auto;
 }
 
 .c-world-modal__container {
@@ -436,17 +465,38 @@ svg {
     padding-bottom: 12px;
 }
 
-.c-world-modal__status {
+/* 💡 アカウントトリガー（枠全体ボタン） */
+.c-world-modal__status.js-account-trigger {
+    background: none;
+    border: none;
+    padding: 6px 12px;
+    margin-left: -12px;
+    border-radius: 8px;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    text-align: left;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.c-world-modal__status.js-account-trigger:hover {
+    background-color: rgba(73, 139, 109, 0.08);
+}
+
+.c-world-modal__status.js-account-trigger:hover .c-world-modal__icon-wrap {
+    transform: scale(1.05);
+    color: var(--color-blue-400);
+}
+
+.c-world-modal__status.js-account-trigger:active {
+    transform: scale(0.98);
 }
 
 .c-world-modal__icon-wrap {
     width: 40px;
     height: 40px;
     background-color: var(--theme-bg-main);
-
     border: 2px solid var(--theme-interactive);
     border-radius: 50%;
     display: flex;
@@ -455,6 +505,7 @@ svg {
     font-size: 1.8rem;
     color: var(--theme-interactive);
     flex-shrink: 0;
+    transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .c-world-modal__info {
@@ -463,18 +514,49 @@ svg {
     gap: 2px;
 }
 
-.c-world-modal__world {
-    font-size: 1.2rem;
+.c-world-modal__name {
+    font-size: 14px;
     font-weight: bold;
-    color: var(--theme-interactive);
-    line-height: 1.2;
+    color: var(--theme-text-main);
 }
 
-.c-world-modal__name {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: var(--theme-text-muted);
-    line-height: 1.2;
+.c-world-modal__uid {
+    font-size: 11px;
+    color: #8e8ea8;
+    font-family: monospace;
+    letter-spacing: 0.5px;
+}
+
+/* 操作系ヘッダーボタン配置 */
+.c-world-modal__header-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* 🚪 ログアウトボタン */
+.c-world-modal__logout-btn {
+    background: none;
+    border: 1px solid var(--theme-border-main);
+    color: #a0a0c0;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.2s ease, background-color 0.2s ease, transform 0.1s ease;
+}
+
+.c-world-modal__logout-btn:hover {
+    color: #ff4a4a;
+    background-color: rgba(255, 74, 74, 0.1);
+}
+
+.c-world-modal__logout-btn:active {
+    transform: scale(0.95);
 }
 
 .c-world-modal__close-btn {
@@ -493,12 +575,6 @@ svg {
     gap: 8px;
 }
 
-.c-world-modal__add-btn-area {
-    padding-top: 16px;
-    border-top: 1px solid var(--theme-border-main);
-    margin-top: 20px;
-}
-
 @media (min-width: 768px) {
     .c-world-modal__list {
         grid-template-columns: repeat(2, 1fr);
@@ -512,7 +588,7 @@ svg {
     font-weight: 500;
     color: var(--theme-text-main);
     background-color: var(--theme-bg-main);
-    border: none;
+    border: 1px solid var(--theme-border-main);
     border-radius: 12px;
     text-align: center;
     cursor: pointer;
@@ -522,6 +598,7 @@ svg {
 .c-world-modal__choice-btn:hover {
     background-color: var(--theme-interactive-hover);
     color: var(--theme-interactive);
+    font-weight: bold;
 }
 
 .c-world-modal__choice-btn.is-active {
@@ -543,25 +620,18 @@ svg {
     width: 100%;
     max-width: min-content;
     box-shadow: 0 2px 6px rgba(62, 158, 214, 0.3);
-    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
 }
 
-/* マウスを載せたとき（ホバー） */
 .c-world-modal__add-btn:hover {
     background-color: var(--theme-accent-action-hover);
 }
 
-/* ====================================================
-   ワールドセレクター　ワールド追加モーダル（モーダル２）
-   ==================================================== */
 
+/* ====================================================
+   📥 【モーダル2】 ワールド追加モーダル
+   ==================================================== */
 .c-create-modal {
     z-index: 2000;
-}
-
-.c-modal.c-create-modal.is-open {
-    opacity: 1;
-    pointer-events: auto;
 }
 
 .c-create-modal__container {
@@ -576,7 +646,6 @@ svg {
     margin-bottom: 10vh;
 }
 
-
 .c-create-modal__header {
     display: flex;
     align-items: center;
@@ -588,5 +657,204 @@ svg {
 
 .c-create-modal__title {
     font-weight: 700;
+    font-size: 1.6rem;
 }
+
+.c-create-modal__close-btn {
+    font-size: 2.4rem;
+    color: var(--theme-text-muted);
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    padding: 0 4px;
+    align-self: flex-start;
+    margin-top: -4px;
+}
+
+
+/* ====================================================
+   👤 【モーダル3】 アカウント情報編集モーダル
+   ==================================================== */
+   .c-account-modal--account {
+    z-index: 2000;
+}
+
+.c-account-modal__container {
+    position: relative;
+    width: 85%;
+    max-width: 420px; /* 設定画面らしく少しコンパクトに */
+    background-color: var(--theme-bg-surface);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    padding: 20px;
+    transition: transform 0.3s ease;
+    margin-bottom: 10vh;
+    border: 1px solid var(--theme-border-main); /* 共通の薄い緑枠で調和を保つ */
+}
+
+.c-account-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--theme-border-main);
+    padding-bottom: 12px;
+}
+
+.c-account-modal__title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--theme-interactive); /* 🟢 メメリグリーンで統一 */
+    font-size: 1.6rem;
+    font-weight: bold;
+}
+
+.c-account-modal__title {
+    font-weight: 700;
+}
+
+.c-account-modal__close-btn {
+    font-size: 2.4rem;
+    color: var(--theme-text-muted);
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    padding: 0 4px;
+    align-self: flex-start;
+    margin-top: -4px;
+}
+
+/* アカウントフォーム内の独自スタイル調整 */
+.c-world-form__item {
+    margin-bottom: 16px;
+}
+
+.c-world-form__label {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.c-world-form__help {
+    font-size: 1.1rem;
+    color: var(--theme-text-muted);
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.c-world-form__input {
+    display: block;
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 1.4rem;
+    color: var(--theme-text-main);
+    background-color: var(--theme-bg-main);
+    border: 1px solid var(--theme-border-main);
+    border-radius: 10px;
+}
+
+.c-world-form__input:focus {
+    outline: none;
+    border-color: var(--theme-accent-action);
+    box-shadow: 0 0 0 3px rgba(62, 158, 214, 0.2);
+    background-color: var(--color-white);
+}
+
+.c-world-form__submit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background-color: var(--theme-accent-action);
+    color: var(--color-white);
+    width: 100%;
+    padding: 12px 24px;
+    font-size: 1.4rem;
+    font-weight: 700;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(62, 158, 214, 0.3);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.c-world-form__submit-btn:hover {
+    background-color: var(--theme-accent-action-hover);
+}
+
+/* 🪪 システム情報（UIDの確認エリア） */
+.c-account-modal__system-info {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--theme-border-main);
+    text-align: left;
+}
+
+.c-account-modal__system-label {
+    font-size: 1.2rem;
+    color: var(--theme-text-muted);
+    font-weight: bold;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.c-account-modal__system-value {
+    font-size: 1.2rem;
+    color: #e2e2e9; /* ダーク背景で見えやすい明るいグレー */
+    background-color: #2b302d; /* 💻 炭黒に馴染むダークグリーングレーでテック感を演出 */
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-family: monospace;
+    word-break: break-all;
+    border: 1px solid var(--theme-border-main);
+}
+
+.c-account-modal__system-help {
+    font-size: 1.1rem;
+    color: var(--theme-text-muted);
+    margin-top: 6px;
+    line-height: 1.4;
+}
+
+/* ====================================================
+   ✨ 初回ユーザー誘導用：アカウント登録プロンプトエフェクト
+   ==================================================== */
+
+/* アカウント未登録時にJS側から付与する状態クラス(is-require-setup) */
+.c-world-modal__status.js-account-trigger.is-require-setup {
+    border: 2px solid var(--color-blue-400);
+    background-color: rgba(62, 158, 214, 0.05);
+    position: relative;
+    animation: pulse-attention 2s infinite ease-in-out;
+}
+
+.c-world-modal__status.js-account-trigger.is-require-setup::before {
+    content: "最初に設定！";
+    position: absolute;
+    top: -12px;
+    left: 12px;
+    background-color: var(--color-blue-400);
+    color: var(--color-white);
+    font-size: 1.0rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+    line-height: 1;
+    box-shadow: 0 2px 6px rgba(62, 158, 214, 0.3);
+}
+
+/* ほんのり優しく光ってユーザーの視線を集めるアニメーション */
+@keyframes pulse-attention {
+    0% {
+        box-shadow: 0 0 0 0 rgba(62, 158, 214, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 8px rgba(62, 158, 214, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(62, 158, 214, 0);
+    }
+}
+
 

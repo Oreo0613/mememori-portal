@@ -7,8 +7,8 @@
             <i class="fa-solid fa-user-astronaut"></i>
         </div>
         <div class="c-world-selector__info">
-            <span id="js-current-world-badge" class="c-world-selector__world">未登録</span>
-            <span id="js-user-name" class="c-world-selector__name">ゲスト</span>
+            <span id="js-current-world-number" class="c-world-selector__world">未登録</span>
+            <span id="js-current-world-name" class="c-world-selector__name"></span>
         </div>
     </button>
 
@@ -20,15 +20,29 @@
 
         <div class="c-modal__container c-world-modal__container">
             <header class="c-world-modal__header">
-                <div class="c-world-modal__status">
-                    <div class="c-world-modal__icon-wrap"><i class="fa-solid fa-user-astronaut"></i></div>
-                    <div class="c-world-modal__info">
-                        <span id="js-modal-world-text" class="c-world-modal__world">未登録</span>
-                        <span id="js-modal-user-text" class="c-world-modal__name">ゲスト</span>
+                <!-- 💡 【ブラッシュアップ】ステータスエリア全体をボタン化し、js-account-trigger を付与！ -->
+                <button type="button" class="c-world-modal__status js-account-trigger" title="アカウント設定を開く">
+                    <div class="c-world-modal__icon-wrap">
+                        <i class="fa-solid fa-user-astronaut"></i>
                     </div>
+                    <div class="c-world-modal__info">
+                        <!-- 上段：アカウント名 -->
+                        <span id="js-modal-user-text" class="c-world-modal__name">ゲスト ユーザー</span>
+                        <!-- 下段：全ワールド共通の固有ID -->
+                        <span id="js-modal-uid-text" class="c-world-modal__uid">ID: 未ログイン</span>
+                    </div>
+                </button>
+
+                <!-- 右側の操作ボタンたち（ログアウトと閉じる） -->
+                <div class="c-world-modal__header-controls">
+                    <button type="button" id="js-btn-logout" class="c-world-modal__logout-btn" title="アカウントからログアウト">
+                        <i class="fa-solid fa-right-from-bracket"></i>ログアウト
+                    </button>
+                    <button type="button" id="js-world-modal-close" class="c-modal__close-btn c-world-modal__close-btn">&times;</button>
                 </div>
-                <button type="button" id="js-world-modal-close" class="c-world-modal__close-btn">&times;</button>
             </header>
+
+
 
             <div class="c-world-modal__content">
                 <ul class="c-world-modal__list">
@@ -52,7 +66,6 @@
                         <button type="button" class="c-world-modal__choice-btn js-world-choice" data-world="w177">ワールド
                             177</button>
                     </li>
-
                 </ul>
             </div>
 
@@ -74,7 +87,7 @@
         <div class="c-modal__container c-create-modal__container">
             <header class="c-create-modal__header">
                 <h3 class="c-create-modal__title">ワールドの新規登録</h3>
-                <button type="button" id="js-create-world-close" class="c-create-modal__close-btn">&times;</button>
+                <button type="button" id="js-create-world-close" class="c-modal__close-btn c-create-modal__close-btn">&times;</button>
             </header>
             <div class="c-create-modal__content">
                 <form id="js-create-world-form" class="c-form">
@@ -91,8 +104,7 @@
                     <!-- ② ワールド名（任意入力フィールド） -->
                     <div class="c-form__group">
                         <label for="js-input-world-name" class="c-form__label">ワールド名</label>
-                        <input type="text" id="js-input-world-name" class="c-form__input"
-                            placeholder="例: 新プレイヤー">
+                        <input type="text" id="js-input-world-name" class="c-form__input" placeholder="例: 新プレイヤー">
                     </div>
 
                     <!-- ③ 決定アクションボタン領域 -->
@@ -105,5 +117,48 @@
             </div>
         </div>
     </div>
+
+    <!-- ====================================
+     👤 【モーダル3】アカウント情報編集モーダル
+     =======================================-->
+    <div id="js-account-modal" class="c-modal c-account-modal--account" aria-hidden="true" inert>
+        <div id="js-account-modal-overlay" class="c-modal__overlay c-account-modal__overlay"></div>
+        <div class="c-modal__container c-account-modal__container">
+
+            <header class="c-account-modal__header">
+                <div class="c-account-modal__title-wrap">
+                    <i class="fa-solid fa-gear"></i>
+                    <h2 class="c-account-modal__title">アカウント設定</h2>
+                </div>
+                <!-- × 閉じるボタン -->
+                <button type="button" id="js-account-modal-close" class="c-account-modal__close-btn">&times;</button>
+            </header>
+
+            <div class="c-account-modal__content">
+                <!-- フォーム：アカウント名の変更 -->
+                <form id="js-account-name-form" class="c-world-form">
+                    <div class="c-world-form__item">
+                        <label for="js-input-account-name" class="c-world-form__label">アカウント名</label>
+                        <p class="c-world-form__help">アプリ内で表示される名前です。いつでも自由に変更できます。</p>
+                        <input type="text" id="js-input-account-name" class="c-world-form__input" placeholder="例：名無しの魔女"
+                            maxlength="15" required>
+                    </div>
+
+                    <button type="submit" class="c-world-form__submit-btn">
+                        <i class="fa-solid fa-floppy-disk"></i> アカウント名を保存する
+                    </button>
+                </form>
+
+                <!-- システム情報（UIDの確認エリア） -->
+                <div class="c-account-modal__system-info">
+                    <span class="c-account-modal__system-label">あなたのアカウントID（UID）</span>
+                    <p id="js-account-full-uid" class="c-account-modal__system-value">未ログイン</p>
+                    <p class="c-account-modal__system-help">※このIDはFirebaseが発行した共通の識別番号です。</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
 
 </div>
