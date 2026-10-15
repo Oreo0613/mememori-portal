@@ -44,7 +44,16 @@
             </header>
 
             <div class="c-world-modal__content">
-                <ul class="c-world-modal__list js-world-list"></ul>
+                <ul class="c-world-modal__list js-world-list">
+                    <!-- 💡 ここに Firestore からアクティブなワールド一覧が動的に展開されます -->
+                </ul>
+                
+                <!-- ─── ⚙️ 【追加・修正】一軍リストの直後に独立配置するアーカイブ管理ボタン ─── -->
+                <div class="c-world-modal__manage-zone">
+                    <button type="button" id="js-btn-open-archive-manager" class="c-world-selector__manage-btn" title="アーカイブされたワールドの管理">
+                        <i class="fa-solid fa-gear"></i> <span>アーカイブされたワールドの管理</span>
+                    </button>
+                </div>
             </div>
 
             <div class="c-world-modal__add-btn-area">
@@ -58,7 +67,6 @@
     <!-- =================================
        📥 【モーダル2】 ワールド追加モーダル
        =================================== -->
-
     <div id="js-create-modal" class="c-modal c-create-modal" aria-hidden="true">
         <div id="js-create-modal-overlay" class="c-modal__overlay c-create-modal__overlay"></div>
 
@@ -139,5 +147,25 @@
         </div>
     </div>
 
+    <!-- ====================================
+     📁 【モーダル4】アーカイブワールド復帰・管理モーダル
+     =======================================-->
+    <div id="js-archive-modal" class="c-modal c-archive-modal" aria-hidden="true" inert>
+        <div id="js-archive-modal-overlay" class="c-modal__overlay"></div>
+        <div class="c-modal__container c-archive-modal__container">
+            <header class="c-create-modal__header" style="margin-bottom: 15px;">
+                <h3 class="c-create-modal__title" style="font-size:16px; font-weight:bold; color:#475569;">
+                    <i class="fa-solid fa-box-archive"></i> アーカイブされたワールドの復帰管理
+                </h3>
+                <button type="button" id="js-archive-modal-close" class="c-modal__close-btn">&times;</button>
+            </header>
+            <div class="c-create-modal__content">
+                <p style="font-size:11px; color:#64748b; margin-bottom:12px;">現在非アクティブに設定されているワールド一覧です。戻したいワールドの「復帰」ボタンを押してください。</p>
+                <ul id="js-archive-world-list" style="display:flex; flex-direction:column; gap:8px; max-height:260px; overflow-y:auto; padding-right:4px;">
+                    <!-- JS側で非アクティブなワールドがここにループ生成されます -->
+                </ul>
+            </div>
+        </div>
+    </div>
 
 </div>

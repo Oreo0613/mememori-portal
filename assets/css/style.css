@@ -1,61 +1,83 @@
 @charset "UTF-8";
 
-/* ====================================================
-   ① GLOBAL PALETTE (色パレット：純粋な色と明るさの定義)
-   ==================================================== */
+/* ==========================================================================
+   🎨 0. DESIGN TOKENS (カラー・フォント・共通変数の一本化マージ)
+   ========================================================================== */
 :root {
-    --color-gray-50: rgb(243, 244, 240);       /* 💻 メイン背景用の薄いグレー */
-    --color-gray-200: #d1d1d6;                 /* 🪙 ボタン無効化などの明るいグレー */
-    --color-gray-400: #8e8e93;                 /* ⚙️ 無効化文字用の少し濃いグレー */
-    --color-gray-900: #333333;                 /* 基本の文字（炭黒） */
-    --color-white: #ffffff;                    /* 純白 */
+    /* 🌐 グローバル色パレット定義 */
+    --color-gray-50: rgb(243, 244, 240);
+    /* メインの薄グレー背景 */
+    --color-gray-100: #f1f5f9;
+    /* ボックス内等の落ち着いた背景 */
+    --color-gray-200: #d1d1d6;
+    /* ボーダー・無効化用グレー */
+    --color-gray-300: #cbd5e1;
+    /* パーティ枠等の点線用グレー */
+    --color-gray-400: #8e8e93;
+    /* ヘルプテキスト・無効化文字色 */
+    --color-gray-600: #475569;
+    /* アコーディオン・トーン低めの文字色 */
+    --color-gray-700: #58665f;
+    /* サブ文字用グリーングレー */
+    --color-gray-900: #1e293b;
+    /* 基本メイン文字色（炭黒に近い濃紺） */
+    --color-white: #ffffff;
+    /* カード等の純白背景 */
 
-    --color-green-100: #f0f7f4;                /* アクティブ・ホバー用の薄い緑 */
-    --color-green-500: #498b6d;                /* 🟢 メメリグリーン（メイン） */
-    --color-green-700: #58665f;                /* サブ文字用の深いグリーングレー */
-    --color-green-500-alpha15: rgba(73, 139, 109, 0.15); /* 透明度15%の緑 */
+    /* 🟢 メメリグリーンパレット */
+    --color-green-100: #f0f7f4;
+    /* アクティブ・ホバー用の超薄い緑 */
+    --color-green-500: #498b6d;
+    /* メインのブランドグリーン */
+    --color-green-500-alpha15: rgba(73, 139, 109, 0.15);
+    /* 透明度15%の緑枠用 */
 
-    /* 💎 視認性・調和特化型のスカイブルーパレット */
-    --color-blue-400: #3e9ed6;                 /* 新規登録・更新等の最重要アクション（通常時） */
-    --color-blue-500: #2584be;                 /* 最重要アクション（ホバー時：少し深みを増すブルー） */
-    --color-blue-600: #1a6694;                 /* 最重要アクション（アクティブ・クリックの瞬間） */
+    /* 🟦 スカイブルーパレット（最重要保存・更新アクション用） */
+    --color-blue-400: #3e9ed6;
+    /* 重要アクション通常時（旧：var(--accent)） */
+    --color-blue-500: #2584be;
+    /* 重要アクションホバー時 */
+    --color-blue-600: #1a6694;
+    /* 重要アクションクリックの瞬間 */
 
-    /* ----------------------------------------------------
-       ② SEMANTIC THEME (使い道：パレットから役割に紐付ける)
-       ---------------------------------------------------- */
-    /* スキンA：画面全体の基本土台セット */
+    /* 🟢 保存コミット用グリーンパレット */
+    --color-emerald-500: #10b981;
+    /* 保存・復活等ポジティブコミット用（旧：var(--btn-save)） */
+
+    /* ⚔️ 四属性の塔（テーマカラー） */
+    --color-tower-blue: #2563eb;
+    --color-tower-red: #dc2626;
+    --color-tower-green: #16a34a;
+    --color-tower-yellow: #d97706;
+
+    /* ----------------------------------------------------------------------
+       🎯 セマンティックテーマ役割の定義 (役割と色のシンクロ)
+       ---------------------------------------------------------------------- */
     --theme-bg-main: var(--color-gray-50);
     --theme-text-main: var(--color-gray-900);
-
-    /* スキンB：カードやフッターなど、浮き出る要素のセット */
     --theme-bg-surface: var(--color-white);
-    --theme-text-muted: var(--color-green-700);
+    --theme-text-muted: var(--color-gray-400);
     --theme-border-main: var(--color-green-500-alpha15);
 
-    /* スキンC：クリック等のインタラクション（状態変化）セット */
-    --theme-interactive: var(--color-green-500);          /* 選択中の文字色など */
-    --theme-interactive-hover: var(--color-green-100);    /* ホバー・アクティブ時の薄い緑背景 */
+    --theme-interactive: var(--color-green-500);
+    --theme-interactive-hover: var(--color-green-100);
 
-    /* 💡 新設スキンD：埋没を防ぎ、ユーザーを迷わせない「最重要アクション」セット */
-    --theme-accent-action: var(--color-blue-400);         /* 新規登録ボタンなどの背景色 */
-    --theme-accent-action-hover: var(--color-blue-500);   /* ホバー時の背景色 */
-    --theme-accent-action-active: var(--color-blue-600);  /* クリックした瞬間の背景色 */
+    --theme-accent-action: var(--color-blue-400);
+    --theme-accent-action-hover: var(--color-blue-500);
+    --theme-accent-action-active: var(--color-blue-600);
 
-    /* 💡 新設スキンE：操作を受け付けない要素の「無効化（Disabled）」 */
-    --theme-disabled-bg: var(--color-gray-200);           /* 無効化されたボタンの背景色 */
-    --theme-disabled-text: var(--color-gray-400);         /* 無効化されたボタンの文字色
+    --theme-disabled-bg: var(--color-gray-200);
+    --theme-disabled-text: var(--color-gray-400);
 
-    /* ----------------------------------------------------
-       ③ TYPOGRAPHY (フォント基本定義)
-       ---------------------------------------------------- */
+    /* タイポグラフィ基本定義 */
     --font-family-base: "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", "UD Digital Kyokyasho NK-R", "UD デジタル教科書体 NK-R", "YakuHanJP", "BIZ UDPGothic", sans-serif;
     --font-size-base: 1.4rem;
     --line-height-base: 1.4;
 }
 
-/* ====================================================
+/* ==========================================================================
    APPLICATION BASE STYLES
-   ==================================================== */
+   ========================================================================== */
 html {
     font-size: 62.5%;
     scroll-behavior: smooth;
@@ -80,9 +102,9 @@ svg {
     display: none !important;
 }
 
-/* ===============================================
-   ベースボタンコンポーネント (.c-btn)
-   ================================================= */
+/* ==========================================================================
+   📦 ベースボタンコンポーネント (.c-btn)
+   ========================================================================== */
 .c-btn {
     display: inline-flex;
     align-items: center;
@@ -98,6 +120,7 @@ svg {
     border-radius: 12px;
     transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
     user-select: none;
+    border: none;
 }
 
 .c-btn:hover {
@@ -108,18 +131,20 @@ svg {
     transform: translateY(2px);
     box-shadow: 0 1px 2px rgba(37, 132, 190, 0.2);
 }
-/* アカウント未登録のときはワールド新規追加ボタンを視覚的に薄くし、禁止マークにする */
+
+/* 未登録ロック時 */
 .c-btn.is-disabled {
     background-color: var(--theme-disabled-bg) !important;
     color: var(--theme-disabled-text) !important;
     box-shadow: none !important;
     cursor: not-allowed !important;
-    pointer-events: none; 
+    pointer-events: none;
     opacity: 0.6;
 }
-/* ============================================================
-   共通モーダルベースコンポーネント (.c-modal)
-   ========================================================= */
+
+/* ==========================================================================
+   📦 共通モーダルベースコンポーネント (.c-modal)
+   ========================================================================== */
 .c-modal {
     position: fixed;
     top: 0;
@@ -134,7 +159,6 @@ svg {
     transition: opacity 0.3s ease;
 }
 
-/* モーダル表示中の共通状態変化クラス */
 .c-modal.is-open {
     opacity: 1 !important;
     pointer-events: auto !important;
@@ -162,15 +186,23 @@ svg {
     background-color: var(--color-gray-200);
     color: #fff;
     opacity: 0.7;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
 }
 
-/* ====================================================
-   フォーム共通コンポーネント (.c-form)
-   ==================================================== */
+/* ==========================================================================
+   📦 フォーム共通コンポーネント (.c-form)
+   ========================================================================== */
 .c-form {
     display: block;
     width: 100%;
-    text-align: left; /* 入力ラベルが左揃えになるように強制 */
+    text-align: left;
 }
 
 .c-form__group {
@@ -187,7 +219,6 @@ svg {
     margin-bottom: 8px;
 }
 
-/* 🟥 「必須」の赤バッジ */
 .c-form__required {
     font-size: 1.0rem;
     font-weight: 700;
@@ -198,20 +229,18 @@ svg {
     line-height: 1;
 }
 
-/* ⌨️ 入力エリア */
 .c-form__input {
     display: block;
     width: 100%;
     padding: 12px 14px;
     font-size: 1.4rem;
     color: var(--theme-text-main);
-    background-color: var(--theme-bg-main);
+    background-color: var(--color-gray-50);
     border: 1px solid var(--theme-border-main);
     border-radius: 10px;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* 入力欄にフォーカス（選択）したときの綺麗に光るエフェクト */
 .c-form__input:focus {
     outline: none;
     border-color: var(--theme-accent-action);
@@ -219,13 +248,11 @@ svg {
     background-color: var(--color-white);
 }
 
-/* 決定ボタン配置エリア */
 .c-form__action-area {
     margin-top: 28px;
     text-align: center;
 }
 
-/* 🟦 新規登録の最重要アクションボタン（色パレット連動） */
 .c-form__submit-btn {
     background-color: var(--theme-accent-action);
     color: var(--color-white);
@@ -245,17 +272,9 @@ svg {
     transform: translateY(2px);
 }
 
-
-
-/* ====================================================
-   メインレイアウト基本構成 (.c-main)
-   ==================================================== */
-.c-main {
-    width: 100%;
-    min-height: 100vh;
-    padding-top: 80px; /* ワールドセレクター用の余白固定 */
-}
-
+/* ==========================================================================
+   c-main 基本レイアウト
+   ========================================================================== */
 .c-main__header {
     width: 100%;
 }
@@ -271,9 +290,9 @@ svg {
     padding: 20px;
 }
 
-/* ====================================================
+/* ==========================================================================
    ワールドセレクター（画面左上トリガー）
-   ==================================================== */
+   ========================================================================== */
 @scope(.c-world-selector) {
     :scope {
         display: block;
@@ -284,7 +303,6 @@ svg {
         z-index: 100;
     }
 
-    /* アイコンとテキストを包むボタン */
     .c-world-selector__btn {
         display: flex;
         align-items: center;
@@ -296,7 +314,6 @@ svg {
         padding: 0;
     }
 
-    /* キャラアイコンを丸く切り抜く枠 */
     .c-world-selector__icon-wrap {
         width: 60px;
         height: 60px;
@@ -317,14 +334,12 @@ svg {
         transform: scale(1.05);
     }
 
-    /* 文字を上下の縦並びにする領域 */
     .c-world-selector__info {
         display: flex;
         flex-direction: column;
         gap: 2px;
     }
 
-    /* 上段：選択中のワールド名 */
     .c-world-selector__world {
         font-size: 1.2rem;
         font-weight: bold;
@@ -332,22 +347,59 @@ svg {
         line-height: 1.2;
     }
 
-    /* 下段：ユーザー名 */
     .c-world-selector__name {
         font-size: 1.1rem;
         font-weight: 500;
-        color: var(--theme-text-muted);
+        color: var(--color-gray-700);
         line-height: 1.2;
+    }
+
+    .c-world-modal__manage-zone {
+        display: flex;
+        border-top: 1px dashed var(--color-gray-200);
+        margin-top: 4px;
+        padding-top: 4px;
+    }
+
+    .c-world-selector__manage-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 16px;
+        background: transparent;
+        border: none;
+        color: var(--color-gray-400);
+        font-size: 12px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.2s, color 0.2s;
+        text-align: center;
+    }
+
+    .c-world-selector__manage-btn:hover {
+        background-color: var(--color-gray-100);
+        color: var(--theme-interactive);
+    }
+
+    .c-world-selector__manage-btn i {
+        font-size: 14px;
+        transition: transform 0.3s ease;
+    }
+
+    .c-world-selector__manage-btn:hover i {
+        transform: rotate(45deg);
     }
 }
 
-/* ====================================================
+/* ==========================================================================
    フッターエリア ＆ 固定ナビゲーション
-   ==================================================== */
+   ========================================================================== */
 .c-footer {
     padding: 18px;
     text-align: center;
-    margin-bottom: 80px; /* 固定ナビに隠れないための底上げ用マージン */
+    margin-bottom: 80px;
 }
 
 @scope(.c-footer) {
@@ -356,7 +408,7 @@ svg {
         display: flex;
         flex-direction: column;
         gap: 8px;
-        color: var(--theme-text-muted);
+        color: var(--color-gray-700);
     }
 
     .c-footer-nav {
@@ -391,7 +443,7 @@ svg {
         flex-direction: column;
         align-items: center;
         gap: 6px;
-        color: var(--theme-text-muted);
+        color: var(--color-gray-700);
         padding: 8px 4px;
         width: 100%;
         border-radius: 20px;
@@ -406,7 +458,6 @@ svg {
         transition: transform 0.3s ease;
     }
 
-    /* ホバー・アクティブ（選択中）時のカプセルエフェクト */
     .c-footer-nav__link.is-active,
     .c-footer-nav__link:hover {
         color: var(--theme-interactive);
@@ -414,15 +465,14 @@ svg {
         font-weight: bold;
     }
 
-    /* 選択中の時だけアイコンがぴょこっと上に持ち上がる演出 */
     .c-footer-nav__link.is-active svg {
         transform: translateY(-2px);
     }
 }
 
-/* ====================================================
+/* ==========================================================================
    📥 【モーダル1】 ワールド選択モーダル
-   ==================================================== */
+   ========================================================================== */
 .c-world-modal {
     z-index: 1000;
 }
@@ -448,7 +498,7 @@ svg {
 .c-world-modal__content {
     transform: translateY(20px);
     height: 40vh;
-    overflow-y: scroll;
+    overflow-y: auto;
     padding-right: 20px;
 }
 
@@ -465,7 +515,6 @@ svg {
     padding-bottom: 12px;
 }
 
-/* 💡 アカウントトリガー（枠全体ボタン） */
 .c-world-modal__status.js-account-trigger {
     background: none;
     border: none;
@@ -496,7 +545,7 @@ svg {
 .c-world-modal__icon-wrap {
     width: 40px;
     height: 40px;
-    background-color: var(--theme-bg-main);
+    background-color: var(--color-gray-50);
     border: 2px solid var(--theme-interactive);
     border-radius: 50%;
     display: flex;
@@ -527,14 +576,12 @@ svg {
     letter-spacing: 0.5px;
 }
 
-/* 操作系ヘッダーボタン配置 */
 .c-world-modal__header-controls {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-/* 🚪 ログアウトボタン */
 .c-world-modal__logout-btn {
     background: none;
     border: 1px solid var(--theme-border-main);
@@ -561,7 +608,7 @@ svg {
 
 .c-world-modal__close-btn {
     font-size: 2.4rem;
-    color: var(--theme-text-muted);
+    color: var(--color-gray-700);
     cursor: pointer;
     background: transparent;
     border: none;
@@ -587,7 +634,7 @@ svg {
     font-size: 1.4rem;
     font-weight: 500;
     color: var(--theme-text-main);
-    background-color: var(--theme-bg-main);
+    background-color: var(--color-gray-50);
     border: 1px solid var(--theme-border-main);
     border-radius: 12px;
     text-align: center;
@@ -595,7 +642,7 @@ svg {
     transition: all 0.2s ease;
     display: flex;
     justify-content: flex-start;
-    /* align-items: center; */
+    align-items: center;
     gap: 12px;
 }
 
@@ -622,7 +669,7 @@ svg {
     background-color: var(--theme-accent-action);
     color: var(--color-white);
     width: 100%;
-    max-width: min-content;
+    max-width: max-content;
     box-shadow: 0 2px 6px rgba(62, 158, 214, 0.3);
 }
 
@@ -648,17 +695,19 @@ svg {
 .c-world-modal__btn-icon {
     width: 36px;
     height: 36px;
+    flex-shrink: 0;
 }
 
 .c-world-modal__btn-icon img {
     width: 100%;
     height: auto;
-    aspect-ratio:  1 / 1;
+    aspect-ratio: 1 / 1;
+    border-radius: 4px;
 }
 
-/* ====================================================
-   📥 【モーダル2】 ワールド追加モーダル
-   ==================================================== */
+/* ==========================================================================
+📥 【モーダル2】 ワールド追加モーダル
+========================================================================== */
 .c-create-modal {
     z-index: 2000;
 }
@@ -691,7 +740,7 @@ svg {
 
 .c-create-modal__close-btn {
     font-size: 2.4rem;
-    color: var(--theme-text-muted);
+    color: var(--color-gray-700);
     cursor: pointer;
     background: transparent;
     border: none;
@@ -700,25 +749,24 @@ svg {
     margin-top: -4px;
 }
 
-
-/* ====================================================
-   👤 【モーダル3】 アカウント情報編集モーダル
-   ==================================================== */
-   .c-account-modal--account {
+/* ==========================================================================
+    👤 【モーダル3】 アカウント情報編集モーダル
+    ========================================================================== */
+.c-account-modal--account {
     z-index: 2000;
 }
 
 .c-account-modal__container {
     position: relative;
     width: 85%;
-    max-width: 420px; /* 設定画面らしく少しコンパクトに */
+    max-width: 420px;
     background-color: var(--theme-bg-surface);
     border-radius: 20px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
     padding: 20px;
     transition: transform 0.3s ease;
     margin-bottom: 10vh;
-    border: 1px solid var(--theme-border-main); /* 共通の薄い緑枠で調和を保つ */
+    border: 1px solid var(--theme-border-main);
 }
 
 .c-account-modal__header {
@@ -734,7 +782,7 @@ svg {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: var(--theme-interactive); /* 🟢 メメリグリーンで統一 */
+    color: var(--theme-interactive);
     font-size: 1.6rem;
     font-weight: bold;
 }
@@ -745,7 +793,7 @@ svg {
 
 .c-account-modal__close-btn {
     font-size: 2.4rem;
-    color: var(--theme-text-muted);
+    color: var(--color-gray-700);
     cursor: pointer;
     background: transparent;
     border: none;
@@ -754,7 +802,6 @@ svg {
     margin-top: -4px;
 }
 
-/* アカウントフォーム内の独自スタイル調整 */
 .c-world-form__item {
     margin-bottom: 16px;
 }
@@ -768,7 +815,7 @@ svg {
 
 .c-world-form__help {
     font-size: 1.1rem;
-    color: var(--theme-text-muted);
+    color: var(--color-gray-700);
     margin-bottom: 8px;
     line-height: 1.4;
 }
@@ -779,7 +826,7 @@ svg {
     padding: 12px 14px;
     font-size: 1.4rem;
     color: var(--theme-text-main);
-    background-color: var(--theme-bg-main);
+    background-color: var(--color-gray-50);
     border: 1px solid var(--theme-border-main);
     border-radius: 10px;
 }
@@ -806,13 +853,13 @@ svg {
     box-shadow: 0 4px 12px rgba(62, 158, 214, 0.3);
     cursor: pointer;
     transition: all 0.2s ease;
+    border: none;
 }
 
 .c-world-form__submit-btn:hover {
     background-color: var(--theme-accent-action-hover);
 }
 
-/* 🪪 システム情報（UIDの確認エリア） */
 .c-account-modal__system-info {
     margin-top: 24px;
     padding-top: 20px;
@@ -822,7 +869,7 @@ svg {
 
 .c-account-modal__system-label {
     font-size: 1.2rem;
-    color: var(--theme-text-muted);
+    color: var(--color-gray-700);
     font-weight: bold;
     display: block;
     margin-bottom: 6px;
@@ -830,8 +877,8 @@ svg {
 
 .c-account-modal__system-value {
     font-size: 1.2rem;
-    color: #e2e2e9; /* ダーク背景で見えやすい明るいグレー */
-    background-color: #2b302d; /* 💻 炭黒に馴染むダークグリーングレーでテック感を演出 */
+    color: #e2e2e9;
+    background-color: #2b302d;
     padding: 10px 12px;
     border-radius: 8px;
     font-family: monospace;
@@ -841,16 +888,12 @@ svg {
 
 .c-account-modal__system-help {
     font-size: 1.1rem;
-    color: var(--theme-text-muted);
+    color: var(--color-gray-700);
     margin-top: 6px;
     line-height: 1.4;
 }
 
-/* ====================================================
-   ✨ 初回ユーザー誘導用：アカウント登録プロンプトエフェクト
-   ==================================================== */
-
-/* アカウント未登録時にJS側から付与する状態クラス(is-require-setup) */
+/* アカウント誘導アニメーション */
 .c-world-modal__status.js-account-trigger.is-require-setup {
     border: 2px solid var(--color-blue-400);
     background-color: rgba(62, 158, 214, 0.05);
@@ -873,17 +916,430 @@ svg {
     box-shadow: 0 2px 6px rgba(62, 158, 214, 0.3);
 }
 
-/* ほんのり優しく光ってユーザーの視線を集めるアニメーション */
+
 @keyframes pulse-attention {
     0% {
         box-shadow: 0 0 0 0 rgba(62, 158, 214, 0.4);
     }
+
     70% {
         box-shadow: 0 0 0 8px rgba(62, 158, 214, 0);
     }
+
     100% {
         box-shadow: 0 0 0 0 rgba(62, 158, 214, 0);
     }
 }
 
+/* ==========================================================================
+    👤 【モーダル4】 アーカイブワールド復帰・管理モーダル
+    ========================================================================== */
+.c-archive-modal__container {
+    position: relative;
+    max-width: 450px;
+    padding: 20px;
+    background-color: var(--theme-bg-surface);
+}
 
+
+
+
+
+/* ==========================================================================
+    🎮 🌐 ワールドダッシュボードコアレイアウト (.c-portal-*)
+    ========================================================================== */
+.c-portal-main {
+    padding: 16px;
+    background-color: var(--color-gray-100);
+    border-radius: 16px;
+}
+
+.c-portal-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+}
+
+.c-portal-main__left,
+.c-portal-main__right {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .c-portal-wrapper {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+
+    .c-portal-main__left {
+        flex: 5;
+    }
+
+    .c-portal-main__right {
+        flex: 6;
+    }
+}
+
+/* フォーム単体コンポーネント */
+.c-portal-input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: var(--theme-text-main);
+    background-color: var(--color-gray-50);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.c-portal-input:focus,
+.c-portal-tower-input:focus,
+.c-portal-textarea:focus {
+    outline: none;
+    border-color: var(--color-blue-400);
+    background-color: var(--theme-bg-surface);
+    box-shadow: 0 0 0 3px rgba(62, 158, 214, 0.15);
+}
+
+.c-portal-input.m-center {
+    text-align: center;
+}
+
+.c-portal-input {
+    font-size: 1.6rem;
+}
+
+/* 進捗インプットボックス群（GAS風モダン配置） */
+.c-portal-progress {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.c-portal-progress__box {
+    background-color: var(--theme-bg-surface);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.c-portal-progress__label {
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--color-gray-600);
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* 章とステージの横並び分離グループ */
+.c-portal-quest-input-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.c-portal-quest-separator {
+    font-weight: bold;
+    color: var(--color-gray-400);
+    font-size: 16px;
+}
+
+/* 四属性の塔（インプット格子） */
+.c-portal-towers {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.c-portal-towers__box {
+    background-color: var(--theme-bg-surface);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 12px;
+    text-align: center;
+    padding: 10px 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.c-portal-towers__label {
+    font-size: 10px;
+    font-weight: bold;
+    color: var(--color-gray-600);
+    display: block;
+    margin-bottom: 6px;
+}
+
+.c-portal-tower-input {
+    width: 100%;
+    padding: 6px;
+    font-size: 1.4rem;
+    text-align: center;
+    border: 1px solid var(--color-gray-200);
+    border-radius: 6px;
+    background-color: var(--color-gray-100);
+    transition: all 0.2s;
+}
+
+.c-portal-towers__box.m-blue {
+    border-bottom: 4px solid var(--color-tower-blue);
+}
+
+.c-portal-towers__box.m-red {
+    border-bottom: 4px solid var(--color-tower-red);
+}
+
+.c-portal-towers__box.m-green {
+    border-bottom: 4px solid var(--color-tower-green);
+}
+
+.c-portal-towers__box.m-yellow {
+    border-bottom: 4px solid var(--color-tower-yellow);
+}
+
+/* 活動自由記述欄 */
+.c-portal-memo {
+    background-color: var(--theme-bg-surface);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.c-portal-memo__title {
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--theme-interactive);
+    margin-bottom: 8px;
+}
+
+.c-portal-textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 13px;
+    color: var(--theme-text-main);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 8px;
+    background-color: var(--color-gray-50);
+    resize: none;
+    line-height: 1.5;
+}
+
+/* 目標パーティ枠 */
+.c-portal-party {
+    background-color: var(--theme-bg-surface);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.c-portal-party__title {
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--color-gray-600);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.c-portal-party__slots {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+}
+
+.c-portal-party__slot {
+    aspect-ratio: 1 / 1;
+    border: 2px dashed var(--color-gray-300);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-gray-100);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.c-portal-party__slot:hover {
+    border-color: var(--color-blue-400);
+    background-color: var(--color-green-100);
+}
+
+.c-portal-party__slot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.c-portal-party__slot span {
+    font-size: 18px;
+    color: var(--color-gray-400);
+    user-select: none;
+}
+
+/* ⚙️ メタ詳細設定（開閉アコーディオン）デザイン */
+.c-portal-settings-accordion {
+    margin-top: 16px;
+    background-color: var(--theme-bg-surface);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.c-portal-settings-toggle {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--color-gray-600);
+    background-color: var(--color-gray-50);
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+}
+
+.c-portal-settings-toggle:hover {
+    background-color: var(--color-gray-100);
+}
+
+.c-portal-settings-content {
+    padding: 16px;
+    border-top: 1px solid var(--color-gray-200);
+}
+
+.c-portal-settings-grid {
+   display: grid;
+   grid-template-columns: 1fr;
+   gap: 16px;
+}
+
+
+.c-portal-settings-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.c-portal-settings-field.m-flex-row {
+    flex-direction: row;
+    align-items: center;
+    grid-column: span 2;
+    padding-top: 4px;
+}
+
+.c-portal-settings-label {
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--color-gray-600);
+}
+
+.c-portal-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.c-portal-checkbox {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.c-portal-checkbox-text {
+    font-size: 12px;
+    color: var(--theme-text-main);
+}
+
+/* 日付・各種アクションフッター */
+.c-portal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--color-gray-400);
+    padding: 4px 8px;
+    margin-top: 16px;
+}
+
+.c-portal-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.c-portal-footer__notion-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+    color: var(--theme-text-main);
+    background-color: var(--theme-bg-surface);
+    border: 1px solid var(--color-gray-200);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.c-portal-footer__notion-btn:hover {
+    background-color: var(--color-gray-100);
+}
+
+.c-portal-footer__notion-btn img {
+    width: 12px;
+    height: 12px;
+}
+
+.c-portal-footer__update-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: white;
+    background-color: var(--color-emerald-500);
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    border: none;
+    font-size: 12px;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);
+}
+
+.c-portal-footer__update-btn:hover {
+    opacity: 0.9;
+}
+
+/* ==========================================================================
+   ⌨️ PLACEHOLDER STYLES (プレースホルダーのカスタム装飾)
+   ========================================================================== */
+/* 通常の入力欄とテキストエリアのプレースホルダー */
+.c-portal-input::placeholder,
+.c-portal-textarea::placeholder,
+.c-portal-tower-input::placeholder {
+    color: var(--theme-text-muted); 
+    font-size: 1.2rem; 
+    opacity: 1; 
+}
+
+/* 💡 [参考] フォーカス（選択）した瞬間にプレースホルダーをスッと消す演出 */
+.c-portal-input:focus::placeholder,
+.c-portal-tower-input:focus::placeholder,
+.c-portal-textarea:focus::placeholder {
+    color: transparent;         /* フォーカス時は透明にする */
+    transition: color 0.2s ease;
+}

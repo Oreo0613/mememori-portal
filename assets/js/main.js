@@ -1,3 +1,23 @@
+// 🔮 魔女マスタデータのキャッシュ用変数（配列に変更）
+let characterMaster = [];
+
+// 📜 魔女マスタデータ（JSON）の非同期読み込み処理
+async function fetchCharacterMaster() {
+  try {
+    // パスはプロジェクトの構成に合わせて調整してください
+    const response = await fetch("assets/json/character-master.json");
+    if (!response.ok)
+      throw new Error("キャラクターマスタの読み込みに失敗しました");
+    characterMaster = await response.json();
+    console.log(
+      "✅ キャラクターマスタデータのロードが完了しました",
+      characterMaster,
+    );
+  } catch (error) {
+    console.error("🚨 キャラクターマスタデータのロードエラー:", error);
+  }
+}
+
 // ==========================================================================
 // 🔥 ① FIREBASE INFRASTRUCTURE (初期化・認証・基本監視)
 // ==========================================================================
@@ -82,12 +102,10 @@ async function loadWorldList(userId) {
   try {
     console.log("⏳ Firestoreからワールド一覧をロード中...");
 
-    // ユーザー配下の「worlds」サブコレクションを、ワールド番号順（昇順）に取得
     const worldsRef = collection(db, "users", userId, "worlds");
     const q = query(worldsRef, orderBy("worldNumber", "asc"));
     const querySnapshot = await getDocs(q);
 
-    // 一旦リストの中身をクリアする
     worldListContainer.innerHTML = "";
 
     if (querySnapshot.empty) {
@@ -96,15 +114,31 @@ async function loadWorldList(userId) {
       return;
     }
 
-    // 取得したワールドデータをループして、HTML（<li>と<button>）を生成
+    let activeCount = 0;
+    // 💡 現在セッションに保存されている選択中ワールドIDを取得
+    const cachedWorldId = sessionStorage.getItem("app_current_world_id");
+
     querySnapshot.forEach((docSnap) => {
       const data = docSnap.data();
       const worldId = docSnap.id;
-      const worldNumber = data.worldNumber;
-      const worldName = data.worldName || ""; // 空なら空文字
 
-      // 💡 ワールド設定で記録されたキャラアイコンのパス（未設定ならデフォルト画像をセット）
-      const iconSrc = data.characterIcon || "assets/images/chara-icon/1.webp";
+      // isActive が明示的に false の場合は一軍セレクターから除外（アーカイブ隠蔽化）
+      if (data.isActive === false) return;
+
+      activeCount++;
+      const worldNumber = data.worldNumber;
+      const worldName = data.worldName || "";
+      const charId = data.characterId || null;
+
+      let iconSrc = "assets/images/chara-icon/1.webp";
+      if (charId && Array.isArray(characterMaster)) {
+        const foundChara = characterMaster.find(
+          (c) => String(c.id) === String(charId),
+        );
+        if (foundChara && foundChara.iconUrl) {
+          iconSrc = foundChara.iconUrl;
+        }
+      }
 
       const li = document.createElement("li");
       li.className = "c-world-modal__item";
@@ -115,68 +149,57 @@ async function loadWorldList(userId) {
       button.dataset.worldId = worldId;
       button.dataset.worldNumber = worldNumber;
 
-      // 🚀 修正：アイコン用のラッパーと img タグを作成
+      // 💡 【修正】現在選択中のワールドであれば最初からアクティブクラスを付与して視覚同期
+      if (cachedWorldId && String(cachedWorldId) === String(worldId)) {
+        button.classList.add("is-active");
+      }
+
       const iconWrap = document.createElement("div");
       iconWrap.className = "c-world-modal__btn-icon";
 
       const img = document.createElement("img");
       img.src = iconSrc;
-      img.alt = ""; // スクリーンリーダー用に空文字（テキストは info にあるため）
-      img.className = "c-world-modal__btn-img"; // ルールに則りケバブケースのクラス付与
+      img.alt = "";
+      img.className = "c-world-modal__btn-img";
       iconWrap.appendChild(img);
 
-      // 📦 2つの情報を包むコンテナ（div）を作成
       const infoWrap = document.createElement("div");
       infoWrap.className = "c-world-modal__btn-info";
 
-      // 🔢 ワールド番号用の要素を作成
       const numSpan = document.createElement("span");
       numSpan.className = "c-world-modal__btn-world";
       numSpan.textContent = `W ${worldNumber}`;
 
-      // 📝 ワールド名用の要素を作成
       const nameSpan = document.createElement("span");
       nameSpan.className = "c-world-modal__btn-name";
       nameSpan.textContent = worldName;
 
-      // 各要素を順番に組み立て
       infoWrap.appendChild(numSpan);
       infoWrap.appendChild(nameSpan);
 
-      // ボタンに「画像アイコン」→「テキスト情報（div）」の順で格納
       button.appendChild(iconWrap);
       button.appendChild(infoWrap);
 
-      // 🌍 クリックした時のワールド切り替えイベントを個別に紐付け
-      button.addEventListener("click", () => {
+      // 🌍 クリックした時のワールド切り替えイベント
+      button.addEventListener("click", async () => {
         document
           .querySelectorAll(".js-world-choice")
           .forEach((b) => b.classList.remove("is-active"));
         button.classList.add("is-active");
 
-        // ヘッダー（左上）の表示を即時更新
-        const currentWorldNumber = document.getElementById(
-          "js-current-world-number",
-        );
-        const currentWorldNameElement = document.getElementById(
-          "js-current-world-name",
-        );
-
-        if (currentWorldNumber)
-          currentWorldNumber.textContent = `W ${worldNumber}`;
-        if (currentWorldNameElement)
-          currentWorldNameElement.textContent = worldName;
-
-        // セッションストレージに「現在選択中のワールドID」を保持
         sessionStorage.setItem("app_current_world_id", worldId);
 
-        // モーダルを閉じる
+        // ワールド切替時にポータルの入力数値をFirestoreから同期ロードする
+        await loadPortalDashboardData(userId, worldId);
+
         const modalSelect = document.getElementById("js-world-modal");
         if (modalSelect) {
           modalSelect.classList.remove("is-open");
           modalSelect.setAttribute("aria-hidden", "true");
           modalSelect.setAttribute("inert", "");
         }
+
+        // 💡 【修正】要素の安全ガードを追加（nullエラーによるJS停止を完全に防止）
         const openSelectBtn = document.getElementById("js-world-modal-open");
         if (openSelectBtn) openSelectBtn.focus();
       });
@@ -184,17 +207,31 @@ async function loadWorldList(userId) {
       li.appendChild(button);
       worldListContainer.appendChild(li);
     });
-  } catch (error) {}
+
+    if (activeCount === 0) {
+      worldListContainer.innerHTML =
+        '<li class="c-world-modal__item" style="text-align:center; padding: 15px; color:#888;">アクティブなワールドがありません</li>';
+    }
+
+    console.log("✅ ワールド一覧のロードと生成が完了しました！");
+  } catch (error) {
+    console.error("🚨 ワールド一覧のロード中にエラーが発生しました:", error);
+  }
 }
 
 // 📄 ページ読み込み時のエントリーポイント
 document.addEventListener("DOMContentLoaded", async () => {
+  // 🔥 最優先で魔女マスタデータをロードしてメモリにキャッシュする
+  await fetchCharacterMaster();
+
   await insertFooter();
   setActiveNavigation();
 
   await insertWorldSelector();
   // 💡 共通モーダル制御・イベント初期化関数を起動
   initWorldSelectorEvent();
+  // 💡 新設：ダッシュボード保存やアコーディオン制御を起動
+  initPortalDashboardEvents();
 });
 
 // 📁 共通フッター挿入
@@ -256,11 +293,10 @@ function checkAccountRegistrationStatus() {
   const accountTrigger = document.querySelector(".js-account-trigger");
   const addWorldBtn = document.querySelector(".js-create-world");
 
-  // アプリ側で手動保存したカスタム名（リロード時はFirestoreからここに同期される）を取得
+  // アプリ側で手動保存したカスタム名を取得
   const savedCustomName = sessionStorage.getItem("app_custom_username");
 
   if (!savedCustomName) {
-    // ➔ ①アカウント未登録状態：視覚的補正(is-require-setup)をオンにし、ワールド追加ボタンをロック(is-disabled)
     if (accountTrigger) accountTrigger.classList.add("is-require-setup");
     if (addWorldBtn) {
       addWorldBtn.classList.add("is-disabled");
@@ -268,7 +304,6 @@ function checkAccountRegistrationStatus() {
     }
     return false;
   } else {
-    // ➔ ②アカウント登録完了状態：すべてのロッククラスを安全に除去
     if (accountTrigger) accountTrigger.classList.remove("is-require-setup");
     if (addWorldBtn) {
       addWorldBtn.classList.remove("is-disabled");
@@ -287,9 +322,6 @@ function initWorldSelectorEvent() {
   const openSelectBtn = document.getElementById("js-world-modal-open");
   const closeSelectBtn = document.getElementById("js-world-modal-close");
   const overlaySelect = document.getElementById("js-world-modal-overlay");
-  const choiceBtns = document.querySelectorAll(".js-world-choice");
-  const currentWorldNumber = document.getElementById("js-current-world-number");
-  const modalWorldText = document.getElementById("js-modal-user-text"); // 💡 表示位置の同期用
 
   // --- モーダル3（アカウント情報編集）の要素 ---
   const modalAccount = document.getElementById("js-account-modal");
@@ -300,9 +332,16 @@ function initWorldSelectorEvent() {
   const inputAccountName = document.getElementById("js-input-account-name");
   const fullUidText = document.getElementById("js-account-full-uid");
 
+  // --- モーダル4（アーカイブ管理復活モーダル）の要素 ---
+  const modalArchive = document.getElementById("js-archive-modal");
+  const openArchiveBtn = document.getElementById("js-btn-open-archive-manager");
+  const closeArchiveBtn = document.getElementById("js-archive-modal-close");
+  const overlayArchive = document.getElementById("js-archive-modal-overlay");
+
   // 🔒 初期状態（閉じているとき）は inert を付与して完全に眠らせておく
   if (modalSelect) modalSelect.setAttribute("inert", "");
   if (modalAccount) modalAccount.setAttribute("inert", "");
+  if (modalArchive) modalArchive.setAttribute("inert", "");
 
   // タイミングのズレを防ぐため、一瞬遅れて確実に要素を捕まえて初期化する
   setTimeout(() => {
@@ -318,9 +357,6 @@ function initWorldSelectorEvent() {
       modalSelect.classList.add("is-open");
       modalSelect.removeAttribute("aria-hidden");
       modalSelect.removeAttribute("inert");
-
-      const activeBtn = modalSelect.querySelector(".js-world-choice.is-active");
-      if (activeBtn) activeBtn.focus();
     });
   }
 
@@ -337,21 +373,50 @@ function initWorldSelectorEvent() {
   if (overlaySelect) overlaySelect.addEventListener("click", closeSelectModal);
 
   // --------------------------------------------------------------------------
+  // ⚙️ モーダル4：アーカイブ管理モーダルの開閉トリガー連携
+  // --------------------------------------------------------------------------
+  if (openArchiveBtn && modalArchive) {
+    openArchiveBtn.addEventListener("click", async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      // 親である選択モーダルを閉じる
+      closeSelectModal();
+
+      // 非アクティブリストを集計ロード
+      await loadArchiveWorldList(user.uid);
+
+      modalArchive.classList.add("is-open");
+      modalArchive.removeAttribute("aria-hidden");
+      modalArchive.removeAttribute("inert");
+    });
+  }
+
+  const closeArchiveModal = () => {
+    if (modalArchive) {
+      modalArchive.classList.remove("is-open");
+      modalArchive.setAttribute("aria-hidden", "true");
+      modalArchive.setAttribute("inert", "");
+    }
+  };
+  if (closeArchiveBtn)
+    closeArchiveBtn.addEventListener("click", closeArchiveModal);
+  if (overlayArchive)
+    overlayArchive.addEventListener("click", closeArchiveModal);
+
+  // --------------------------------------------------------------------------
   // 🔵 モーダル2：ワールド追加モーダルの開閉（★アカウント未登録時のロック付き）
   // --------------------------------------------------------------------------
   document.addEventListener("click", (e) => {
     const targetAddTrigger = e.target.closest(".js-create-world");
     if (!targetAddTrigger) return;
 
-    // CSSの pointer-events: none が適用されている場合は通常発動しませんが、
-    // JavaScript側でもセッション状態を見て二重で厳格にインターセプトガードをかけます
     const savedCustomName = sessionStorage.getItem("app_custom_username");
     if (!savedCustomName) {
       alert(
         "順番に登録しましょう！まずは「アカウント設定」からカスタムアカウント名を保存してください。",
       );
 
-      // アカウント設定モーダル（モーダル3）を自動起動
       if (modalAccount) {
         modalAccount.classList.add("is-open");
         modalAccount.removeAttribute("aria-hidden");
@@ -361,10 +426,9 @@ function initWorldSelectorEvent() {
           inputAccountName.focus();
         }
       }
-      return; // ここで処理を遮断し、ワールド追加モーダルは絶対に開かせない
+      return;
     }
 
-    // アカウント名が設定済みであれば通常通り開く
     const modalAdd = document.getElementById("js-create-modal");
     if (modalAdd) {
       modalAdd.classList.add("is-open");
@@ -397,13 +461,10 @@ function initWorldSelectorEvent() {
 
       const user = auth.currentUser;
       if (user) {
-        // 💡 Googleの user.displayName は一切見ない
         const savedCustomName = sessionStorage.getItem("app_custom_username");
         if (inputAccountName) {
           inputAccountName.value = savedCustomName ? savedCustomName : "";
         }
-
-        // システム識別用のUIDだけを画面のグレー背景エリアに反映
         if (fullUidText) fullUidText.textContent = user.uid;
       }
 
@@ -417,22 +478,15 @@ function initWorldSelectorEvent() {
 
   const closeAccountModal = () => {
     if (modalAccount) {
-      // 1. モーダル内の入力欄にフォーカスが残っていたら、強制的に解除して迷子を防ぐ
       const activeInput = modalAccount.querySelector(
         "input:focus, button:focus",
       );
       if (activeInput) {
         activeInput.blur();
       }
-
-      // 2. その後、安全に非表示属性を付与する
       modalAccount.classList.remove("is-open");
       modalAccount.setAttribute("aria-hidden", "true");
       modalAccount.setAttribute("inert", "");
-
-      // 3. アクセシビリティ親切設計：トリガーとなった元のボタンにフォーカスを戻す（任意）
-      const triggerBtn = document.getElementById("js-world-modal-open");
-      if (triggerBtn) triggerBtn.focus();
     }
   };
 
@@ -442,23 +496,7 @@ function initWorldSelectorEvent() {
     overlayAccount.addEventListener("click", closeAccountModal);
 
   // --------------------------------------------------------------------------
-  // 🌍 選択ワールドの切り替え・画面テキスト同期
-  // --------------------------------------------------------------------------
-  choiceBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const selectedWorldText = btn.textContent;
-
-      choiceBtns.forEach((b) => b.classList.remove("is-active"));
-      btn.classList.add("is-active");
-
-      if (currentWorldNumber)
-        currentWorldNumber.textContent = selectedWorldText;
-      closeSelectModal();
-    });
-  });
-
-  // --------------------------------------------------------------------------
-  // 📝 フォーム送信：①ワールド新規追加（Firestoreデータ保存）
+  // 📝 フォーム送信：①ワールド新規追加（Firestoreデータ保存 ＆ 即時ロード連動）
   // --------------------------------------------------------------------------
   const createWorldForm = document.getElementById("js-create-world-form");
   if (createWorldForm) {
@@ -480,38 +518,55 @@ function initWorldSelectorEvent() {
       try {
         console.log(`⏳ ユーザー「${user.uid}」の領域へデータを送信中...`);
 
-        // 1. Firestoreへデータ保存
-        await addDoc(collection(db, "users", user.uid, "worlds"), {
-          worldNumber: Number(inputNumber),
-          worldName: inputName || null,
-          createdAt: serverTimestamp(),
-        });
-
-        console.log("✅ 正常に書き込みが完了しました！");
-
-        // 2. モーダル内のワールド一覧リストを最新状態に再読み込み
-        await loadWorldList(user.uid);
-
-        // 3. 左上のヘッダーバッジに入力値を即時同期
-        if (currentWorldNumber) {
-          currentWorldNumber.textContent = `ワールド ${inputNumber}`;
-        }
-        const currentWorldNameElement = document.getElementById(
-          "js-current-world-name",
+        // 1. Firestoreへデータ保存（新しく追加されたドキュメントの参照を newWorldRef として受け取る）
+        const newWorldRef = await addDoc(
+          collection(db, "users", user.uid, "worlds"),
+          {
+            worldNumber: Number(inputNumber),
+            worldName: inputName || null,
+            isActive: true,
+            createdAt: serverTimestamp(),
+          },
         );
-        if (currentWorldNameElement) {
-          currentWorldNameElement.textContent = inputName || "名称未設定";
+
+        console.log(
+          `✅ 正常に書き込みが完了しました！ドキュメントID: ${newWorldRef.id}`,
+        );
+
+        // 💡 【ここが重要！】新規登録したワールドを「現在選択中のワールド」としてセッションに登録する
+        sessionStorage.setItem("app_current_world_id", newWorldRef.id);
+
+        // 1. 先にフォームをリセットし、送信ボタンのフォーカスを安全に外す
+        createWorldForm.reset();
+        const activeSubmitBtn = document.getElementById(
+          "js-create-world-submit",
+        );
+        if (activeSubmitBtn) {
+          activeSubmitBtn.blur();
         }
 
-        // 4. 入力フォームのリセットとモーダルを閉じる処理
-        createWorldForm.reset();
+        // 2. 警告対策：ダッシュボードデータを読み込む前に、確実にモーダルを完全に閉じて眠らせる
         const modalAdd = document.getElementById("js-create-modal");
         if (modalAdd) {
           modalAdd.classList.remove("is-open");
           modalAdd.setAttribute("aria-hidden", "true");
           modalAdd.setAttribute("inert", "");
         }
-        closeSelectModal();
+
+        // 3. モーダル内のワールド一覧リストを最新状態に再読み込み
+        await loadWorldList(user.uid);
+
+        // 4. 新規登録したワールドの情報をダッシュボードに反映・同期する
+        // (この中でフォーカスが移動しても、すでにモーダルは閉じているので警告は出ません)
+        await loadPortalDashboardData(user.uid, newWorldRef.id);
+
+        // ワールド選択モーダルも一緒にクローズ
+        const modalSelect = document.getElementById("js-world-modal");
+        if (modalSelect) {
+          modalSelect.classList.remove("is-open");
+          modalSelect.setAttribute("aria-hidden", "true");
+          modalSelect.setAttribute("inert", "");
+        }
       } catch (error) {
         console.error("❌ 本番階層への保存に失敗しました。原因:", error);
         alert(
@@ -539,7 +594,6 @@ function initWorldSelectorEvent() {
           `⏳ 画面にカスタムアカウント名「${newName}」を即時反映中...`,
         );
 
-        // 💡送信ボタンのフォーカスを安全に解除（アクセシビリティ警告エラー対策）
         const activeSubmitBtn = accountNameForm.querySelector(
           "button[type='submit']",
         );
@@ -547,23 +601,19 @@ function initWorldSelectorEvent() {
           activeSubmitBtn.blur();
         }
 
-        // 🌍 モーダル1ヘッダー内の名前要素を取得して即時書き換え
         const modalHeaderName = document.getElementById("js-modal-user-text");
         if (modalHeaderName) {
           modalHeaderName.textContent = newName;
         }
 
-        // 💡 Google側への同期を遮断し、アプリ専用の一時メモリ（セッション）に手動カスタム名を保存する
         sessionStorage.setItem("app_custom_username", newName);
 
-        // 🔥 Firestoreの一番上の階層（users/ユーザーID）に保存する
         await saveAccountData(user.uid, {
           accountId: user.uid,
           accountName: newName,
           updatedAt: serverTimestamp(),
         });
 
-        // 💡 ロック制御関数を呼び出して、追加ボタンのロック解除とオーラ消去をリアルタイム実行
         checkAccountRegistrationStatus();
 
         alert(
@@ -579,10 +629,311 @@ function initWorldSelectorEvent() {
 }
 
 // ==========================================================================
+// 🔄 【新設】ヘッダーのワールドセレクター表示を強制的に最新情報へ同期する関数
+// ==========================================================================
+function syncHeaderWorldSelector(worldNumber, worldName) {
+  const currentWorldNumber = document.getElementById("js-current-world-number");
+  const currentWorldNameElement = document.getElementById(
+    "js-current-world-name",
+  );
+
+  if (currentWorldNumber) {
+    currentWorldNumber.textContent = worldNumber
+      ? `W ${worldNumber}`
+      : "未登録";
+  }
+  if (currentWorldNameElement) {
+    currentWorldNameElement.textContent = worldName || "";
+  }
+}
+
+// ==========================================================================
+// 📥 【修正確定版】ポータルデータのロード・UIへのマッピング復元処理
+// ==========================================================================
+async function loadPortalDashboardData(userId, worldId) {
+  try {
+    console.log(`⏳ ワールド [${worldId}] のデータを読み込み中...`);
+    const worldDocRef = doc(db, "users", userId, "worlds", worldId);
+    const docSnap = await getDoc(worldDocRef);
+    if (!docSnap.exists()) return;
+
+    const data = docSnap.data();
+
+    // Firestoreからロードした最新のワールド番号とワールド名を、左上ヘッダーにも強制同期させる！
+    syncHeaderWorldSelector(data.worldNumber, data.worldName);
+
+    // クエスト章・ステージのバラバラ分解配置連動
+    const questStr = data.questProgress || ""; // 例: "13-28"
+    let chapter = "";
+    let stage = "";
+    if (questStr.includes("-")) {
+      const parts = questStr.split("-");
+      chapter = parts[0];
+      stage = parts[1];
+    }
+    document.getElementById("js-portal-quest-chapter").value = chapter;
+    document.getElementById("js-portal-quest-stage").value = stage;
+
+    // 各種塔・数値インプットの同期
+    document.getElementById("js-portal-muguu").value = data.towerMuguu || "";
+    document.getElementById("js-portal-tower-blue").value =
+      data.towerBlue || "";
+    document.getElementById("js-portal-tower-red").value = data.towerRed || "";
+    document.getElementById("js-portal-tower-green").value =
+      data.towerGreen || "";
+    document.getElementById("js-portal-tower-yellow").value =
+      data.towerYellow || "";
+    document.getElementById("js-portal-world-memo").value =
+      data.worldMemo || "";
+
+    // 詳細設定アコーディオンパーツの同期
+    document.getElementById("js-portal-setting-name").value =
+      data.worldName || "";
+    document.getElementById("js-portal-setting-start-date").value =
+      data.startDate || "";
+
+    // 💡 【一本化統合】「notionLink」を完全に廃止し、保存キーと同じ「externalLink」から安全にロード復元！
+    document.getElementById("js-portal-setting-link").value =
+      data.externalLink || "";
+
+    document.getElementById("js-portal-setting-icon").value =
+      data.characterId || "";
+    document.getElementById("js-portal-setting-active").checked =
+      data.isActive !== false;
+
+    // 最終更新日時
+    const updatedEl = document.getElementById("js-portal-world-updated");
+    if (updatedEl && data.updatedAt) {
+      const date = data.updatedAt.toDate();
+      updatedEl.textContent = `最終更新: ${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
+    }
+
+    // 外部リンクボタンの即時制御
+    const linkBtn = document.getElementById("js-portal-notion-link");
+    if (linkBtn) {
+      // 💡 ボタンの飛び先URLも「externalLink」に一本化
+      if (data.externalLink) {
+        linkBtn.href = data.externalLink;
+        linkBtn.style.display = "inline-flex";
+      } else {
+        linkBtn.style.display = "none";
+      }
+    }
+
+    console.log("✅ ダッシュボードデータのUIマッピングが完了しました");
+  } catch (error) {
+    console.error("🚨 ダッシュボードロードエラー:", error);
+  }
+}
+
+// ==========================================================================
+// 📥 アーカイブされた非アクティブワールドの一覧集計・復帰処理
+// ==========================================================================
+async function loadArchiveWorldList(userId) {
+  const archiveContainer = document.getElementById("js-archive-world-list");
+  if (!archiveContainer) return;
+
+  try {
+    const worldsRef = collection(db, "users", userId, "worlds");
+    const q = query(worldsRef, where("isActive", "==", false));
+    const querySnapshot = await getDocs(q);
+
+    archiveContainer.innerHTML = "";
+
+    if (querySnapshot.empty) {
+      archiveContainer.innerHTML =
+        '<li style="text-align:center; padding:10px; color:#aaa; font-size:12px;">アーカイブされたワールドはありません</li>';
+      return;
+    }
+
+    querySnapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      const worldId = docSnap.id;
+      const worldNumber = data.worldNumber;
+      const worldName = data.worldName || "名称未設定";
+
+      const li = document.createElement("li");
+      li.style.cssText =
+        "display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #e2e8f0;";
+
+      li.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="background:#94a3b8; color:#fff; font-size:10px; font-weight:bold; padding:2px 5px; border-radius:4px;">W ${worldNumber}</span>
+          <span style="font-size:13px; color:#1e293b; font-weight:bold;">${worldName}</span>
+        </div>
+        <button type="button" class="js-portal-restore-btn" data-world-id="${worldId}" style="background:#10b981; color:#fff; font-size:11px; padding:4px 10px; border-radius:4px; font-weight:bold; cursor:pointer;">復帰</button>
+      `;
+
+      // 復帰ボタンのイベント登録
+      li.querySelector(".js-portal-restore-btn").addEventListener(
+        "click",
+        async (e) => {
+          if (confirm(`ワールド ${worldNumber} をアクティブに戻しますか？`)) {
+            const wId = e.target.dataset.worldId;
+            const worldDocRef = doc(db, "users", userId, "worlds", wId);
+            await setDoc(
+              worldDocRef,
+              { isActive: true, updatedAt: serverTimestamp() },
+              { merge: true },
+            );
+
+            alert("ワールドをアクティブリストに戻しました！");
+            await loadWorldList(userId); // 一軍リスト再生成
+            await loadArchiveWorldList(userId); // アーカイブ内再生成
+          }
+        },
+      );
+
+      archiveContainer.appendChild(li);
+    });
+  } catch (error) {
+    console.error("🚨 アーカイブロードエラー:", error);
+  }
+}
+
+// ==========================================================================
+// 📥 【新設】ダッシュボード側のリアルタイム数値保存 ＆ アコーディオン開閉
+// ==========================================================================
+function initPortalDashboardEvents() {
+  const toggleBtn = document.getElementById("js-portal-settings-toggle");
+  const contentPanel = document.getElementById("js-portal-settings-content");
+
+  // 1. メタ詳細設定アコーディオンのクリーンな開閉
+  if (toggleBtn && contentPanel) {
+    contentPanel.style.display = "none";
+    toggleBtn.addEventListener("click", () => {
+      if (contentPanel.style.display === "none") {
+        contentPanel.style.display = "block";
+        toggleBtn.innerHTML =
+          '<i class="fa-solid fa-gear"></i> ワールドの詳細メタ設定を隠す';
+      } else {
+        contentPanel.style.display = "none";
+        toggleBtn.innerHTML =
+          '<i class="fa-solid fa-gear"></i> ワールドの詳細設定（名前・開始日・外部リンク等）を編集';
+      }
+    });
+  }
+
+  // 2. 「設定と数値を保存」ボタンのFirestore連動コミット処理
+  const updateBtn = document.getElementById("js-portal-btn-update");
+  if (updateBtn) {
+    updateBtn.addEventListener("click", async () => {
+      const user = auth.currentUser;
+      const currentWorldId = sessionStorage.getItem("app_current_world_id");
+
+      if (!user || !currentWorldId) {
+        alert("ワールドが選択されていないか、セッションが切れています。");
+        return;
+      }
+
+      // UIインプット値の回収
+      const chapter = document
+        .getElementById("js-portal-quest-chapter")
+        .value.trim();
+      const stage = document
+        .getElementById("js-portal-quest-stage")
+        .value.trim();
+      const questProgressStr = chapter && stage ? `${chapter}-${stage}` : ""; // 分割値を結合
+
+      const towerMuguu = document
+        .getElementById("js-portal-muguu")
+        .value.trim();
+      const towerBlue = document
+        .getElementById("js-portal-tower-blue")
+        .value.trim();
+      const towerRed = document
+        .getElementById("js-portal-tower-red")
+        .value.trim();
+      const towerGreen = document
+        .getElementById("js-portal-tower-green")
+        .value.trim();
+      const towerYellow = document
+        .getElementById("js-portal-tower-yellow")
+        .value.trim();
+      const worldMemo = document
+        .getElementById("js-portal-world-memo")
+        .value.trim();
+
+      // 詳細設定メタエリアの回収
+      const worldName = document
+        .getElementById("js-portal-setting-name")
+        .value.trim();
+      const startDate = document.getElementById(
+        "js-portal-setting-start-date",
+      ).value;
+      const externalLink = document
+        .getElementById("js-portal-setting-link")
+        .value.trim();
+      const characterId = document
+        .getElementById("js-portal-setting-icon")
+        .value.trim();
+      const isActive = document.getElementById(
+        "js-portal-setting-active",
+      ).checked;
+
+      try {
+        updateBtn.disabled = true;
+        updateBtn.innerHTML =
+          '<i class="fa-solid fa-spinner fa-spin"></i> 保存中...';
+
+        const worldDocRef = doc(
+          db,
+          "users",
+          user.uid,
+          "worlds",
+          currentWorldId,
+        );
+
+        // Firestoreへのマージアップデート実行
+        await setDoc(
+          worldDocRef,
+          {
+            questProgress: questProgressStr,
+            towerMuguu: towerMuguu ? Number(towerMuguu) : null,
+            towerBlue: towerBlue ? Number(towerBlue) : null,
+            towerRed: towerRed ? Number(towerRed) : null,
+            towerGreen: towerGreen ? Number(towerGreen) : null,
+            towerYellow: towerYellow ? Number(towerYellow) : null,
+            worldMemo: worldMemo || null,
+            worldName: worldName || "名称未設定",
+            startDate: startDate || null,
+            externalLink: externalLink || null,
+            characterId: characterId || null,
+            isActive: isActive,
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
+
+        alert("ワールドの進捗数値をFirestoreへ正常に保存しました！");
+
+        // 保存内容を上部セレクターや一覧に再反映・同期
+        await loadWorldList(user.uid);
+
+        // もし詳細設定で非アクティブ化をコミットした場合は、現在の選択状態を初期化する
+        if (!isActive) {
+          sessionStorage.removeItem("app_current_world_id");
+          window.location.reload(); // リロードをかけてクリーンに状態をリセット
+        } else {
+          await loadPortalDashboardData(user.uid, currentWorldId);
+        }
+      } catch (error) {
+        console.error("🚨 進捗数値の保存エラー:", error);
+        alert("数値の保存に失敗しました。");
+      } finally {
+        updateBtn.disabled = false;
+        updateBtn.innerHTML =
+          '<i class="fa-solid fa-floppy-disk"></i> 設定と数値を保存';
+      }
+    });
+  }
+}
+
+// ==========================================================================
 // 🚪 ③ GOOGLE LOGOUT & SECURITY GATE (ログアウト・ログイン監視・防犯ロック)
 // ==========================================================================
 
-// 💡 1. ログアウトボタンのクリック処理
+// 💡 1. ログアウトボタン of クリック処理
 document.addEventListener("click", async (e) => {
   if (e.target.closest("#js-btn-logout")) {
     if (confirm("ログアウトしますか？")) {
@@ -590,6 +941,7 @@ document.addEventListener("click", async (e) => {
         console.log("⏳ Googleからサインアウト中...");
         // ログアウト時はセッションストレージも綺麗にクリアする
         sessionStorage.removeItem("app_custom_username");
+        sessionStorage.removeItem("app_current_world_id");
         await signOut(auth);
         console.log("👋 ログアウトが成功しました。");
       } catch (error) {
@@ -624,8 +976,14 @@ onAuthStateChanged(auth, async (user) => {
         if (modalHeaderName) modalHeaderName.textContent = "未設定";
       }
 
-      // 🔥【追加】ここでログインしたユーザーのワールド一覧を読み込んでモーダルにセットする！
+      // 登録されたワールド一覧をロードしてモーダルにセットする
       await loadWorldList(user.uid);
+
+      // 💡 セッションに「選択中ワールド」が残っていれば自動でデータをダッシュボードに復元ロードする
+      const activeWorldId = sessionStorage.getItem("app_current_world_id");
+      if (activeWorldId) {
+        await loadPortalDashboardData(user.uid, activeWorldId);
+      }
     } catch (error) {
       console.error("🚨 アカウント情報の自動ロードに失敗しました:", error);
     }

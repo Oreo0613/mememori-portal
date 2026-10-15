@@ -15,30 +15,147 @@
 </head>
 
 <body>
-    <!-- スペース用サンプルここから -->
-    <img src="http://www.google.com/s2/favicons?domain=https://www.taniweb.jp/" alt="">
-    <img src="http://www.google.com/s2/favicons?domain=https://www.taniweb.jp/" alt="">
-    <!-- スペース用サンプルここまで -->
+    <div id="js-world-selector-container" class="c-main__header js-header-container"></div>
 
-    <!-- メインレイアウトのベース -->
-    <div class="c-main">
-        <!-- 💡 外部から読み込むヘッダー（ワールドセレクター）の受け皿 -->
-        <div id="js-world-selector-container" class="c-main__header js-header-container"></div>
+    <!-- 🌍 選択中のワールドの進捗をその場で管理するメインダッシュボード -->
+    <main class="c-portal-tab is-active" style="display: block; max-width: 1200px; margin: 0 auto; padding-top: 64px;">
 
-        <!-- ヒーローエリア（タイトルやログインボタンなど） -->
-        <div class="c-main__hero">
-            <!-- ここにログイン前/後のメインビジュアルを配置 -->
+        <!-- 📦 メインコンテナ：PCでは横並び、スマホでは縦並びにCSSで可変 -->
+        <div class="c-portal-main">
+            <div class="c-portal-wrapper">
+
+                <!-- 👈 左側：進捗数値入力・四属性の塔・活動メモエリア -->
+                <div class="c-portal-main__left">
+
+                    <!-- クエスト（章-ステージ分割） ＆ メインの塔進捗入力 -->
+                    <div class="c-portal-progress">
+                        <div class="c-portal-progress__box m-quest-box">
+                            <span class="c-portal-progress__label">クエスト進捗</span>
+                            <div class="c-portal-quest-input-group">
+                                <input type="number" id="js-portal-quest-chapter" class="c-portal-input m-center"
+                                    placeholder="0" min="1">
+                                <span class="c-portal-quest-separator">-</span>
+                                <input type="number" id="js-portal-quest-stage" class="c-portal-input m-center"
+                                    placeholder="0" min="1">
+                            </div>
+                        </div>
+                        <div class="c-portal-progress__box">
+                            <span class="c-portal-progress__label">無窮の塔</span>
+                            <input type="number" id="js-portal-muguu" class="c-portal-input m-center"
+                                placeholder="0" min="0">
+                        </div>
+                    </div>
+
+                    <!-- 四属性の塔（藍・紅・翠·黄）数値入力 -->
+                    <div class="c-portal-towers">
+                        <div class="c-portal-towers__box m-blue">
+                            <span class="c-portal-towers__label">藍属性</span>
+                            <input type="number" id="js-portal-tower-blue" class="c-portal-tower-input" placeholder="0"
+                                min="0">
+                        </div>
+                        <div class="c-portal-towers__box m-red">
+                            <span class="c-portal-towers__label">紅属性</span>
+                            <input type="number" id="js-portal-tower-red" class="c-portal-tower-input" placeholder="0"
+                                min="0">
+                        </div>
+                        <div class="c-portal-towers__box m-green">
+                            <span class="c-portal-towers__label">翠属性</span>
+                            <input type="number" id="js-portal-tower-green" class="c-portal-tower-input" placeholder="0"
+                                min="0">
+                        </div>
+                        <div class="c-portal-towers__box m-yellow">
+                            <span class="c-portal-towers__label">黄属性</span>
+                            <input type="number" id="js-portal-tower-yellow" class="c-portal-tower-input"
+                                placeholder="0" min="0">
+                        </div>
+                    </div>
+
+                    <!-- ワールドの概要備考メモ・活動コメント -->
+                    <div class="c-portal-memo">
+                        <h4 class="c-portal-memo__title">ワールド活動メモ</h4>
+                        <textarea id="js-portal-world-memo" class="c-portal-textarea"
+                            placeholder="自由に記述できます" rows="3"></textarea>
+                    </div>
+
+                </div>
+
+                <!-- 👉 右側：目標パーティ編成エリア -->
+                <div class="c-portal-main__right">
+                    <div class="c-portal-party">
+                        <h4 class="c-portal-party__title">
+                            <i class="fa-solid fa-shield-halved"></i> 現在の目標パーティ編成
+                        </h4>
+                        <div class="c-portal-party__slots">
+                            <div class="c-portal-party__slot"><img id="js-portal-party-1" src=""
+                                    style="display:none;"><span>+</span></div>
+                            <div class="c-portal-party__slot"><img id="js-portal-party-2" src=""
+                                    style="display:none;"><span>+</span></div>
+                            <div class="c-portal-party__slot"><img id="js-portal-party-3" src=""
+                                    style="display:none;"><span>+</span></div>
+                            <div class="c-portal-party__slot"><img id="js-portal-party-4" src=""
+                                    style="display:none;"><span>+</span></div>
+                            <div class="c-portal-party__slot"><img id="js-portal-party-5" src=""
+                                    style="display:none;"><span>+</span></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ⚙️ 詳細設定エリア（開閉アコーディオン仕様） -->
+            <div class="c-portal-settings-accordion">
+                <button type="button" id="js-portal-settings-toggle" class="c-portal-settings-toggle">
+                    <i class="fa-solid fa-gear"></i> ワールドの詳細設定を編集
+                </button>
+
+                <div id="js-portal-settings-content" class="c-portal-settings-content">
+                    <div class="c-portal-settings-grid">
+                        <div class="c-portal-settings-field">
+                            <label class="c-portal-settings-label">ワールド名（サーバー識別名）</label>
+                            <input type="text" id="js-portal-setting-name" class="c-portal-input" placeholder="例：アマギ">
+                        </div>
+                        <div class="c-portal-settings-field">
+                            <label class="c-portal-settings-label">開始日</label>
+                            <input type="date" id="js-portal-setting-start-date" class="c-portal-input">
+                        </div>
+                        <div class="c-portal-settings-field m-col-span-2">
+                            <label class="c-portal-settings-label">外部リンク（Notion等URL）</label>
+                            <input type="url" id="js-portal-setting-link" class="c-portal-input"
+                                placeholder="https://notion.so...">
+                        </div>
+                        <div class="c-portal-settings-field">
+                            <label class="c-portal-settings-label">ワールドのアイコン画像URL</label>
+                            <input type="text" id="js-portal-setting-icon" class="c-portal-input"
+                                placeholder="assets/images/chara-icon/1.webp">
+                        </div>
+                        <div class="c-portal-settings-field m-flex-row">
+                            <label class="c-portal-checkbox-label">
+                                <input type="checkbox" id="js-portal-setting-active" class="c-portal-checkbox" checked>
+                                <span class="c-portal-checkbox-text">このワールドをアクティブにする（チェックを外すとアーカイブ化）</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🗓️ 日付・各種アクションフッター -->
+            <div class="c-portal-footer">
+                <span id="js-portal-world-updated">最終更新: ──</span>
+                <div class="c-portal-actions">
+                    <a id="js-portal-notion-link" href="https://notion.com" class="c-portal-footer__notion-btn"
+                        target="_blank">
+                        <img src="http://google.com"> 外部リンク
+                    </a>
+                    <button type="button" id="js-portal-btn-update" class="c-btn c-portal-footer__update-btn">
+                        <i class="fa-solid fa-floppy-disk"></i> 更新する
+                    </button>
+                </div>
+            </div>
+
         </div>
 
-        <!-- 💡 各タブ（SPA）のコンテンツが動的に表示されるメインコンテナ -->
-        <main class="c-main__container js-main-content">
-            <!-- 
-                JavaScriptでここに 
-                portal.html, diamond.html, character.html, arcana.html 
-                などの中身を非同期で流し込む、または最初から全タブ分を非表示で置いておく 
-                -->
-        </main>
-    </div>
+    </main>
+
 
     <!-- 外部から読み込むフッターの受け皿 -->
     <footer id="js-footer-container" class="c-footer js-footer-container">
