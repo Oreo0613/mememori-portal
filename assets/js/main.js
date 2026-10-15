@@ -27,6 +27,9 @@ import {
   doc,
   setDoc,
   getDoc,
+  getDocs,
+  query,
+  orderBy,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 import {
@@ -69,6 +72,119 @@ async function loadAccountData(userId) {
     console.error("エラー:", error);
     return null;
   }
+}
+
+// 🌐 ワールド情報のロード・モーダルリスト生成処理
+async function loadWorldList(userId) {
+  const worldListContainer = document.querySelector(".js-world-list");
+  if (!worldListContainer) return;
+
+  try {
+    console.log("⏳ Firestoreからワールド一覧をロード中...");
+
+    // ユーザー配下の「worlds」サブコレクションを、ワールド番号順（昇順）に取得
+    const worldsRef = collection(db, "users", userId, "worlds");
+    const q = query(worldsRef, orderBy("worldNumber", "asc"));
+    const querySnapshot = await getDocs(q);
+
+    // 一旦リストの中身をクリアする
+    worldListContainer.innerHTML = "";
+
+    if (querySnapshot.empty) {
+      worldListContainer.innerHTML =
+        '<li class="c-world-modal__item" style="text-align:center; padding: 15px; color:#888;">登録されたワールドがありません</li>';
+      return;
+    }
+
+    // 取得したワールドデータをループして、HTML（<li>と<button>）を生成
+    querySnapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      const worldId = docSnap.id;
+      const worldNumber = data.worldNumber;
+      const worldName = data.worldName || ""; // 空なら空文字
+
+      // 💡 ワールド設定で記録されたキャラアイコンのパス（未設定ならデフォルト画像をセット）
+      const iconSrc = data.characterIcon || "assets/images/chara-icon/1.webp";
+
+      const li = document.createElement("li");
+      li.className = "c-world-modal__item";
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "c-world-modal__choice-btn js-world-choice";
+      button.dataset.worldId = worldId;
+      button.dataset.worldNumber = worldNumber;
+
+      // 🚀 修正：アイコン用のラッパーと img タグを作成
+      const iconWrap = document.createElement("div");
+      iconWrap.className = "c-world-modal__btn-icon";
+
+      const img = document.createElement("img");
+      img.src = iconSrc;
+      img.alt = ""; // スクリーンリーダー用に空文字（テキストは info にあるため）
+      img.className = "c-world-modal__btn-img"; // ルールに則りケバブケースのクラス付与
+      iconWrap.appendChild(img);
+
+      // 📦 2つの情報を包むコンテナ（div）を作成
+      const infoWrap = document.createElement("div");
+      infoWrap.className = "c-world-modal__btn-info";
+
+      // 🔢 ワールド番号用の要素を作成
+      const numSpan = document.createElement("span");
+      numSpan.className = "c-world-modal__btn-world";
+      numSpan.textContent = `W ${worldNumber}`;
+
+      // 📝 ワールド名用の要素を作成
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "c-world-modal__btn-name";
+      nameSpan.textContent = worldName;
+
+      // 各要素を順番に組み立て
+      infoWrap.appendChild(numSpan);
+      infoWrap.appendChild(nameSpan);
+
+      // ボタンに「画像アイコン」→「テキスト情報（div）」の順で格納
+      button.appendChild(iconWrap);
+      button.appendChild(infoWrap);
+
+      // 🌍 クリックした時のワールド切り替えイベントを個別に紐付け
+      button.addEventListener("click", () => {
+        document
+          .querySelectorAll(".js-world-choice")
+          .forEach((b) => b.classList.remove("is-active"));
+        button.classList.add("is-active");
+
+        // ヘッダー（左上）の表示を即時更新
+        const currentWorldNumber = document.getElementById(
+          "js-current-world-number",
+        );
+        const currentWorldNameElement = document.getElementById(
+          "js-current-world-name",
+        );
+
+        if (currentWorldNumber)
+          currentWorldNumber.textContent = `W ${worldNumber}`;
+        if (currentWorldNameElement)
+          currentWorldNameElement.textContent = worldName;
+
+        // セッションストレージに「現在選択中のワールドID」を保持
+        sessionStorage.setItem("app_current_world_id", worldId);
+
+        // モーダルを閉じる
+        const modalSelect = document.getElementById("js-world-modal");
+        if (modalSelect) {
+          modalSelect.classList.remove("is-open");
+          modalSelect.setAttribute("aria-hidden", "true");
+          modalSelect.setAttribute("inert", "");
+        }
+        const openSelectBtn = document.getElementById("js-world-modal-open");
+        if (openSelectBtn) openSelectBtn.focus();
+      });
+
+      li.appendChild(button);
+      worldListContainer.appendChild(li);
+    });
+  } catch (error) {}
 }
 
 // 📄 ページ読み込み時のエントリーポイント
@@ -301,11 +417,25 @@ function initWorldSelectorEvent() {
 
   const closeAccountModal = () => {
     if (modalAccount) {
+      // 1. モーダル内の入力欄にフォーカスが残っていたら、強制的に解除して迷子を防ぐ
+      const activeInput = modalAccount.querySelector(
+        "input:focus, button:focus",
+      );
+      if (activeInput) {
+        activeInput.blur();
+      }
+
+      // 2. その後、安全に非表示属性を付与する
       modalAccount.classList.remove("is-open");
       modalAccount.setAttribute("aria-hidden", "true");
       modalAccount.setAttribute("inert", "");
+
+      // 3. アクセシビリティ親切設計：トリガーとなった元のボタンにフォーカスを戻す（任意）
+      const triggerBtn = document.getElementById("js-world-modal-open");
+      if (triggerBtn) triggerBtn.focus();
     }
   };
+
   if (closeAccountBtn)
     closeAccountBtn.addEventListener("click", closeAccountModal);
   if (overlayAccount)
@@ -350,6 +480,7 @@ function initWorldSelectorEvent() {
       try {
         console.log(`⏳ ユーザー「${user.uid}」の領域へデータを送信中...`);
 
+        // 1. Firestoreへデータ保存
         await addDoc(collection(db, "users", user.uid, "worlds"), {
           worldNumber: Number(inputNumber),
           worldName: inputName || null,
@@ -358,12 +489,13 @@ function initWorldSelectorEvent() {
 
         console.log("✅ 正常に書き込みが完了しました！");
 
-        // 🌍 【追加・修正】左上のバッジにワールド番号とワールド名を即時同期
+        // 2. モーダル内のワールド一覧リストを最新状態に再読み込み
+        await loadWorldList(user.uid);
+
+        // 3. 左上のヘッダーバッジに入力値を即時同期
         if (currentWorldNumber) {
           currentWorldNumber.textContent = `ワールド ${inputNumber}`;
         }
-
-        // ✨ ここを追加：新設したIDを取得して、入力されたワールド名（空なら"（名称未設定）"など）を反映
         const currentWorldNameElement = document.getElementById(
           "js-current-world-name",
         );
@@ -371,6 +503,7 @@ function initWorldSelectorEvent() {
           currentWorldNameElement.textContent = inputName || "名称未設定";
         }
 
+        // 4. 入力フォームのリセットとモーダルを閉じる処理
         createWorldForm.reset();
         const modalAdd = document.getElementById("js-create-modal");
         if (modalAdd) {
@@ -471,66 +604,32 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     console.log(`👤 ログイン監視中... (UID: ${user.uid})`);
 
-    // 🌍 HTML側の各ユーザー情報表示パーツを正確に捕まえる
-    const headerTriggerName = document.getElementById("js-current-world-name"); // 左上トリガー内の名前
-    const modalHeaderName = document.getElementById("js-modal-user-text"); // モーダル1ヘッダー内の名前
-    const modalUidText = document.getElementById("js-modal-uid-text"); // モーダル1ヘッダー内のID枠
+    const modalHeaderName = document.getElementById("js-modal-user-text");
+    const modalUidText = document.getElementById("js-modal-uid-text");
 
-    // 🆔 UID表示の安全な切り出し反映
     if (modalUidText) {
       modalUidText.textContent = `ID: ${user.uid.substring(0, 8)}...`;
     }
 
-    // 💡【コアアップデート】セッションではなく、Firestoreのデータベースから登録名を直接自動ロードする
     try {
       console.log("⏳ Firestoreからアカウント情報を自動ロード中...");
       const accountData = await loadAccountData(user.uid);
 
       if (accountData && accountData.accountName) {
-        // ------------------------------------------------------------------
-        // ⭕ アカウント名がすでに手動登録・保存されている場合の処理
-        // ------------------------------------------------------------------
         const savedCustomName = accountData.accountName;
-        console.log(
-          `main.js:410 ⏳ 画面にカスタムアカウント名「${savedCustomName}」を即時反映中...`,
-        );
-
-        // セッションストレージ側にも最新値を同期してバックアップ
         sessionStorage.setItem("app_custom_username", savedCustomName);
-
-        // 各種HTMLテキストの書き換えと、非表示(is-hidden)の安全な解除
-        if (headerTriggerName) {
-          headerTriggerName.textContent = savedCustomName;
-          headerTriggerName.classList.remove("is-hidden"); // 確実に名前を表示させる
-        }
-        if (modalHeaderName) {
-          modalHeaderName.textContent = savedCustomName;
-        }
+        if (modalHeaderName) modalHeaderName.textContent = savedCustomName;
       } else {
-        // ------------------------------------------------------------------
-        // ❌ アカウント名がまだ手動登録されていない「初回訪問時」の処理
-        // ------------------------------------------------------------------
-        console.log(
-          "ℹ️ Firestoreにまだアカウントデータが登録されていません。新規登録が必要です。",
-        );
-
-        // 未設定時は念のため一時メモリも確実に空にする
         sessionStorage.removeItem("app_custom_username");
-
-        if (headerTriggerName) {
-          headerTriggerName.textContent = "";
-          headerTriggerName.classList.add("is-hidden"); // 登録されるまで左上の名前を完全に消し去る
-        }
-        if (modalHeaderName) {
-          modalHeaderName.textContent = "未設定";
-        }
+        if (modalHeaderName) modalHeaderName.textContent = "未設定";
       }
+
+      // 🔥【追加】ここでログインしたユーザーのワールド一覧を読み込んでモーダルにセットする！
+      await loadWorldList(user.uid);
     } catch (error) {
       console.error("🚨 アカウント情報の自動ロードに失敗しました:", error);
     }
 
-    // 💡 【超重要】上記データ取得が完了したタイミングでロック状態判定を呼び出す！
-    // これにより、手動登録の有無に応じて is-require-setup や is-disabled が100%完璧に同期連動します。
     checkAccountRegistrationStatus();
   } else {
     console.log(

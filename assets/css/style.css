@@ -583,7 +583,7 @@ svg {
 
 .c-world-modal__choice-btn {
     width: 100%;
-    padding: 12px;
+    padding: 8px;
     font-size: 1.4rem;
     font-weight: 500;
     color: var(--theme-text-main);
@@ -593,6 +593,10 @@ svg {
     text-align: center;
     cursor: pointer;
     transition: all 0.2s ease;
+    display: flex;
+    justify-content: flex-start;
+    /* align-items: center; */
+    gap: 12px;
 }
 
 .c-world-modal__choice-btn:hover {
@@ -626,6 +630,31 @@ svg {
     background-color: var(--theme-accent-action-hover);
 }
 
+.c-world-modal__btn-info {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.c-world-modal__btn-world {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.c-world-modal__btn-name {
+    font-size: 1.1rem;
+}
+
+.c-world-modal__btn-icon {
+    width: 36px;
+    height: 36px;
+}
+
+.c-world-modal__btn-icon img {
+    width: 100%;
+    height: auto;
+    aspect-ratio:  1 / 1;
+}
 
 /* ====================================================
    📥 【モーダル2】 ワールド追加モーダル
