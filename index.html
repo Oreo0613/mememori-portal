@@ -92,17 +92,52 @@
                                 <i class="fa-solid fa-shield-halved"></i> パーティ名を取得
                             </h4>
                             <div class="c-portal-party__slots">
-                                <div class="c-portal-party__slot"><img id="js-portal-party-1" src=""
-                                        style="display:none;"><span>+</span></div>
-                                <div class="c-portal-party__slot"><img id="js-portal-party-2" src=""
-                                        style="display:none;"><span>+</span></div>
-                                <div class="c-portal-party__slot"><img id="js-portal-party-3" src=""
-                                        style="display:none;"><span>+</span></div>
-                                <div class="c-portal-party__slot"><img id="js-portal-party-4" src=""
-                                        style="display:none;"><span>+</span></div>
-                                <div class="c-portal-party__slot"><img id="js-portal-party-5" src=""
-                                        style="display:none;"><span>+</span></div>
+                                <!-- 枠1 -->
+                                <button type="button" class="c-portal-party__slot js-open-character-picker"
+                                    data-target-input="js-portal-party-chara-1"
+                                    data-target-preview="js-portal-party-img-1">
+                                    <img id="js-portal-party-img-1" src="" class="is-hidden" alt="枠1">
+                                    <span>+</span>
+                                    <input type="hidden" id="js-portal-party-chara-1" value="">
+                                </button>
+
+                                <!-- 枠2 -->
+                                <button type="button" class="c-portal-party__slot js-open-character-picker"
+                                    data-target-input="js-portal-party-chara-2"
+                                    data-target-preview="js-portal-party-img-2">
+                                    <img id="js-portal-party-img-2" src="" class="is-hidden" alt="枠2">
+                                    <span>+</span>
+                                    <input type="hidden" id="js-portal-party-chara-2" value="">
+                                </button>
+
+                                <!-- 枠3 -->
+                                <button type="button" class="c-portal-party__slot js-open-character-picker"
+                                    data-target-input="js-portal-party-chara-3"
+                                    data-target-preview="js-portal-party-img-3">
+                                    <img id="js-portal-party-img-3" src="" class="is-hidden" alt="枠3">
+                                    <span>+</span>
+                                    <input type="hidden" id="js-portal-party-chara-3" value="">
+                                </button>
+
+                                <!-- 枠4 -->
+                                <button type="button" class="c-portal-party__slot js-open-character-picker"
+                                    data-target-input="js-portal-party-chara-4"
+                                    data-target-preview="js-portal-party-img-4">
+                                    <img id="js-portal-party-img-4" src="" class="is-hidden" alt="枠4">
+                                    <span>+</span>
+                                    <input type="hidden" id="js-portal-party-chara-4" value="">
+                                </button>
+
+                                <!-- 枠5 -->
+                                <button type="button" class="c-portal-party__slot js-open-character-picker"
+                                    data-target-input="js-portal-party-chara-5"
+                                    data-target-preview="js-portal-party-img-5">
+                                    <img id="js-portal-party-img-5" src="" class="is-hidden" alt="枠5">
+                                    <span>+</span>
+                                    <input type="hidden" id="js-portal-party-chara-5" value="">
+                                </button>
                             </div>
+
                         </div>
                     </div>
 
@@ -118,17 +153,21 @@
                             <div class="c-portal-settings-field">
                                 <label class="c-portal-settings-label">ワールドのアイコン</label>
 
-                                <button type="button" id="js-portal-character-trigger" class="c-portal-chara-btn">
+                                <button type="button" id="js-portal-character-trigger"
+                                    class="c-portal-chara-btn js-open-character-picker"
+                                    data-target-input="js-portal-setting-character-id"
+                                    data-target-preview="js-portal-setting-icon-preview">
                                     <img id="js-portal-setting-icon-preview" src="assets/images/chara-icon/1.webp"
                                         alt="キャラクターアイコン">
                                 </button>
+
 
                                 <input type="hidden" id="js-portal-setting-character-id" value="">
                             </div>
                             <div class="c-portal-settings-field">
                                 <label class="c-portal-settings-label">ワールド名</label>
                                 <input type="text" id="js-portal-setting-name" class="c-portal-input"
-                                    placeholder="例：アマギ">
+                                    placeholder="例：新プレイヤー">
                             </div>
                             <div class="c-portal-settings-field">
                                 <label class="c-portal-settings-label">開始日</label>
@@ -148,7 +187,7 @@
                                     </select>
                                 </div>
                             </div>
-                            
+
                         </div>
                     </div>
                 </div>
@@ -156,8 +195,8 @@
                 <div class="c-portal-footer">
                     <span id="js-portal-world-updated">最終更新: ──</span>
                     <div class="c-portal-actions">
-                        <a id="js-portal-external-link" href="https://notion.com" class="c-portal-footer__external-link-btn"
-                            target="_blank">
+                        <a id="js-portal-external-link" href="https://notion.com"
+                            class="c-portal-footer__external-link-btn" target="_blank">
                             <img src="http://google.com"> 外部リンク
                         </a>
                         <button type="button" id="js-portal-btn-update" class="c-btn c-portal-footer__update-btn">
@@ -192,6 +231,9 @@
             </div>
         </div>
     </div>
+
+    <!-- 🔮 共通キャラクターピッカーがJSで自動生成されてここに挿入されます -->
+    <div id="js-character-picker-container"></div>
 
 
     <!-- 外部から読み込むフッターの受け皿 -->

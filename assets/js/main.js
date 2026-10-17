@@ -219,18 +219,19 @@ async function loadWorldList(userId) {
   }
 }
 
-// 📄 ページ読み込み時のエントリーポイント
+// 📄 ページ読み込み時のエントリーポイント（ピッカー起動対応版）
 document.addEventListener("DOMContentLoaded", async () => {
   // 🔥 最優先で魔女マスタデータをロードしてメモリにキャッシュする
   await fetchCharacterMaster();
 
   await insertFooter();
   setActiveNavigation();
-
   await insertWorldSelector();
-  // 💡 共通モーダル制御・イベント初期化関数を起動
+
+  // 💡 【追記】JS内に用意したピッカーの箱を自動生成し、クリック監視（起動コード）を有効化する
+  injectAndInitCharacterPicker();
+
   initWorldSelectorEvent();
-  // 💡 新設：ダッシュボード保存やアコーディオン制御を起動
   initPortalDashboardEvents();
 });
 
@@ -729,6 +730,32 @@ async function loadPortalDashboardData(userId, worldId) {
       statusSelect.value = data.isActive !== false ? "active" : "archived";
     }
 
+    // 💡 【新設連動】パーティ5人分のデータをマッピング復元
+    const partyArray = data.partyMembers || [null, null, null, null, null];
+    partyArray.forEach((charaId, i) => {
+      const idx = i + 1;
+      const inputField = document.getElementById(
+        `js-portal-party-chara-${idx}`,
+      );
+      const imgField = document.getElementById(`js-portal-party-img-${idx}`);
+
+      if (inputField) inputField.value = charaId || "";
+      if (imgField) {
+        if (charaId && Array.isArray(characterMaster)) {
+          const found = characterMaster.find(
+            (c) => String(c.id) === String(charaId),
+          );
+          if (found) {
+            imgField.src = found.iconUrl;
+            imgField.classList.remove("is-hidden"); // CSS側で画像を表示状態にする
+            return;
+          }
+        }
+        imgField.src = "";
+        imgField.classList.add("is-hidden"); // キャラ未設定時は画像を隠して「+」を出す
+      }
+    });
+
     // 最終更新日時
     const updatedEl = document.getElementById("js-portal-world-updated");
     if (updatedEl && data.updatedAt) {
@@ -923,7 +950,24 @@ function initPortalDashboardEvents() {
           currentWorldId,
         );
 
-        // Firestoreへのマージアップデート実行
+        // 詳細設定エリアの回収のすぐ後ろあたりに追記（720行目付近）
+        const partyChara1 = document.getElementById(
+          "js-portal-party-chara-1",
+        ).value;
+        const partyChara2 = document.getElementById(
+          "js-portal-party-chara-2",
+        ).value;
+        const partyChara3 = document.getElementById(
+          "js-portal-party-chara-3",
+        ).value;
+        const partyChara4 = document.getElementById(
+          "js-portal-party-chara-4",
+        ).value;
+        const partyChara5 = document.getElementById(
+          "js-portal-party-chara-5",
+        ).value;
+
+        // 💡 Firestoreのオブジェクト構造へ配列データとして合流コミット
         await setDoc(
           worldDocRef,
           {
@@ -938,6 +982,16 @@ function initPortalDashboardEvents() {
             startDate: startDate || null,
             externalLink: externalLink || null,
             characterId: characterId || null,
+
+            // 💡 追加：パーティメンバー情報をFirestoreへ格納
+            partyMembers: [
+              partyChara1 || null,
+              partyChara2 || null,
+              partyChara3 || null,
+              partyChara4 || null,
+              partyChara5 || null,
+            ],
+
             isActive: isActive,
             updatedAt: serverTimestamp(),
           },
@@ -1058,3 +1112,198 @@ onAuthStateChanged(auth, async (user) => {
     window.location.href = "login.html";
   }
 });
+
+// ==========================================================================
+// 🔮 【本番直結型】キャラクターピッカー完全自動生成 ＆ 動的ターゲット連動
+// ==========================================================================
+
+/**
+ * 💡 1. 外部ファイル不要！JS側でキャラクターピッカーのHTMLを自動生成して画面に挿入する
+ */
+function injectAndInitCharacterPicker() {
+  const container = document.getElementById("js-character-picker-container");
+  if (!container) return;
+
+  // 📝 管理画面の属性フィルター付き構造を1枚のテンプレート文字列として定義
+  container.innerHTML = `
+    <div id="js-character-modal" class="c-modal c-world-modal" aria-hidden="true" inert>
+        <div class="c-modal__overlay js-character-modal-close"></div>
+        <div class="c-world-modal__container c-modal__container">
+            <header class="c-world-modal__header">
+                <div class="c-account-modal__title-wrap">
+                    <i class="fa-solid fa-user-gear"></i>
+                    <span class="c-account-modal__title">キャラクター選択</span>
+                </div>
+                <button type="button" class="c-world-modal__close-btn js-character-modal-close">&times;</button>
+            </header>
+
+            <div class="c-world-modal__content">
+                <!-- 🏷️ 属性の絞り込みフィルターエリア（管理画面から継承） -->
+                <div class="c-world-modal__filter-flex">
+                    <button type="button" class="c-world-modal__filter-btn is-active js-attr-filter" data-attr="all"><img class="c-world-modal__filter-img" src="assets/images/filter-icon/icon-all.png" alt="ALL"></button>
+                    <button type="button" class="c-world-modal__filter-btn js-attr-filter" data-attr="藍"><img class="c-world-modal__filter-img" src="assets/images/filter-icon/icon-attr-blue.png" alt="藍"></button>
+                    <button type="button" class="c-world-modal__filter-btn js-attr-filter" data-attr="紅"><img class="c-world-modal__filter-img" src="assets/images/filter-icon/icon-attr-red.png" alt="紅"></button>
+                    <button type="button" class="c-world-modal__filter-btn js-attr-filter" data-attr="翠"><img class="c-world-modal__filter-img" src="assets/images/filter-icon/icon-attr-green.png" alt="翠"></button>
+                    <button type="button" class="c-world-modal__filter-btn js-attr-filter" data-attr="黄"><img class="c-world-modal__filter-img" src="assets/images/filter-icon/icon-attr-yellow.png" alt="黄"></button>
+                    <button type="button" class="c-world-modal__filter-btn js-attr-filter" data-attr="天"><img class="c-world-modal__filter-img" src="assets/images/filter-icon/icon-attr-holy.png" alt="天"></button>
+                    <button type="button" class="c-world-modal__filter-btn js-attr-filter" data-attr="冥"><img class="c-world-modal__filter-img" src="assets/images/filter-icon/icon-attr-dark.png" alt="冥"></button>
+                </div>
+                
+                <!-- 👥 キャラクターアイコンが並ぶグリッド領域 -->
+                <div id="js-character-select-list" class="c-world-modal__grid"></div>
+            </div>
+        </div>
+    </div>
+  `;
+
+  // HTML生成が完了したので、即座に中身のイベント制御をバインドする
+  bindCharacterPickerEvents();
+}
+
+// ==========================================================================
+// 🔮 【完全部品共通化】キャラクターピッカーHTML非同期ロード ＆ 動的ターゲット連動
+// ==========================================================================
+function bindCharacterPickerEvents() {
+  const modalChara = document.getElementById("js-character-modal");
+  const closeCharaBtns = document.querySelectorAll(".js-character-modal-close");
+  const gridContainer = document.getElementById("js-character-select-list");
+  const filterBtns = document.querySelectorAll(".js-attr-filter");
+
+  if (!modalChara || !gridContainer) return;
+
+  // 格納先のターゲットと、ピッカーを起動した親ボタンを記憶するスコープ変数
+  let activeInputTargetId = "";
+  let activePreviewTargetId = "";
+  let activeTriggerBtn = null; // 💡 今回ピッカーを開いたボタンの要素を一時保存する変数
+
+  // 🔓 アプリ内すべての「js-open-character-picker」クラスを持つ要素のクリックを検知
+  document.addEventListener("click", (e) => {
+    const triggerBtn = e.target.closest(".js-open-character-picker");
+    if (!triggerBtn) return;
+
+    // 💡 警告対策：現在アクティブになった親起動ボタンを記憶しておく
+    activeTriggerBtn = triggerBtn;
+
+    // トリガーボタンに書き込まれている「ターゲットID」をその場で記憶！
+    activeInputTargetId = triggerBtn.dataset.targetInput;
+    activePreviewTargetId = triggerBtn.dataset.targetPreview;
+
+    // 属性フィルターの選択表示を「ALL」にリセット
+    filterBtns.forEach((btn) => btn.classList.remove("is-active"));
+    const allBtn = Array.from(filterBtns).find(
+      (btn) => btn.dataset.attr === "all",
+    );
+    if (allBtn) allBtn.classList.add("is-active");
+
+    // リストの初期描画
+    renderFilteredCharacters("all");
+
+    modalChara.classList.add("is-open");
+    modalChara.removeAttribute("aria-hidden");
+    modalChara.removeAttribute("inert");
+  });
+
+  // モーダルをクローズする処理
+  const closeCharaModal = () => {
+    // 💡 【最重要解決策】非表示（inert/aria-hidden）にする前に、フォーカスを元の親ボタンへ安全に戻す！
+    if (activeTriggerBtn) {
+      activeTriggerBtn.focus();
+    }
+
+    modalChara.classList.remove("is-open");
+    modalChara.setAttribute("aria-hidden", "true");
+    modalChara.setAttribute("inert", "");
+  };
+
+  closeCharaBtns.forEach((btn) =>
+    btn.addEventListener("click", closeCharaModal),
+  );
+
+  // 属性タブによるフィルタリング（ onclick の排除 ）
+  filterBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      filterBtns.forEach((b) => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+      renderFilteredCharacters(btn.dataset.attr);
+    });
+  });
+
+  // フィルター条件に基づく魔女カードの動的展開
+  function renderFilteredCharacters(attrFilter) {
+    gridContainer.innerHTML = "";
+
+    if (!Array.isArray(characterMaster) || characterMaster.length === 0) {
+      gridContainer.innerHTML =
+        '<li class="c-world-modal__item--empty">データがありません</li>';
+      return;
+    }
+
+    // 💡 現在選択中のインプットの値（自分自身の枠のキャラクターID）を取得
+    const currentSelectedId = activeInputTargetId
+      ? document.getElementById(activeInputTargetId)?.value
+      : "";
+
+    // 💡 パーティ5人の枠から、すでに選択されているキャラクターIDをすべて集計（重複除外の対象）
+    const selectedPartyCharIds = [];
+    for (let i = 1; i <= 5; i++) {
+      const inputEl = document.getElementById(`js-portal-party-chara-${i}`);
+      if (inputEl && inputEl.value) {
+        selectedPartyCharIds.push(String(inputEl.value));
+      }
+    }
+
+    characterMaster.forEach((chara) => {
+      if (attrFilter !== "all" && String(chara.attr).trim() !== attrFilter)
+        return;
+
+      const charaIdStr = String(chara.id);
+
+      // 💡 【重複対策】他の枠で選択済みのキャラは除外する（ただし、今自分が選択しているキャラ自身は表示を残す）
+      if (
+        selectedPartyCharIds.includes(charaIdStr) &&
+        charaIdStr !== String(currentSelectedId)
+      ) {
+        return;
+      }
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "c-world-modal__card";
+      if (charaIdStr === String(currentSelectedId)) {
+        button.classList.add("is-selected");
+      }
+
+      const img = document.createElement("img");
+      img.src = chara.iconUrl || "assets/images/chara-icon/1.webp";
+      img.alt = chara.name || "";
+
+      button.appendChild(img);
+
+      // 🌍 アイコン決定・値の書き込みコミット処理
+      button.addEventListener("click", () => {
+        if (activeInputTargetId) {
+          const targetInput = document.getElementById(activeInputTargetId);
+          if (targetInput) {
+            targetInput.value = chara.id;
+
+            // 💡【重要】値が書き換わったことをブラウザにリアルタイム通知するイベントを発火
+            targetInput.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        }
+
+        if (activePreviewTargetId) {
+          const targetPreview = document.getElementById(activePreviewTargetId);
+          if (targetPreview) {
+            targetPreview.src =
+              chara.iconUrl || "assets/images/chara-icon/1.webp";
+            targetPreview.classList.remove("is-hidden");
+          }
+        }
+
+        closeCharaModal();
+      });
+
+      gridContainer.appendChild(button);
+    });
+  }
+}

@@ -943,4 +943,95 @@ svg {
 
 
 
+/* ==========================================================================
+   🔮 キャラクターピッカーコンポーネント固有スタイル
+   ========================================================================== */
 
+/* 属性フィルターボタンのコンテナ */
+.c-world-modal__filter-flex {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed var(--theme-border-main);
+}
+
+/* フィルターボタン単体 */
+.c-world-modal__filter-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    opacity: 0.3;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.c-world-modal__filter-btn:hover,
+.c-world-modal__filter-btn.is-active {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.c-world-modal__filter-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* キャラクター選択用グリッド */
+.c-world-modal__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+    gap: 8px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+/* キャラクター選択用ボタンカード */
+.c-world-modal__card {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    cursor: pointer;
+    background-color: var(--color-gray-100);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 8px;
+    position: relative;
+    padding: 0;
+    transition: all 0.2s ease;
+}
+
+.c-world-modal__card:hover {
+    border-color: var(--color-blue-400);
+    transform: translateY(-2px);
+}
+
+/* 選択中キャラクターカードの強調 */
+.c-world-modal__card.is-selected {
+    border-color: var(--color-blue-400);
+    box-shadow: 0 0 0 2px var(--color-blue-400);
+}
+
+.c-world-modal__card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ==========================================================================
+   ⚔️ パーティ編成スロットUI制御
+   ========================================================================== */
+/* 画像の非表示制御クラス */
+.c-portal-party__slot img.is-hidden {
+    display: none !important;
+}
+
+/* 枠内に画像が表示されている（is-hiddenクラスが剥がれている）時、プラスの「+」文字を自動で消す */
+.c-portal-party__slot:has(img:not(.is-hidden)) span {
+    display: none !important;
+}
