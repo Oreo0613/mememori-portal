@@ -1,7 +1,11 @@
+// 🌐 外部リンクのドメインからファビコン画像URLを生成する共通関数
+const FAVICON_API_BASE = "http://www.google.com/s2/favicons?domain=";
+
+
 // 🔮 魔女マスタデータのキャッシュ用変数（配列に変更）
 let characterMaster = [];
 
-// 📜 魔女マスタデータ（JSON）の非同期読み込み処理
+// 📜 魔女マスタデータ（JSON）の非同期読み込み処理（完了時ヘッダー同期連動版）
 async function fetchCharacterMaster() {
   try {
     const response = await fetch("assets/json/character-master.json");
@@ -12,6 +16,23 @@ async function fetchCharacterMaster() {
       "✅ キャラクターマスタデータのロードが完了しました",
       characterMaster,
     );
+
+    // 💡【ロード遅延対策】マスタの読み込みが完了した時点で、すでに選択中のワールドがあればヘッダーアイコンを再同期させる
+    const activeWorldId = sessionStorage.getItem("app_current_world_id");
+    const user = auth.currentUser;
+    if (user && activeWorldId) {
+      // データの再取得を軽く行うためにダッシュボードロードを再実行、またはセッションからヘッダーのみ更新
+      const worldDocRef = doc(db, "users", user.uid, "worlds", activeWorldId);
+      const docSnap = await getDoc(worldDocRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        syncHeaderWorldSelector(
+          data.worldNumber,
+          data.worldName,
+          data.characterId,
+        );
+      }
+    }
   } catch (error) {
     console.error("🚨 キャラクターマスタデータのロードエラー:", error);
   }
@@ -652,21 +673,53 @@ function initWorldSelectorEvent() {
 }
 
 // ==========================================================================
-// 🔄 【新設】ヘッダーのワールドセレクター表示を強制的に最新情報へ同期する関数
+// 🔄 【デバッグログ付き対策版】ヘッダーのワールドセレクター表示を同期する関数
 // ==========================================================================
-function syncHeaderWorldSelector(worldNumber, worldName) {
+function syncHeaderWorldSelector(worldNumber, worldName, characterId = null) {
   const currentWorldNumber = document.getElementById("js-current-world-number");
-  const currentWorldNameElement = document.getElementById(
-    "js-current-world-name",
-  );
+  const currentWorldNameElement = document.getElementById("js-current-world-name");
+  const iconWrap = document.querySelector(".c-world-selector__icon-wrap");
 
   if (currentWorldNumber) {
-    currentWorldNumber.textContent = worldNumber
-      ? `W ${worldNumber}`
-      : "未登録";
+    currentWorldNumber.textContent = worldNumber ? `W ${worldNumber}` : "未登録";
   }
   if (currentWorldNameElement) {
     currentWorldNameElement.textContent = worldName || "";
+  }
+
+  if (iconWrap) {
+    let iconSrc = "";
+
+    console.log(`[IconSync] 渡されたキャラID: ${characterId}, マスタの状態: ${Array.isArray(characterMaster) ? characterMaster.length + "件" : "未ロード"}`);
+
+    if (characterId && Array.isArray(characterMaster) && characterMaster.length > 0) {
+      // 💡 Stringにして型変換の安全マージをして比較
+      const foundChara = characterMaster.find(
+        (c) => String(c.id).trim() === String(characterId).trim()
+      );
+      
+      if (foundChara) {
+        iconSrc = foundChara.iconUrl;
+        console.log(`[IconSync] マスタから画像パスを発見しました: ${iconSrc}`);
+      } else {
+        console.warn(`[IconSync] キャラID [${characterId}] に一致する魔女がマスタ内に見つかりません`);
+      }
+    }
+
+    iconWrap.innerHTML = "";
+
+    if (iconSrc) {
+      const img = document.createElement("img");
+      img.className = "c-world-selector__img";
+      img.src = iconSrc;
+      img.alt = worldName || "ワールドアイコン";
+      img.style.cssText = "width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;";
+      iconWrap.appendChild(img);
+    } else {
+      const icon = document.createElement("i");
+      icon.className = "fa-solid fa-earth-asia";
+      iconWrap.appendChild(icon);
+    }
   }
 }
 
@@ -681,9 +734,6 @@ async function loadPortalDashboardData(userId, worldId) {
     if (!docSnap.exists()) return;
 
     const data = docSnap.data();
-
-    // Firestoreからロードした最新のワールド番号とワールド名を、左上ヘッダーにも強制同期させる！
-    syncHeaderWorldSelector(data.worldNumber, data.worldName);
 
     // クエスト章・ステージのバラバラ分解配置連動
     const questStr = data.questProgress || ""; // 例: "13-28"
@@ -719,7 +769,7 @@ async function loadPortalDashboardData(userId, worldId) {
 
     // 💡 HTML側の id="js-portal-setting-character-id" と完全に一致させ、値を復元
     const charIdField = document.getElementById(
-      "js-portal-setting-character-id",
+      "js-portal-setting-character-id"
     );
     if (charIdField) {
       charIdField.value = data.characterId || "";
@@ -727,11 +777,11 @@ async function loadPortalDashboardData(userId, worldId) {
 
     // 💡 ロードしたキャラクターIDに基づいて、詳細設定内のアイコン画像を最新に切り替える
     const previewImg = document.getElementById(
-      "js-portal-setting-icon-preview",
+      "js-portal-setting-icon-preview"
     );
     if (previewImg && data.characterId && Array.isArray(characterMaster)) {
       const foundChara = characterMaster.find(
-        (c) => String(c.id) === String(data.characterId),
+        (c) => String(c.id) === String(data.characterId)
       );
       if (foundChara && foundChara.iconUrl) {
         previewImg.src = foundChara.iconUrl;
@@ -751,7 +801,7 @@ async function loadPortalDashboardData(userId, worldId) {
     partyArray.forEach((charaId, i) => {
       const idx = i + 1;
       const inputField = document.getElementById(
-        `js-portal-party-chara-${idx}`,
+        `js-portal-party-chara-${idx}`
       );
       const imgField = document.getElementById(`js-portal-party-img-${idx}`);
 
@@ -759,7 +809,7 @@ async function loadPortalDashboardData(userId, worldId) {
       if (imgField) {
         if (charaId && Array.isArray(characterMaster)) {
           const found = characterMaster.find(
-            (c) => String(c.id) === String(charaId),
+            (c) => String(c.id) === String(charaId)
           );
           if (found) {
             imgField.src = found.iconUrl;
@@ -789,8 +839,9 @@ async function loadPortalDashboardData(userId, worldId) {
 
         const faviconImg = linkBtn.querySelector("img");
         if (faviconImg) {
-          faviconImg.src =
-            "http://www.google.com/s2/favicons?domain=" + data.externalLink;
+
+          faviconImg.src = FAVICON_API_BASE + data.externalLink;
+
         }
       } else {
         // 💡 直接スタイルを書き換えず、設計図の共通非表示クラス「is-hidden」を付与
@@ -798,11 +849,16 @@ async function loadPortalDashboardData(userId, worldId) {
       }
     }
 
+    // 🟢【最重要修正】すべてのマッピングが終わったこのタイミングで、左上ヘッダーセレクターへ値を同期する！
+    syncHeaderWorldSelector(data.worldNumber, data.worldName, data.characterId);
+
     console.log("✅ ダッシュボードデータのUIマッピングが完了しました");
   } catch (error) {
     console.error("🚨 ダッシュボードロードエラー:", error);
   }
 }
+
+
 
 // ==========================================================================
 // 📥 アーカイブされた非アクティブワールドの一覧集計・復帰処理
