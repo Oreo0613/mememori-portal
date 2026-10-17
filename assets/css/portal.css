@@ -500,3 +500,22 @@
 .c-portal-chara-btn {
     width: 50px;
 }
+
+/* ==========================================================================
+   ⚔️ パーティドラッグ＆ドロップ専用スタイル
+   ========================================================================== */
+/* 現在掴んでドラッグ移動中の枠 */
+.c-portal-party__slot.is-dragging {
+    opacity: 0.4;
+    border: 2px dashed var(--theme-interactive) !important;
+    background-color: var(--color-gray-100) !important;
+}
+
+/* ドラッグした枠が上に重なった時のホバーエフェクト */
+.c-portal-party__slot.is-drag-over {
+    transform: scale(1.08);
+    border: 2px solid var(--color-blue-400) !important;
+    box-shadow: 0 0 12px rgba(62, 158, 214, 0.4);
+    background-color: var(--theme-interactive-hover) !important;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
