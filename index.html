@@ -22,6 +22,8 @@
 
         <!-- 📦 メインコンテナ：PCでは横並び、スマホでは縦並びにCSSで可変 -->
         <div class="c-portal-main">
+            <div class="c-portal__mask">
+            </div>
             <div class="c-portal__header">
                 <div id="js-world-selector-container" class="c-main__header js-header-container"></div>
             </div>
@@ -87,7 +89,7 @@
                     <div class="c-portal-main__right">
                         <div class="c-portal-party">
                             <h4 class="c-portal-party__title">
-                                <i class="fa-solid fa-shield-halved"></i> 現在の目標パーティ編成
+                                <i class="fa-solid fa-shield-halved"></i> パーティ名を取得
                             </h4>
                             <div class="c-portal-party__slots">
                                 <div class="c-portal-party__slot"><img id="js-portal-party-1" src=""
@@ -114,7 +116,17 @@
                     <div id="js-portal-settings-content" class="c-portal-settings-content">
                         <div class="c-portal-settings-grid">
                             <div class="c-portal-settings-field">
-                                <label class="c-portal-settings-label">ワールド名（サーバー識別名）</label>
+                                <label class="c-portal-settings-label">ワールドのアイコン</label>
+
+                                <button type="button" id="js-portal-character-trigger" class="c-portal-chara-btn">
+                                    <img id="js-portal-setting-icon-preview" src="assets/images/chara-icon/1.webp"
+                                        alt="キャラクターアイコン">
+                                </button>
+
+                                <input type="hidden" id="js-portal-setting-character-id" value="">
+                            </div>
+                            <div class="c-portal-settings-field">
+                                <label class="c-portal-settings-label">ワールド名</label>
                                 <input type="text" id="js-portal-setting-name" class="c-portal-input"
                                     placeholder="例：アマギ">
                             </div>
@@ -122,17 +134,12 @@
                                 <label class="c-portal-settings-label">開始日</label>
                                 <input type="date" id="js-portal-setting-start-date" class="c-portal-input">
                             </div>
-                            <div class="c-portal-settings-field m-col-span-2">
-                                <label class="c-portal-settings-label">外部リンク（Notion等URL）</label>
+                            <div class="c-portal-settings-field">
+                                <label class="c-portal-settings-label">外部リンクURL</label>
                                 <input type="url" id="js-portal-setting-link" class="c-portal-input"
                                     placeholder="https://notion.so...">
                             </div>
                             <div class="c-portal-settings-field">
-                                <label class="c-portal-settings-label">ワールドのアイコン画像URL</label>
-                                <input type="text" id="js-portal-setting-icon" class="c-portal-input"
-                                    placeholder="assets/images/chara-icon/1.webp">
-                            </div>
-                            <div class="c-portal-settings-field m-flex-row">
                                 <label class="c-portal-checkbox-label">
                                     <input type="checkbox" id="js-portal-setting-active" class="c-portal-checkbox"
                                         checked>
@@ -146,7 +153,7 @@
                 <div class="c-portal-footer">
                     <span id="js-portal-world-updated">最終更新: ──</span>
                     <div class="c-portal-actions">
-                        <a id="js-portal-notion-link" href="https://notion.com" class="c-portal-footer__notion-btn"
+                        <a id="js-portal-external-link" href="https://notion.com" class="c-portal-footer__external-link-btn"
                             target="_blank">
                             <img src="http://google.com"> 外部リンク
                         </a>
@@ -158,6 +165,30 @@
             </div>
         </div>
     </main>
+    <div id="js-character-modal" class="c-modal c-world-modal">
+        <div class="c-modal__overlay js-modal-close"></div>
+        <div class="c-world-modal__container c-modal__container">
+            <div class="c-world-modal__header">
+                <div class="c-account-modal__title-wrap">
+                    <i class="fa-solid fa-user-gear"></i>
+                    <span class="c-account-modal__title">アイコンキャラクター選択</span>
+                </div>
+                <button type="button" class="c-world-modal__close-btn js-character-modal-close">×</button>
+            </div>
+
+            <!-- 👥 ここにJSでJSON（キャラマスタ）から全キャラのアイコンリストを動的に生成して流し込む -->
+            <div class="c-world-modal__content">
+                <div id="js-character-select-list" class="c-world-modal__list">
+                    <!-- JS挿入イメージ：
+                    <button type="button" class="c-world-modal__choice-btn" data-chara-id="1">
+                        <div class="c-world-modal__btn-icon"><img src="assets/images/chara-icon/1.webp"></div>
+                        <div class="c-world-modal__btn-info"><span class="c-world-modal__btn-world">キャラクター名</span></div>
+                    </button>
+                    -->
+                </div>
+            </div>
+        </div>
+    </div>
 
 
     <!-- 外部から読み込むフッターの受け皿 -->

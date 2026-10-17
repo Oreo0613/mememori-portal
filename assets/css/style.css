@@ -5,7 +5,7 @@
    ========================================================================== */
 :root {
     /* 🌐 グローバル色パレット定義 */
-    --color-gray-50: rgb(243, 244, 240);
+    --color-gray-50: #f3f4f0;
     /* メインの薄グレー背景 */
     --color-gray-100: #f1f5f9;
     /* ボックス内等の落ち着いた背景 */
@@ -278,6 +278,7 @@ svg {
    ========================================================================== */
 .c-main__header {
     width: 100%;
+    padding-bottom: 8px;
 }
 
 .c-main__hero {
@@ -297,11 +298,8 @@ svg {
 @scope(.c-world-selector) {
     :scope {
         display: block;
-        padding: 8px 16px;
-        /* position: fixed;
-        top: 0;
-        left: 0;
-        z-index: 100; */
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--theme-border-main)
     }
 
     .c-world-selector__btn {

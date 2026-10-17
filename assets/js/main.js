@@ -4,7 +4,6 @@ let characterMaster = [];
 // 📜 魔女マスタデータ（JSON）の非同期読み込み処理
 async function fetchCharacterMaster() {
   try {
-    // パスはプロジェクトの構成に合わせて調整してください
     const response = await fetch("assets/json/character-master.json");
     if (!response.ok)
       throw new Error("キャラクターマスタの読み込みに失敗しました");
@@ -50,6 +49,7 @@ import {
   getDocs,
   query,
   orderBy,
+  where,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 import {
@@ -210,8 +210,9 @@ async function loadWorldList(userId) {
 
     if (activeCount === 0) {
       worldListContainer.innerHTML =
-        '<li class="c-world-modal__item" style="text-align:center; padding: 15px; color:#888;">アクティブなワールドがありません</li>';
+        '<li class="c-world-modal__item--empty">アクティブなワールドがありません</li>';
     }
+
 
     console.log("✅ ワールド一覧のロードと生成が完了しました！");
   } catch (error) {
@@ -691,13 +692,32 @@ async function loadPortalDashboardData(userId, worldId) {
       data.worldName || "";
     document.getElementById("js-portal-setting-start-date").value =
       data.startDate || "";
-
-    // 💡 【一本化統合】「notionLink」を完全に廃止し、保存キーと同じ「externalLink」から安全にロード復元！
     document.getElementById("js-portal-setting-link").value =
       data.externalLink || "";
 
-    document.getElementById("js-portal-setting-icon").value =
-      data.characterId || "";
+    // 💡 HTML側の id="js-portal-setting-character-id" と完全に一致させ、値を復元
+    const charIdField = document.getElementById(
+      "js-portal-setting-character-id",
+    );
+    if (charIdField) {
+      charIdField.value = data.characterId || "";
+    }
+
+    // 💡 ロードしたキャラクターIDに基づいて、詳細設定内のアイコン画像を最新に切り替える
+    const previewImg = document.getElementById(
+      "js-portal-setting-icon-preview",
+    );
+    if (previewImg && data.characterId && Array.isArray(characterMaster)) {
+      const foundChara = characterMaster.find(
+        (c) => String(c.id) === String(data.characterId),
+      );
+      if (foundChara && foundChara.iconUrl) {
+        previewImg.src = foundChara.iconUrl;
+      } else {
+        previewImg.src = "assets/images/chara-icon/1.webp";
+      }
+    }
+
     document.getElementById("js-portal-setting-active").checked =
       data.isActive !== false;
 
@@ -709,16 +729,23 @@ async function loadPortalDashboardData(userId, worldId) {
     }
 
     // 外部リンクボタンの即時制御
-    const linkBtn = document.getElementById("js-portal-notion-link");
+    const linkBtn = document.getElementById("js-portal-external-link");
     if (linkBtn) {
-      // 💡 ボタンの飛び先URLも「externalLink」に一本化
       if (data.externalLink) {
         linkBtn.href = data.externalLink;
-        linkBtn.style.display = "inline-flex";
+        
+        linkBtn.classList.remove("is-hidden");
+
+        const faviconImg = linkBtn.querySelector("img");
+        if (faviconImg) {
+          faviconImg.src = "http://www.google.com/s2/favicons?domain=" + data.externalLink;
+        }
       } else {
-        linkBtn.style.display = "none";
+        // 💡 直接スタイルを書き換えず、設計図の共通非表示クラス「is-hidden」を付与
+        linkBtn.classList.add("is-hidden");
       }
     }
+
 
     console.log("✅ ダッシュボードデータのUIマッピングが完了しました");
   } catch (error) {
@@ -798,18 +825,18 @@ function initPortalDashboardEvents() {
   const toggleBtn = document.getElementById("js-portal-settings-toggle");
   const contentPanel = document.getElementById("js-portal-settings-content");
 
-  // 1. メタ詳細設定アコーディオンのクリーンな開閉
+  // 1. 詳細設定アコーディオンのクリーンな開閉
   if (toggleBtn && contentPanel) {
     contentPanel.style.display = "none";
     toggleBtn.addEventListener("click", () => {
       if (contentPanel.style.display === "none") {
         contentPanel.style.display = "block";
         toggleBtn.innerHTML =
-          '<i class="fa-solid fa-gear"></i> ワールドの詳細メタ設定を隠す';
+          '<i class="fa-solid fa-gear"></i> ワールドの詳細設定を隠す';
       } else {
         contentPanel.style.display = "none";
         toggleBtn.innerHTML =
-          '<i class="fa-solid fa-gear"></i> ワールドの詳細設定（名前・開始日・外部リンク等）を編集';
+          '<i class="fa-solid fa-gear"></i> ワールドの詳細設定を編集';
       }
     });
   }
@@ -854,7 +881,7 @@ function initPortalDashboardEvents() {
         .getElementById("js-portal-world-memo")
         .value.trim();
 
-      // 詳細設定メタエリアの回収
+      // 詳細設定エリアの回収
       const worldName = document
         .getElementById("js-portal-setting-name")
         .value.trim();
@@ -864,9 +891,12 @@ function initPortalDashboardEvents() {
       const externalLink = document
         .getElementById("js-portal-setting-link")
         .value.trim();
+
+      // 💡 HTML側の隠しインプットである id="js-portal-setting-character-id" から値を回収するよう修正
       const characterId = document
-        .getElementById("js-portal-setting-icon")
+        .getElementById("js-portal-setting-character-id")
         .value.trim();
+
       const isActive = document.getElementById(
         "js-portal-setting-active",
       ).checked;
@@ -910,20 +940,38 @@ function initPortalDashboardEvents() {
         // 保存内容を上部セレクターや一覧に再反映・同期
         await loadWorldList(user.uid);
 
-        // もし詳細設定で非アクティブ化をコミットした場合は、現在の選択状態を初期化する
+        // 💡 もし詳細設定で非アクティブ化（アーカイブ化）された場合のUI制御
         if (!isActive) {
+          // 1. セッションから選択中のワールドIDを削除
           sessionStorage.removeItem("app_current_world_id");
-          window.location.reload(); // リロードをかけてクリーンに状態をリセット
+
+          // 2. 選択中クラス（is-active）をすべての選択肢ボタンから完全に外す（見た目のリセット）
+          document.querySelectorAll(".js-world-choice").forEach((b) => b.classList.remove("is-active"));
+
+          // 3. チェックボックスのチェックを明示的に外す
+          const activeCheckbox = document.getElementById("js-portal-setting-active");
+          if (activeCheckbox) {
+            activeCheckbox.checked = false;
+          }
+
+          // 4. ヘッダーのワールド表示を「未登録」にリセット
+          syncHeaderWorldSelector(null, "");
+
+          alert("ワールドをアーカイブ化しました。ワールド選択から新しいワールドを選ぶか追加してください。");
+          
+          window.location.reload(); 
         } else {
           await loadPortalDashboardData(user.uid, currentWorldId);
         }
+
       } catch (error) {
-        console.error("🚨 進捗数値の保存エラー:", error);
+        console.error("🚨 保存エラー:", error);
         alert("数値の保存に失敗しました。");
       } finally {
         updateBtn.disabled = false;
+        // 💡 index.html 側の初期表示である「更新する」という文言と完全に一致させる
         updateBtn.innerHTML =
-          '<i class="fa-solid fa-floppy-disk"></i> 設定と数値を保存';
+          '<i class="fa-solid fa-floppy-disk"></i> 更新する';
       }
     });
   }
