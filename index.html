@@ -207,30 +207,6 @@
             </div>
         </div>
     </main>
-    <div id="js-character-modal" class="c-modal c-world-modal">
-        <div class="c-modal__overlay js-modal-close"></div>
-        <div class="c-world-modal__container c-modal__container">
-            <div class="c-world-modal__header">
-                <div class="c-account-modal__title-wrap">
-                    <i class="fa-solid fa-user-gear"></i>
-                    <span class="c-account-modal__title">アイコンキャラクター選択</span>
-                </div>
-                <button type="button" class="c-world-modal__close-btn js-character-modal-close">×</button>
-            </div>
-
-            <!-- 👥 ここにJSでJSON（キャラマスタ）から全キャラのアイコンリストを動的に生成して流し込む -->
-            <div class="c-world-modal__content">
-                <div id="js-character-select-list" class="c-world-modal__list">
-                    <!-- JS挿入イメージ：
-                    <button type="button" class="c-world-modal__choice-btn" data-chara-id="1">
-                        <div class="c-world-modal__btn-icon"><img src="assets/images/chara-icon/1.webp"></div>
-                        <div class="c-world-modal__btn-info"><span class="c-world-modal__btn-world">キャラクター名</span></div>
-                    </button>
-                    -->
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- 🔮 共通キャラクターピッカーがJSで自動生成されてここに挿入されます -->
     <div id="js-character-picker-container"></div>

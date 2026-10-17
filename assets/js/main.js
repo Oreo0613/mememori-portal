@@ -233,6 +233,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   initWorldSelectorEvent();
   initPortalDashboardEvents();
+
+  // 🟢【最重要修正】ここにドラッグ＆ドロップの初期化呼び出しを追記します！
+  initPartyDragAndDrop();
 });
 
 // 📁 共通フッター挿入
@@ -349,6 +352,19 @@ function initWorldSelectorEvent() {
     const modalAdd = document.getElementById("js-create-modal");
     if (modalAdd) modalAdd.setAttribute("inert", "");
   }, 50);
+
+  // --------------------------------------------------------------------------
+  // 💡 汎用閉じクラス（js-modal-close）の共通一括クローズ処理
+  // --------------------------------------------------------------------------
+  document.addEventListener("click", (e) => {
+    if (e.target.closest(".js-modal-close")) {
+      document.querySelectorAll(".c-modal, .c-world-modal").forEach((modal) => {
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+        modal.setAttribute("inert", "");
+      });
+    }
+  });
 
   // --------------------------------------------------------------------------
   // 🟢 モーダル1：ワールド選択モーダルの開閉
@@ -1126,9 +1142,9 @@ function injectAndInitCharacterPicker() {
 
   // 📝 管理画面の属性フィルター付き構造を1枚のテンプレート文字列として定義
   container.innerHTML = `
-    <div id="js-character-modal" class="c-modal c-world-modal" aria-hidden="true" inert>
+    <div id="js-character-modal" class="c-modal c-world-modal c-character-picker" aria-hidden="true" inert>
         <div class="c-modal__overlay js-character-modal-close"></div>
-        <div class="c-world-modal__container c-modal__container">
+        <div class="c-world-modal__container c-modal__container c-character-picker__container">
             <header class="c-world-modal__header">
                 <div class="c-account-modal__title-wrap">
                     <i class="fa-solid fa-user-gear"></i>
@@ -1150,7 +1166,7 @@ function injectAndInitCharacterPicker() {
                 </div>
                 
                 <!-- 👥 キャラクターアイコンが並ぶグリッド領域 -->
-                <div id="js-character-select-list" class="c-world-modal__grid"></div>
+                <div id="js-character-select-list" class="c-world-modal__grid c-character-picker-grid"></div>
             </div>
         </div>
     </div>
@@ -1306,4 +1322,96 @@ function bindCharacterPickerEvents() {
       gridContainer.appendChild(button);
     });
   }
+}
+
+// ==========================================================================
+// ⚔️ 【新設】パーティ編成枠のドラッグ＆ドロップ入れ替え（スワップ）機能
+// ==========================================================================
+function initPartyDragAndDrop() {
+  const slots = document.querySelectorAll(
+    ".c-portal-party__slots .c-portal-party__slot",
+  );
+  let draggedSlot = null;
+
+  slots.forEach((slot) => {
+    // 💡 ボタン要素をドラッグ可能にする
+    slot.setAttribute("draggable", "true");
+
+    // ドラッグ開始
+    slot.addEventListener("dragstart", (e) => {
+      draggedSlot = slot;
+      slot.classList.add("is-dragging");
+      // 子要素の文字や画像ではなく、枠自体が綺麗にドラッグされるように調整
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", slot.dataset.targetInput);
+    });
+
+    // ドラッグ終了
+    slot.addEventListener("dragend", () => {
+      slot.classList.remove("is-dragging");
+      slots.forEach((s) => s.classList.remove("is-drag-over"));
+      draggedSlot = null;
+    });
+
+    // 他の枠の上に重なっている時
+    slot.addEventListener("dragover", (e) => {
+      e.preventDefault(); // ドロップを許可するために必須
+      if (draggedSlot && slot !== draggedSlot) {
+        slot.classList.add("is-drag-over");
+      }
+    });
+
+    // 他の枠から離れた時
+    slot.addEventListener("dragleave", () => {
+      slot.classList.remove("is-drag-over");
+    });
+
+    // ドロップした瞬間（値を入れ替えるコアロジック）
+    slot.addEventListener("drop", (e) => {
+      e.preventDefault();
+      slot.classList.remove("is-drag-over");
+
+      if (!draggedSlot || draggedSlot === slot) return;
+
+      // 1. 互いのターゲットインプットIDとプレビュー画像IDをデータ属性から取得
+      const srcInputId = draggedSlot.dataset.targetInput;
+      const srcImgId = draggedSlot.dataset.targetPreview;
+      const destInputId = slot.dataset.targetInput;
+      const destImgId = slot.dataset.targetPreview;
+
+      const srcInput = document.getElementById(srcInputId);
+      const srcImg = document.getElementById(srcImgId);
+      const destInput = document.getElementById(destInputId);
+      const destImg = document.getElementById(destImgId);
+
+      if (!srcInput || !destInput) return;
+
+      // 2. 隠しインプット（キャラクターID）の値を入れ替え
+      const tempValue = srcInput.value;
+      srcInput.value = destInput.value;
+      destInput.value = tempValue;
+
+      // 3. プレビュー画像（src）と表示クラス（is-hidden）の入れ替え
+      const tempImgSrc = srcImg.src;
+      const tempImgHidden = srcImg.classList.contains("is-hidden");
+
+      if (destImg.classList.contains("is-hidden")) {
+        srcImg.classList.add("is-hidden");
+      } else {
+        srcImg.classList.remove("is-hidden");
+      }
+      srcImg.src = destImg.src;
+
+      if (tempImgHidden) {
+        destImg.classList.add("is-hidden");
+      } else {
+        destImg.classList.remove("is-hidden");
+      }
+      destImg.src = tempImgSrc;
+
+      // 4. 値が変わったことをブラウザへ通知（Firestoreへのリアルタイム保存や他連動用）
+      srcInput.dispatchEvent(new Event("change", { bubbles: true }));
+      destInput.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+  });
 }
