@@ -140,12 +140,15 @@
                                     placeholder="https://notion.so...">
                             </div>
                             <div class="c-portal-settings-field">
-                                <label class="c-portal-checkbox-label">
-                                    <input type="checkbox" id="js-portal-setting-active" class="c-portal-checkbox"
-                                        checked>
-                                    <span class="c-portal-checkbox-text">このワールドをアクティブにする（チェックを外すとアーカイブ化）</span>
-                                </label>
+                                <label class="c-portal-settings-label">ワールドのステータス</label>
+                                <div class="c-portal-select">
+                                    <select id="js-portal-setting-status" class="c-portal-select__input">
+                                        <option value="active" selected>有効</option>
+                                        <option value="archived">無効（アーカイブ）</option>
+                                    </select>
+                                </div>
                             </div>
+                            
                         </div>
                     </div>
                 </div>

@@ -213,7 +213,6 @@ async function loadWorldList(userId) {
         '<li class="c-world-modal__item--empty">アクティブなワールドがありません</li>';
     }
 
-
     console.log("✅ ワールド一覧のロードと生成が完了しました！");
   } catch (error) {
     console.error("🚨 ワールド一覧のロード中にエラーが発生しました:", error);
@@ -718,8 +717,11 @@ async function loadPortalDashboardData(userId, worldId) {
       }
     }
 
-    document.getElementById("js-portal-setting-active").checked =
-      data.isActive !== false;
+    const statusSelect = document.getElementById("js-portal-setting-status");
+    if (statusSelect) {
+      // 過去データがtrue（または未設定）なら active、明示的に false の場合のみ archived を選択
+      statusSelect.value = data.isActive !== false ? "active" : "archived";
+    }
 
     // 最終更新日時
     const updatedEl = document.getElementById("js-portal-world-updated");
@@ -733,19 +735,19 @@ async function loadPortalDashboardData(userId, worldId) {
     if (linkBtn) {
       if (data.externalLink) {
         linkBtn.href = data.externalLink;
-        
+
         linkBtn.classList.remove("is-hidden");
 
         const faviconImg = linkBtn.querySelector("img");
         if (faviconImg) {
-          faviconImg.src = "http://www.google.com/s2/favicons?domain=" + data.externalLink;
+          faviconImg.src =
+            "http://www.google.com/s2/favicons?domain=" + data.externalLink;
         }
       } else {
         // 💡 直接スタイルを書き換えず、設計図の共通非表示クラス「is-hidden」を付与
         linkBtn.classList.add("is-hidden");
       }
     }
-
 
     console.log("✅ ダッシュボードデータのUIマッピングが完了しました");
   } catch (error) {
@@ -946,10 +948,14 @@ function initPortalDashboardEvents() {
           sessionStorage.removeItem("app_current_world_id");
 
           // 2. 選択中クラス（is-active）をすべての選択肢ボタンから完全に外す（見た目のリセット）
-          document.querySelectorAll(".js-world-choice").forEach((b) => b.classList.remove("is-active"));
+          document
+            .querySelectorAll(".js-world-choice")
+            .forEach((b) => b.classList.remove("is-active"));
 
           // 3. チェックボックスのチェックを明示的に外す
-          const activeCheckbox = document.getElementById("js-portal-setting-active");
+          const activeCheckbox = document.getElementById(
+            "js-portal-setting-active",
+          );
           if (activeCheckbox) {
             activeCheckbox.checked = false;
           }
@@ -957,13 +963,14 @@ function initPortalDashboardEvents() {
           // 4. ヘッダーのワールド表示を「未登録」にリセット
           syncHeaderWorldSelector(null, "");
 
-          alert("ワールドをアーカイブ化しました。ワールド選択から新しいワールドを選ぶか追加してください。");
-          
-          window.location.reload(); 
+          alert(
+            "ワールドをアーカイブ化しました。ワールド選択から新しいワールドを選ぶか追加してください。",
+          );
+
+          window.location.reload();
         } else {
           await loadPortalDashboardData(user.uid, currentWorldId);
         }
-
       } catch (error) {
         console.error("🚨 保存エラー:", error);
         alert("数値の保存に失敗しました。");
