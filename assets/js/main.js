@@ -538,6 +538,12 @@ function initWorldSelectorEvent() {
 
         // 1. 先にフォームをリセットし、送信ボタンのフォーカスを安全に外す
         createWorldForm.reset();
+
+        const statusSelect = document.getElementById(
+          "js-portal-setting-status",
+        );
+        if (statusSelect) statusSelect.value = "active";
+
         const activeSubmitBtn = document.getElementById(
           "js-create-world-submit",
         );
@@ -899,9 +905,10 @@ function initPortalDashboardEvents() {
         .getElementById("js-portal-setting-character-id")
         .value.trim();
 
-      const isActive = document.getElementById(
-        "js-portal-setting-active",
-      ).checked;
+      const statusValue = document.getElementById(
+        "js-portal-setting-status",
+      )?.value;
+      const isActive = statusValue === "active"; // "active" の場合のみ true
 
       try {
         updateBtn.disabled = true;
