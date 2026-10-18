@@ -405,25 +405,98 @@
     height: 12px;
 }
 
+
+/* ボタンを乗せるための、画面いっぱいに広がる透明な固定レイヤー */
+.c-floating-container {
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    pointer-events: none;
+    /* 下にある入力欄をクリックできるようにするガード */
+    z-index: 100;
+}
+
+/* 中央寄せのインナー枠（ここに最大幅を設定する） */
+.c-floating-inner {
+    max-width: 1024px;
+    /* アプリのメインコンテンツの最大幅（wrapperなど）に合わせる */
+    margin: 0 auto;
+    position: relative;
+    height: 60px;
+    /* ボタンの高さ分 */
+}
+
 .c-portal-footer__update-btn {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     color: white;
-    background-color: var(--color-emerald-500);
     padding: 8px 18px;
     border-radius: 8px;
     font-weight: bold;
     cursor: pointer;
-    transition: opacity 0.2s;
-    border: none;
-    font-size: 12px;
+    font-size: 1.3rem;
     box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);
+    
+    background-color: rgba(16, 185, 129, 0.9) !important; /* ほんの少し透けさせる */
+    backdrop-filter: blur(8px); /* ボタンの後ろに重なったコンテンツをボカす */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+
+
+
+    position: absolute;
+    right: 20px;
+    bottom: 12vh;
+    pointer-events: auto;
+
+    transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.2s, box-shadow 0.25s;
 }
 
 .c-portal-footer__update-btn:hover {
-    opacity: 0.9;
+    transform: translateY(-2px);
+    background-color: #059669;
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
 }
+
+.c-portal-footer__update-btn:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
+}
+
+/* ==========================================================================
+   ✨ 更新成功時のアニメーション演出
+   ========================================================================== */
+.c-portal-footer__update-btn.is-success-flash {
+    animation: successFlash 1.2s ease-out;
+}
+
+@keyframes successFlash {
+    0% {
+        background-color: #10b981;
+        /* 成功の緑色 */
+        transform: scale(1);
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.8);
+    }
+
+    15% {
+        transform: scale(1.08);
+        /* 完了した瞬間に少しポンッと大きくなる */
+        background-color: #059669;
+        /* 濃い緑 */
+    }
+
+    30% {
+        transform: scale(1);
+    }
+
+    100% {
+        background-color: var(--theme-accent-action);
+        /* 元のボタン色に戻る */
+        box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);
+    }
+}
+
 
 
 /* ⭕ 追加：セレクトボックス（新仕様）のコンポーネントスタイル */
@@ -526,7 +599,7 @@
 /* ==========================================================================
    👥 複数パーティ管理対応用スタイル
    ========================================================================== */
-   .c-portal-party-container {
+.c-portal-party-container {
     background-color: var(--theme-bg-surface);
     border: 1px solid var(--color-gray-200);
     border-radius: 12px;
@@ -621,6 +694,7 @@
     color: var(--color-tower-red);
     font-size: 1.2rem;
 }
+
 .c-btn.m-delete-action:hover {
     background-color: #fca5a5;
     box-shadow: none;
@@ -635,5 +709,6 @@
 }
 
 /* 汎用ヘルパークラス（設計図ルールに則り追記） */
-.u-mt-8 { margin-top: 8px !important; }
-
+.u-mt-8 {
+    margin-top: 8px !important;
+}
