@@ -1,7 +1,6 @@
 // 🌐 外部リンクのドメインからファビコン画像URLを生成する共通関数
 const FAVICON_API_BASE = "http://www.google.com/s2/favicons?domain=";
 
-
 // 🔮 魔女マスタデータのキャッシュ用変数（配列に変更）
 let characterMaster = [];
 
@@ -249,13 +248,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   setActiveNavigation();
   await insertWorldSelector();
 
-  // 💡 【追記】JS内に用意したピッカーの箱を自動生成し、クリック監視（起動コード）を有効化する
   injectAndInitCharacterPicker();
 
   initWorldSelectorEvent();
   initPortalDashboardEvents();
 
-  // 🟢【最重要修正】ここにドラッグ＆ドロップの初期化呼び出しを追記します！
+  initPartySystemEvents();
   initPartyDragAndDrop();
 });
 
@@ -677,11 +675,15 @@ function initWorldSelectorEvent() {
 // ==========================================================================
 function syncHeaderWorldSelector(worldNumber, worldName, characterId = null) {
   const currentWorldNumber = document.getElementById("js-current-world-number");
-  const currentWorldNameElement = document.getElementById("js-current-world-name");
+  const currentWorldNameElement = document.getElementById(
+    "js-current-world-name",
+  );
   const iconWrap = document.querySelector(".c-world-selector__icon-wrap");
 
   if (currentWorldNumber) {
-    currentWorldNumber.textContent = worldNumber ? `W ${worldNumber}` : "未登録";
+    currentWorldNumber.textContent = worldNumber
+      ? `W ${worldNumber}`
+      : "未登録";
   }
   if (currentWorldNameElement) {
     currentWorldNameElement.textContent = worldName || "";
@@ -690,19 +692,27 @@ function syncHeaderWorldSelector(worldNumber, worldName, characterId = null) {
   if (iconWrap) {
     let iconSrc = "";
 
-    console.log(`[IconSync] 渡されたキャラID: ${characterId}, マスタの状態: ${Array.isArray(characterMaster) ? characterMaster.length + "件" : "未ロード"}`);
+    console.log(
+      `[IconSync] 渡されたキャラID: ${characterId}, マスタの状態: ${Array.isArray(characterMaster) ? characterMaster.length + "件" : "未ロード"}`,
+    );
 
-    if (characterId && Array.isArray(characterMaster) && characterMaster.length > 0) {
+    if (
+      characterId &&
+      Array.isArray(characterMaster) &&
+      characterMaster.length > 0
+    ) {
       // 💡 Stringにして型変換の安全マージをして比較
       const foundChara = characterMaster.find(
-        (c) => String(c.id).trim() === String(characterId).trim()
+        (c) => String(c.id).trim() === String(characterId).trim(),
       );
-      
+
       if (foundChara) {
         iconSrc = foundChara.iconUrl;
         console.log(`[IconSync] マスタから画像パスを発見しました: ${iconSrc}`);
       } else {
-        console.warn(`[IconSync] キャラID [${characterId}] に一致する魔女がマスタ内に見つかりません`);
+        console.warn(
+          `[IconSync] キャラID [${characterId}] に一致する魔女がマスタ内に見つかりません`,
+        );
       }
     }
 
@@ -713,7 +723,8 @@ function syncHeaderWorldSelector(worldNumber, worldName, characterId = null) {
       img.className = "c-world-selector__img";
       img.src = iconSrc;
       img.alt = worldName || "ワールドアイコン";
-      img.style.cssText = "width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;";
+      img.style.cssText =
+        "width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;";
       iconWrap.appendChild(img);
     } else {
       const icon = document.createElement("i");
@@ -769,7 +780,7 @@ async function loadPortalDashboardData(userId, worldId) {
 
     // 💡 HTML側の id="js-portal-setting-character-id" と完全に一致させ、値を復元
     const charIdField = document.getElementById(
-      "js-portal-setting-character-id"
+      "js-portal-setting-character-id",
     );
     if (charIdField) {
       charIdField.value = data.characterId || "";
@@ -777,11 +788,11 @@ async function loadPortalDashboardData(userId, worldId) {
 
     // 💡 ロードしたキャラクターIDに基づいて、詳細設定内のアイコン画像を最新に切り替える
     const previewImg = document.getElementById(
-      "js-portal-setting-icon-preview"
+      "js-portal-setting-icon-preview",
     );
     if (previewImg && data.characterId && Array.isArray(characterMaster)) {
       const foundChara = characterMaster.find(
-        (c) => String(c.id) === String(data.characterId)
+        (c) => String(c.id) === String(data.characterId),
       );
       if (foundChara && foundChara.iconUrl) {
         previewImg.src = foundChara.iconUrl;
@@ -796,31 +807,23 @@ async function loadPortalDashboardData(userId, worldId) {
       statusSelect.value = data.isActive !== false ? "active" : "archived";
     }
 
-    // 💡 【新設連動】パーティ5人分のデータをマッピング復元
-    const partyArray = data.partyMembers || [null, null, null, null, null];
-    partyArray.forEach((charaId, i) => {
-      const idx = i + 1;
-      const inputField = document.getElementById(
-        `js-portal-party-chara-${idx}`
-      );
-      const imgField = document.getElementById(`js-portal-party-img-${idx}`);
+    // 🔗 差し替え後：複数対応のパーティ配列データを復元（古いデータ構造の互換ガード付き）
+    if (data.parties && Array.isArray(data.parties)) {
+      currentPartiesState = data.parties;
+    } else if (data.partyMembers) {
+      // 古い1パーティ仕様データがある場合の自動変換処理
+      currentPartiesState = [
+        {
+          partyName: "メインパーティ",
+          members: data.partyMembers,
+        },
+      ];
+    } else {
+      currentPartiesState = [];
+    }
 
-      if (inputField) inputField.value = charaId || "";
-      if (imgField) {
-        if (charaId && Array.isArray(characterMaster)) {
-          const found = characterMaster.find(
-            (c) => String(c.id) === String(charaId)
-          );
-          if (found) {
-            imgField.src = found.iconUrl;
-            imgField.classList.remove("is-hidden"); // CSS側で画像を表示状態にする
-            return;
-          }
-        }
-        imgField.src = "";
-        imgField.classList.add("is-hidden"); // キャラ未設定時は画像を隠して「+」を出す
-      }
-    });
+    // パーティリスト一覧UIをレンダリング
+    renderPartyListUI();
 
     // 最終更新日時
     const updatedEl = document.getElementById("js-portal-world-updated");
@@ -839,9 +842,7 @@ async function loadPortalDashboardData(userId, worldId) {
 
         const faviconImg = linkBtn.querySelector("img");
         if (faviconImg) {
-
           faviconImg.src = FAVICON_API_BASE + data.externalLink;
-
         }
       } else {
         // 💡 直接スタイルを書き換えず、設計図の共通非表示クラス「is-hidden」を付与
@@ -857,8 +858,6 @@ async function loadPortalDashboardData(userId, worldId) {
     console.error("🚨 ダッシュボードロードエラー:", error);
   }
 }
-
-
 
 // ==========================================================================
 // 📥 アーカイブされた非アクティブワールドの一覧集計・復帰処理
@@ -1022,24 +1021,7 @@ function initPortalDashboardEvents() {
           currentWorldId,
         );
 
-        // 詳細設定エリアの回収のすぐ後ろあたりに追記（720行目付近）
-        const partyChara1 = document.getElementById(
-          "js-portal-party-chara-1",
-        ).value;
-        const partyChara2 = document.getElementById(
-          "js-portal-party-chara-2",
-        ).value;
-        const partyChara3 = document.getElementById(
-          "js-portal-party-chara-3",
-        ).value;
-        const partyChara4 = document.getElementById(
-          "js-portal-party-chara-4",
-        ).value;
-        const partyChara5 = document.getElementById(
-          "js-portal-party-chara-5",
-        ).value;
-
-        // 💡 Firestoreのオブジェクト構造へ配列データとして合流コミット
+        // 🔗 差し替え後：個別回収コードを廃止し、メモリ上のステート配列をそのまま合流保存
         await setDoc(
           worldDocRef,
           {
@@ -1055,14 +1037,8 @@ function initPortalDashboardEvents() {
             externalLink: externalLink || null,
             characterId: characterId || null,
 
-            // 💡 追加：パーティメンバー情報をFirestoreへ格納
-            partyMembers: [
-              partyChara1 || null,
-              partyChara2 || null,
-              partyChara3 || null,
-              partyChara4 || null,
-              partyChara5 || null,
-            ],
+            // 💡 複数パーティ配列（最大8個）を丸ごと保存
+            parties: currentPartiesState,
 
             isActive: isActive,
             updatedAt: serverTimestamp(),
@@ -1423,55 +1399,254 @@ function bindCharacterPickerEvents() {
 }
 
 // ==========================================================================
-// ⚔️ 【新設】パーティ編成枠のドラッグ＆ドロップ入れ替え（スワップ）機能
+// 👥 複数パーティ管理データステート・メモリ（新規追加）
 // ==========================================================================
+let currentPartiesState = []; // 現在選択中ワールドのパーティ配列をキャッシュする
+let activeEditingPartyIndex = null; // 現在編集中のパーティインデックス (0〜7)
+
+// 🔓 パーティ管理全体のイベント初期化
+function initPartySystemEvents() {
+  const modalParty = document.getElementById("js-party-edit-modal");
+  const closePartyBtns = document.querySelectorAll(
+    ".js-party-edit-modal-close",
+  );
+  const addPartyBtn = document.getElementById("js-portal-btn-add-party");
+  const savePartyBtn = document.getElementById("js-portal-btn-save-party");
+  const deletePartyBtn = document.getElementById("js-portal-btn-delete-party");
+
+  if (!modalParty) return;
+
+  // モーダルクローズ
+  const closePartyModal = () => {
+    // 💡 エラー対策：非表示にする前に、現在モーダル内のボタンにあたっているフォーカスを強制解除して外へ逃がす
+    const activeEl = document.activeElement;
+    if (activeEl && modalParty.contains(activeEl)) {
+      activeEl.blur();
+    }
+
+    // パーティリスト一覧のコンテナにフォーカスを安全に移動
+    const partyListContainer = document.getElementById("js-portal-party-list");
+    if (partyListContainer) {
+      partyListContainer.focus();
+    }
+
+    modalParty.classList.remove("is-open");
+    modalParty.setAttribute("aria-hidden", "true");
+    modalParty.setAttribute("inert", "");
+    activeEditingPartyIndex = null;
+  };
+  closePartyBtns.forEach((btn) =>
+    btn.addEventListener("click", closePartyModal),
+  );
+  // ➕ 新規パーティ追加処理
+  if (addPartyBtn) {
+    addPartyBtn.addEventListener("click", () => {
+      if (currentPartiesState.length >= 8) {
+        alert("パーティは最大8つまでしか作成できません。");
+        return;
+      }
+
+      const newParty = {
+        partyName: `新規パーティ ${currentPartiesState.length + 1}`,
+        members: [null, null, null, null, null],
+      };
+
+      currentPartiesState.push(newParty);
+      renderPartyListUI();
+      openPartyEditModal(currentPartiesState.length - 1);
+    });
+  }
+
+  // 💾 モーダル内「反映する」ボタン押下時
+  if (savePartyBtn) {
+    savePartyBtn.addEventListener("click", () => {
+      if (activeEditingPartyIndex === null) return;
+
+      const inputName = document
+        .getElementById("js-input-party-name")
+        .value.trim();
+      currentPartiesState[activeEditingPartyIndex].partyName =
+        inputName || "名称未設定パーティ";
+
+      for (let i = 1; i <= 5; i++) {
+        const val =
+          document.getElementById(`js-portal-modal-chara-${i}`).value || null;
+        currentPartiesState[activeEditingPartyIndex].members[i - 1] = val;
+      }
+
+      renderPartyListUI();
+
+      // 💡 ボタンのフォーカスを先に外してからクローズ処理へ
+      savePartyBtn.blur();
+      closePartyModal();
+    });
+  }
+
+  // 🗑️ フォーカスを安全なコンテナへ逃がしてからモーダルを閉じる
+  if (deletePartyBtn) {
+    deletePartyBtn.addEventListener("click", () => {
+      if (activeEditingPartyIndex === null) return;
+
+      // 1. 配列（メモリ上）からサクッと削除
+      currentPartiesState.splice(activeEditingPartyIndex, 1);
+
+      // 2. 裏の一覧UIを即座に再描画
+      renderPartyListUI();
+
+      // 非表示にする前に、ボタンのフォーカスを強制的に外して親コンテナへ逃がす
+      deletePartyBtn.blur();
+      const partyListContainer = document.getElementById(
+        "js-portal-party-list",
+      );
+      if (partyListContainer) {
+        partyListContainer.focus();
+      }
+
+      closePartyModal();
+    });
+  }
+}
+
+// 👥 メモリデータを元に、右側のパーティカード一覧を生成
+function renderPartyListUI() {
+  const container = document.getElementById("js-portal-party-list");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  if (currentPartiesState.length === 0) {
+    container.innerHTML =
+      '<p class="c-world-form__help" style="text-align:center; padding:12px;">登録されたパーティがありません。</p>';
+    return;
+  }
+
+  currentPartiesState.forEach((party, index) => {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "c-portal-party-card";
+
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "c-portal-party-card__name";
+    nameSpan.textContent = party.partyName;
+    card.appendChild(nameSpan);
+
+    const slotsDiv = document.createElement("div");
+    slotsDiv.className = "c-portal-party__slots";
+
+    party.members.forEach((charaId) => {
+      const slotIcon = document.createElement("div");
+      slotIcon.className = "c-portal-party__slot";
+
+      if (charaId && Array.isArray(characterMaster)) {
+        const found = characterMaster.find(
+          (c) => String(c.id) === String(charaId),
+        );
+        if (found) {
+          const img = document.createElement("img");
+          img.src = found.iconUrl;
+          img.alt = found.name;
+          slotIcon.appendChild(img);
+        } else {
+          slotIcon.innerHTML = "<span>+</span>";
+        }
+      } else {
+        slotIcon.innerHTML = "<span>+</span>";
+      }
+      slotsDiv.appendChild(slotIcon);
+    });
+
+    card.appendChild(slotsDiv);
+
+    card.addEventListener("click", () => {
+      openPartyEditModal(index);
+    });
+
+    container.appendChild(card);
+  });
+}
+
+// 🔓 編集モーダルを開き、データをインプットへ流し込む
+function openPartyEditModal(index) {
+  activeEditingPartyIndex = index;
+  const party = currentPartiesState[index];
+
+  document.getElementById("js-input-party-name").value = party.partyName;
+
+  party.members.forEach((charaId, i) => {
+    const idx = i + 1;
+    const inputField = document.getElementById(`js-portal-modal-chara-${idx}`);
+    const imgField = document.getElementById(`js-portal-modal-img-${idx}`);
+
+    if (inputField) inputField.value = charaId || "";
+    if (imgField) {
+      if (charaId && Array.isArray(characterMaster)) {
+        const found = characterMaster.find(
+          (c) => String(c.id) === String(charaId),
+        );
+        if (found) {
+          imgField.src = found.iconUrl;
+          imgField.classList.remove("is-hidden");
+          return;
+        }
+      }
+      imgField.src = "";
+      imgField.classList.add("is-hidden");
+    }
+  });
+
+  const modalParty = document.getElementById("js-party-edit-modal");
+  if (modalParty) {
+    modalParty.classList.add("is-open");
+    modalParty.removeAttribute("aria-hidden");
+    modalParty.removeAttribute("inert");
+  }
+}
+
+// ⚔️ モーダル編集枠専用のドラッグ＆ドロップ入れ替え（スワップ）機能
+// 🟢 バグを修正した正しいイベント処理
 function initPartyDragAndDrop() {
   const slots = document.querySelectorAll(
-    ".c-portal-party__slots .c-portal-party__slot",
+    ".js-party-modal-slots .c-portal-party__slot",
   );
   let draggedSlot = null;
 
   slots.forEach((slot) => {
-    // 💡 ボタン要素をドラッグ可能にする
     slot.setAttribute("draggable", "true");
 
-    // ドラッグ開始
+    // ① ドラッグ開始：動かしている本人に付与
     slot.addEventListener("dragstart", (e) => {
       draggedSlot = slot;
       slot.classList.add("is-dragging");
-      // 子要素の文字や画像ではなく、枠自体が綺麗にドラッグされるように調整
       e.dataTransfer.effectAllowed = "move";
       e.dataTransfer.setData("text/plain", slot.dataset.targetInput);
     });
 
-    // ドラッグ終了
+    // ② ドラッグ終了：成否に関わらず、動かしていた本人のクラスを絶対に外す
     slot.addEventListener("dragend", () => {
       slot.classList.remove("is-dragging");
-      slots.forEach((s) => s.classList.remove("is-drag-over"));
+      slots.forEach((s) => s.classList.remove("is-drag-over")); // 全枠の重なりクラスも掃除
       draggedSlot = null;
     });
 
-    // 他の枠の上に重なっている時
+    // ③ 他の枠の上に重なったとき：重なられた側の枠に「is-drag-over」を付与
     slot.addEventListener("dragover", (e) => {
-      e.preventDefault(); // ドロップを許可するために必須
+      e.preventDefault();
       if (draggedSlot && slot !== draggedSlot) {
-        slot.classList.add("is-drag-over");
+        slot.classList.add("is-drag-over"); // 👈 is-drag-over に修正
       }
     });
 
-    // 他の枠から離れた時
+    // ④ 重なりから外れたとき：重なられていた枠から「is-drag-over」を外す
     slot.addEventListener("dragleave", () => {
       slot.classList.remove("is-drag-over");
     });
 
-    // ドロップした瞬間（値を入れ替えるコアロジック）
+    // ⑤ ドロップされたとき
     slot.addEventListener("drop", (e) => {
       e.preventDefault();
       slot.classList.remove("is-drag-over");
-
       if (!draggedSlot || draggedSlot === slot) return;
 
-      // 1. 互いのターゲットインプットIDとプレビュー画像IDをデータ属性から取得
       const srcInputId = draggedSlot.dataset.targetInput;
       const srcImgId = draggedSlot.dataset.targetPreview;
       const destInputId = slot.dataset.targetInput;
@@ -1484,12 +1659,10 @@ function initPartyDragAndDrop() {
 
       if (!srcInput || !destInput) return;
 
-      // 2. 隠しインプット（キャラクターID）の値を入れ替え
       const tempValue = srcInput.value;
       srcInput.value = destInput.value;
       destInput.value = tempValue;
 
-      // 3. プレビュー画像（src）と表示クラス（is-hidden）の入れ替え
       const tempImgSrc = srcImg.src;
       const tempImgHidden = srcImg.classList.contains("is-hidden");
 
@@ -1507,7 +1680,6 @@ function initPartyDragAndDrop() {
       }
       destImg.src = tempImgSrc;
 
-      // 4. 値が変わったことをブラウザへ通知（Firestoreへのリアルタイム保存や他連動用）
       srcInput.dispatchEvent(new Event("change", { bubbles: true }));
       destInput.dispatchEvent(new Event("change", { bubbles: true }));
     });

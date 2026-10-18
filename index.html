@@ -85,61 +85,24 @@
 
                     </div>
 
-                    <!-- 👉 右側：目標パーティ編成エリア -->
+                    <!-- 👉 右側：目標パーティ編成エリア（複数対応版） -->
                     <div class="c-portal-main__right">
-                        <div class="c-portal-party">
-                            <h4 class="c-portal-party__title">
-                                <i class="fa-solid fa-shield-halved"></i> パーティ名を取得
-                            </h4>
-                            <div class="c-portal-party__slots">
-                                <!-- 枠1 -->
-                                <button type="button" class="c-portal-party__slot js-open-character-picker"
-                                    data-target-input="js-portal-party-chara-1"
-                                    data-target-preview="js-portal-party-img-1">
-                                    <img id="js-portal-party-img-1" src="" class="is-hidden" alt="枠1">
-                                    <span>+</span>
-                                    <input type="hidden" id="js-portal-party-chara-1" value="">
+                        <div class="c-portal-party-container">
+                            <header class="c-portal-party-container__header">
+                                <h4 class="c-portal-party-container__title">
+                                    <i class="fa-solid fa-shield-halved"></i> 目標パーティ編成 (最大8つ)
+                                </h4>
+                                <button type="button" id="js-portal-btn-add-party"
+                                    class="c-btn c-portal-party-container__add-btn">
+                                    <i class="fa-solid fa-plus"></i> 追加
                                 </button>
+                            </header>
 
-                                <!-- 枠2 -->
-                                <button type="button" class="c-portal-party__slot js-open-character-picker"
-                                    data-target-input="js-portal-party-chara-2"
-                                    data-target-preview="js-portal-party-img-2">
-                                    <img id="js-portal-party-img-2" src="" class="is-hidden" alt="枠2">
-                                    <span>+</span>
-                                    <input type="hidden" id="js-portal-party-chara-2" value="">
-                                </button>
-
-                                <!-- 枠3 -->
-                                <button type="button" class="c-portal-party__slot js-open-character-picker"
-                                    data-target-input="js-portal-party-chara-3"
-                                    data-target-preview="js-portal-party-img-3">
-                                    <img id="js-portal-party-img-3" src="" class="is-hidden" alt="枠3">
-                                    <span>+</span>
-                                    <input type="hidden" id="js-portal-party-chara-3" value="">
-                                </button>
-
-                                <!-- 枠4 -->
-                                <button type="button" class="c-portal-party__slot js-open-character-picker"
-                                    data-target-input="js-portal-party-chara-4"
-                                    data-target-preview="js-portal-party-img-4">
-                                    <img id="js-portal-party-img-4" src="" class="is-hidden" alt="枠4">
-                                    <span>+</span>
-                                    <input type="hidden" id="js-portal-party-chara-4" value="">
-                                </button>
-
-                                <!-- 枠5 -->
-                                <button type="button" class="c-portal-party__slot js-open-character-picker"
-                                    data-target-input="js-portal-party-chara-5"
-                                    data-target-preview="js-portal-party-img-5">
-                                    <img id="js-portal-party-img-5" src="" class="is-hidden" alt="枠5">
-                                    <span>+</span>
-                                    <input type="hidden" id="js-portal-party-chara-5" value="">
-                                </button>
-                            </div>
-
+                            <!-- 👥 ここに登録されたパーティリストが動的にJavaScriptでレンダリングされます -->
+                            <div id="js-portal-party-list" class="c-portal-party-list"></div>
                         </div>
                     </div>
+
 
                 </div>
                 <!-- ⚙️ 詳細設定エリア（開閉アコーディオン仕様） -->
@@ -206,6 +169,79 @@
                 </div>
             </div>
         </div>
+
+        <!-- 🔲 共通部品：パーティ編集用モーダル -->
+        <div id="js-party-edit-modal" class="c-modal c-party-edit-modal c-world-modal" aria-hidden="true" inert>
+            <div class="c-modal__overlay js-party-edit-modal-close"></div>
+            <div class="c-world-modal__container c-modal__container">
+                <header class="c-world-modal__header">
+                    <div class="c-account-modal__title-wrap">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <span class="c-account-modal__title">パーティ編成の編集</span>
+                    </div>
+                    <button type="button" class="c-world-modal__close-btn js-party-edit-modal-close">&times;</button>
+                </header>
+
+                <div class="c-world-modal__content m-party-edit">
+                    <!-- 🏷️ パーティ名入力フォーム -->
+                    <div class="c-form__group">
+                        <label for="js-input-party-name" class="c-form__label">パーティ名</label>
+                        <input type="text" id="js-input-party-name" class="c-form__input"
+                            placeholder="例：第1一軍 / 藍染染めパーティ">
+                    </div>
+
+                    <!-- 👥 キャラクター枠（旧 index.html の5枠構成を移植） -->
+                    <div class="c-portal-party__edit-zone">
+                        <label class="c-form__label">編成メンバー</label>
+                        <div class="c-portal-party__slots js-party-modal-slots">
+                            <!-- 枠1〜5 (JSで動的にターゲットID付きで再配置しても良いですが、構造は固定) -->
+                            <button type="button" class="c-portal-party__slot js-open-character-picker"
+                                data-target-input="js-portal-modal-chara-1" data-target-preview="js-portal-modal-img-1">
+                                <img id="js-portal-modal-img-1" src="" class="is-hidden" alt="枠1">
+                                <span>+</span>
+                                <input type="hidden" id="js-portal-modal-chara-1" value="">
+                            </button>
+                            <button type="button" class="c-portal-party__slot js-open-character-picker"
+                                data-target-input="js-portal-modal-chara-2" data-target-preview="js-portal-modal-img-2">
+                                <img id="js-portal-modal-img-2" src="" class="is-hidden" alt="枠2">
+                                <span>+</span>
+                                <input type="hidden" id="js-portal-modal-chara-2" value="">
+                            </button>
+                            <button type="button" class="c-portal-party__slot js-open-character-picker"
+                                data-target-input="js-portal-modal-chara-3" data-target-preview="js-portal-modal-img-3">
+                                <img id="js-portal-modal-img-3" src="" class="is-hidden" alt="枠3">
+                                <span>+</span>
+                                <input type="hidden" id="js-portal-modal-chara-3" value="">
+                            </button>
+                            <button type="button" class="c-portal-party__slot js-open-character-picker"
+                                data-target-input="js-portal-modal-chara-4" data-target-preview="js-portal-modal-img-4">
+                                <img id="js-portal-modal-img-4" src="" class="is-hidden" alt="枠4">
+                                <span>+</span>
+                                <input type="hidden" id="js-portal-modal-chara-4" value="">
+                            </button>
+                            <button type="button" class="c-portal-party__slot js-open-character-picker"
+                                data-target-input="js-portal-modal-chara-5" data-target-preview="js-portal-modal-img-5">
+                                <img id="js-portal-modal-img-5" src="" class="is-hidden" alt="枠5">
+                                <span>+</span>
+                                <input type="hidden" id="js-portal-modal-chara-5" value="">
+                            </button>
+                        </div>
+                        <p class="c-world-form__help u-mt-8">※ドラッグ＆ドロップして並び替え出来ます。</p>
+                    </div>
+
+                    <!-- ⚠️ アクションボタンエリア -->
+                    <div class="c-portal-party__modal-actions">
+                        <button type="button" id="js-portal-btn-delete-party" class="c-btn m-delete-action">
+                            <i class="fa-solid fa-trash-can"></i> パーティ削除
+                        </button>
+                        <button type="button" id="js-portal-btn-save-party" class="c-btn m-save-action">
+                            <i class="fa-solid fa-check"></i> 反映する
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- 🔮 共通キャラクターピッカーがJSで自動生成されてここに挿入されます -->

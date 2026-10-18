@@ -260,7 +260,8 @@
     transition: all 0.2s;
 }
 
-.c-portal-party__slot:hover {
+
+.c-party-edit-modal .c-portal-party__slot:hover {
     border-color: var(--color-blue-400);
     background-color: var(--color-green-100);
 }
@@ -519,3 +520,120 @@
     background-color: var(--theme-interactive-hover) !important;
     transition: transform 0.2s ease, border-color 0.2s ease;
 }
+
+
+
+/* ==========================================================================
+   👥 複数パーティ管理対応用スタイル
+   ========================================================================== */
+   .c-portal-party-container {
+    background-color: var(--theme-bg-surface);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.c-portal-party-container__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--theme-border-main);
+    padding-bottom: 8px;
+}
+
+.c-portal-party-container__title {
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--color-gray-600);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.c-portal-party-container__add-btn {
+    background-color: var(--theme-interactive);
+    color: var(--color-white);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+.c-portal-party-container__add-btn:hover {
+    background-color: var(--theme-accent-action-hover);
+}
+
+/* 一覧用の個別まとまりカード */
+.c-portal-party-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.c-portal-party-card {
+    background-color: var(--color-gray-50);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 10px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    width: 100%;
+}
+
+.c-portal-party-card:hover {
+    border-color: var(--color-blue-400);
+    background-color: var(--theme-interactive-hover);
+    transform: translateY(-1px);
+}
+
+.c-portal-party-card__name {
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--theme-text-main);
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* モーダル内部のレイアウト調整 */
+.c-world-modal__content.m-party-edit {
+    height: auto;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.c-portal-party__edit-zone {
+    margin-top: 16px;
+    padding: 12px 0;
+    border-top: 1px dashed var(--color-gray-200);
+}
+
+.c-portal-party__modal-actions {
+    margin-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.c-btn.m-delete-action {
+    background-color: #fee2e2;
+    color: var(--color-tower-red);
+    font-size: 1.2rem;
+}
+.c-btn.m-delete-action:hover {
+    background-color: #fca5a5;
+    box-shadow: none;
+}
+
+.c-btn.m-save-action {
+    background-color: var(--theme-accent-action);
+    color: var(--color-white);
+    flex-grow: 1;
+    font-size: 1.3rem;
+    max-width: 180px;
+}
+
+/* 汎用ヘルパークラス（設計図ルールに則り追記） */
+.u-mt-8 { margin-top: 8px !important; }
+
