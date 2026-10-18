@@ -1294,7 +1294,8 @@ function bindCharacterPickerEvents() {
     // 💡 パーティ5人の枠から、すでに選択されているキャラクターIDをすべて集計（重複除外の対象）
     const selectedPartyCharIds = [];
     for (let i = 1; i <= 5; i++) {
-      const inputEl = document.getElementById(`js-portal-party-chara-${i}`);
+      // 💡 探しに行くIDを「js-portal-modal-chara-」に変更します
+      const inputEl = document.getElementById(`js-portal-modal-chara-${i}`);
       if (inputEl && inputEl.value) {
         selectedPartyCharIds.push(String(inputEl.value));
       }
