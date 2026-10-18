@@ -243,6 +243,7 @@
 }
 
 .c-portal-party__slots {
+    width: 100%;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 8px;
