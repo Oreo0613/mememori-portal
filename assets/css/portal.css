@@ -232,6 +232,7 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
+
 .c-portal-party__title {
     font-size: 12px;
     font-weight: bold;
@@ -245,7 +246,7 @@
 .c-portal-party__slots {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 60px));
     gap: 8px;
 }
 
@@ -259,6 +260,10 @@
     background-color: var(--color-gray-100);
     cursor: pointer;
     transition: all 0.2s;
+}
+
+.c-portal-party__slot.has-character {
+    border-color: transparent;
 }
 
 

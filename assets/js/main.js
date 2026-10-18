@@ -928,138 +928,176 @@ async function loadArchiveWorldList(userId) {
 // 📥 【修正・アニメーション追加版】ダッシュボード側のデータ保存 ＆ アコーディオン
 // ==========================================================================
 function initPortalDashboardEvents() {
-    // --------------------------------------------------------------------------
-    // ⚙️ 1. 詳細設定アコーディオンのクリーンな開閉処理（更新ボタンとは完全独立）
-    // --------------------------------------------------------------------------
-    const toggleBtn = document.getElementById("js-portal-settings-toggle");
-    const contentPanel = document.getElementById("js-portal-settings-content");
-  
-    if (toggleBtn && contentPanel) {
-      contentPanel.style.display = "none";
-      toggleBtn.addEventListener("click", () => {
-        if (contentPanel.style.display === "none") {
-          contentPanel.style.display = "block";
-          toggleBtn.innerHTML =
-            '<i class="fa-solid fa-gear"></i> ワールドの詳細設定を隠す';
-        } else {
-          contentPanel.style.display = "none";
-          toggleBtn.innerHTML =
-            '<i class="fa-solid fa-gear"></i> ワールドの詳細設定を編集';
-        }
-      });
-    }
-  
-    // --------------------------------------------------------------------------
-    // 💾 2. 「更新する」ボタンのFirestore連動コミット ＆ アニメーション処理
-    // --------------------------------------------------------------------------
-    const updateBtn = document.getElementById("js-portal-btn-update");
-    if (updateBtn) {
-      updateBtn.addEventListener("click", async () => {
-        const user = auth.currentUser;
-        const currentWorldId = sessionStorage.getItem("app_current_world_id");
-  
-        if (!user || !currentWorldId) {
-          alert("ワールドが選択されていないか、セッションが切れています。");
-          return;
-        }
-  
-        // ① メイン画面（ダッシュボード）側の入力値回収
-        const chapter = document.getElementById("js-portal-quest-chapter").value.trim();
-        const stage = document.getElementById("js-portal-quest-stage").value.trim();
-        const questProgressStr = chapter && stage ? `${chapter}-${stage}` : "";
-  
-        const towerMuguu = document.getElementById("js-portal-muguu").value.trim();
-        const towerBlue = document.getElementById("js-portal-tower-blue").value.trim();
-        const towerRed = document.getElementById("js-portal-tower-red").value.trim();
-        const towerGreen = document.getElementById("js-portal-tower-green").value.trim();
-        const towerYellow = document.getElementById("js-portal-tower-yellow").value.trim();
-        const worldMemo = document.getElementById("js-portal-world-memo").value.trim();
-  
-        // ② アコーディオン内（詳細設定）の入力値回収
-        const worldName = document.getElementById("js-portal-setting-name").value.trim();
-        const startDate = document.getElementById("js-portal-setting-start-date").value;
-        const externalLink = document.getElementById("js-portal-setting-link").value.trim();
-        const characterId = document.getElementById("js-portal-setting-character-id").value.trim();
-        const statusValue = document.getElementById("js-portal-setting-status")?.value;
-        const isActive = statusValue === "active";
-  
-        try {
-          // ⏳ ローディング状態へ移行
-          updateBtn.disabled = true;
-          updateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 保存中...';
-  
-          const worldDocRef = doc(db, "users", user.uid, "worlds", currentWorldId);
-  
-          // Firestoreへマージ保存
-          await setDoc(
-            worldDocRef,
-            {
-              questProgress: questProgressStr,
-              towerMuguu: towerMuguu ? Number(towerMuguu) : null,
-              towerBlue: towerBlue ? Number(towerBlue) : null,
-              towerRed: towerRed ? Number(towerRed) : null,
-              towerGreen: towerGreen ? Number(towerGreen) : null,
-              towerYellow: towerYellow ? Number(towerYellow) : null,
-              worldMemo: worldMemo || null,
-              worldName: worldName || "名称未設定",
-              startDate: startDate || null,
-              externalLink: externalLink || null,
-              characterId: characterId || null,
-              parties: currentPartiesState, // キャッシュされているパーティ配列
-              isActive: isActive,
-              updatedAt: serverTimestamp(),
-            },
-            { merge: true }
-          );
-  
-          // 💡 リストや表示の再同期
-          await loadWorldList(user.uid);
-  
-          // 💡 もし詳細設定で非アクティブ化（アーカイブ化）された場合のUI制御
-          if (!isActive) {
-            sessionStorage.removeItem("app_current_world_id");
-            document.querySelectorAll(".js-world-choice").forEach((b) => b.classList.remove("is-active"));
-  
-            const activeCheckbox = document.getElementById("js-portal-setting-active");
-            if (activeCheckbox) activeCheckbox.checked = false;
-  
-            syncHeaderWorldSelector(null, "");
-            alert("ワールドをアーカイブ化しました。ワールド選択から新しいワールドを選ぶか追加してください。");
-            window.location.reload();
-            return; // アーカイブ時はリロードが入るためここで処理を抜ける
-          }
-  
-          // 通常の更新成功時：最新データを再描画
-          await loadPortalDashboardData(user.uid, currentWorldId);
-  
-          // ✨【アニメーション演出】成功フラッシュクラスを付与し、文言を切り替える
-          updateBtn.classList.add("is-success-flash");
-          updateBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> 更新完了！';
-  
-          // アラートの表示タイミングを少しずらすことで、ボタンの緑フラッシュがユーザーの目に入るように調整
-          setTimeout(() => {
-            alert("ワールドの進捗数値をFirestoreへ正常に保存しました！");
-          }, 100);
-  
-        } catch (error) {
-          console.error("🚨 保存エラー:", error);
-          alert("数値の保存に失敗しました。");
-        } finally {
-          // ⏳ ロックを解除して、一定時間後にボタンの見た目を「更新する」に戻す処理
-          updateBtn.disabled = false;
-          
-          // すでにアーカイブ化されてリロードが走っている場合はこの処理をスキップさせるガード
-          if (isActive) {
-            setTimeout(() => {
-              updateBtn.classList.remove("is-success-flash");
-              updateBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> 更新する';
-            }, 1500); // 1.5秒間フラッシュと完了文字を維持
-          }
-        }
-      });
-    }
+  // --------------------------------------------------------------------------
+  // ⚙️ 1. 詳細設定アコーディオンのクリーンな開閉処理（更新ボタンとは完全独立）
+  // --------------------------------------------------------------------------
+  const toggleBtn = document.getElementById("js-portal-settings-toggle");
+  const contentPanel = document.getElementById("js-portal-settings-content");
+
+  if (toggleBtn && contentPanel) {
+    contentPanel.style.display = "none";
+    toggleBtn.addEventListener("click", () => {
+      if (contentPanel.style.display === "none") {
+        contentPanel.style.display = "block";
+        toggleBtn.innerHTML =
+          '<i class="fa-solid fa-gear"></i> ワールドの詳細設定を隠す';
+      } else {
+        contentPanel.style.display = "none";
+        toggleBtn.innerHTML =
+          '<i class="fa-solid fa-gear"></i> ワールドの詳細設定を編集';
+      }
+    });
   }
-  
+
+  // --------------------------------------------------------------------------
+  // 💾 2. 「更新する」ボタンのFirestore連動コミット ＆ アニメーション処理
+  // --------------------------------------------------------------------------
+  const updateBtn = document.getElementById("js-portal-btn-update");
+  if (updateBtn) {
+    updateBtn.addEventListener("click", async () => {
+      const user = auth.currentUser;
+      const currentWorldId = sessionStorage.getItem("app_current_world_id");
+
+      if (!user || !currentWorldId) {
+        alert("ワールドが選択されていないか、セッションが切れています。");
+        return;
+      }
+
+      // ① メイン画面（ダッシュボード）側の入力値回収
+      const chapter = document
+        .getElementById("js-portal-quest-chapter")
+        .value.trim();
+      const stage = document
+        .getElementById("js-portal-quest-stage")
+        .value.trim();
+      const questProgressStr = chapter && stage ? `${chapter}-${stage}` : "";
+
+      const towerMuguu = document
+        .getElementById("js-portal-muguu")
+        .value.trim();
+      const towerBlue = document
+        .getElementById("js-portal-tower-blue")
+        .value.trim();
+      const towerRed = document
+        .getElementById("js-portal-tower-red")
+        .value.trim();
+      const towerGreen = document
+        .getElementById("js-portal-tower-green")
+        .value.trim();
+      const towerYellow = document
+        .getElementById("js-portal-tower-yellow")
+        .value.trim();
+      const worldMemo = document
+        .getElementById("js-portal-world-memo")
+        .value.trim();
+
+      // ② アコーディオン内（詳細設定）の入力値回収
+      const worldName = document
+        .getElementById("js-portal-setting-name")
+        .value.trim();
+      const startDate = document.getElementById(
+        "js-portal-setting-start-date",
+      ).value;
+      const externalLink = document
+        .getElementById("js-portal-setting-link")
+        .value.trim();
+      const characterId = document
+        .getElementById("js-portal-setting-character-id")
+        .value.trim();
+      const statusValue = document.getElementById(
+        "js-portal-setting-status",
+      )?.value;
+      const isActive = statusValue === "active";
+
+      try {
+        // ⏳ ローディング状態へ移行
+        updateBtn.disabled = true;
+        updateBtn.innerHTML =
+          '<i class="fa-solid fa-spinner fa-spin"></i> 保存中...';
+
+        const worldDocRef = doc(
+          db,
+          "users",
+          user.uid,
+          "worlds",
+          currentWorldId,
+        );
+
+        // Firestoreへマージ保存
+        await setDoc(
+          worldDocRef,
+          {
+            questProgress: questProgressStr,
+            towerMuguu: towerMuguu ? Number(towerMuguu) : null,
+            towerBlue: towerBlue ? Number(towerBlue) : null,
+            towerRed: towerRed ? Number(towerRed) : null,
+            towerGreen: towerGreen ? Number(towerGreen) : null,
+            towerYellow: towerYellow ? Number(towerYellow) : null,
+            worldMemo: worldMemo || null,
+            worldName: worldName || "名称未設定",
+            startDate: startDate || null,
+            externalLink: externalLink || null,
+            characterId: characterId || null,
+            parties: currentPartiesState, // キャッシュされているパーティ配列
+            isActive: isActive,
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true },
+        );
+
+        // 💡 リストや表示の再同期
+        await loadWorldList(user.uid);
+
+        // 💡 もし詳細設定で非アクティブ化（アーカイブ化）された場合のUI制御
+        if (!isActive) {
+          sessionStorage.removeItem("app_current_world_id");
+          document
+            .querySelectorAll(".js-world-choice")
+            .forEach((b) => b.classList.remove("is-active"));
+
+          const activeCheckbox = document.getElementById(
+            "js-portal-setting-active",
+          );
+          if (activeCheckbox) activeCheckbox.checked = false;
+
+          syncHeaderWorldSelector(null, "");
+          alert(
+            "ワールドをアーカイブ化しました。ワールド選択から新しいワールドを選ぶか追加してください。",
+          );
+          window.location.reload();
+          return; // アーカイブ時はリロードが入るためここで処理を抜ける
+        }
+
+        // 通常の更新成功時：最新データを再描画
+        await loadPortalDashboardData(user.uid, currentWorldId);
+
+        // ✨【アニメーション演出】成功フラッシュクラスを付与し、文言を切り替える
+        updateBtn.classList.add("is-success-flash");
+        updateBtn.innerHTML =
+          '<i class="fa-solid fa-circle-check"></i> 更新完了！';
+
+        // アラートの表示タイミングを少しずらすことで、ボタンの緑フラッシュがユーザーの目に入るように調整
+        setTimeout(() => {
+          alert("ワールドの進捗数値をFirestoreへ正常に保存しました！");
+        }, 100);
+      } catch (error) {
+        console.error("🚨 保存エラー:", error);
+        alert("数値の保存に失敗しました。");
+      } finally {
+        // ⏳ ロックを解除して、一定時間後にボタンの見た目を「更新する」に戻す処理
+        updateBtn.disabled = false;
+
+        // すでにアーカイブ化されてリロードが走っている場合はこの処理をスキップさせるガード
+        if (isActive) {
+          setTimeout(() => {
+            updateBtn.classList.remove("is-success-flash");
+            updateBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> 更新する';
+          }, 1500); // 1.5秒間フラッシュと完了文字を維持
+        }
+      }
+    });
+  }
+}
 
 // ==========================================================================
 // 🚪 ③ GOOGLE LOGOUT & SECURITY GATE (ログアウト・ログイン監視・防犯ロック)
@@ -1502,6 +1540,7 @@ function renderPartyListUI() {
     const slotsDiv = document.createElement("div");
     slotsDiv.className = "c-portal-party__slots";
 
+    // 🟢 修正箇所：キャラクターが存在する場合にクラス「has-character」を付与する
     party.members.forEach((charaId) => {
       const slotIcon = document.createElement("div");
       slotIcon.className = "c-portal-party__slot";
@@ -1511,6 +1550,9 @@ function renderPartyListUI() {
           (c) => String(c.id) === String(charaId),
         );
         if (found) {
+          // 💡【追加】キャラデータが見つかり、画像が入る枠にだけクラス名を付与！
+          slotIcon.classList.add("has-character");
+
           const img = document.createElement("img");
           img.src = found.iconUrl;
           img.alt = found.name;
