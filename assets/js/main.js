@@ -1078,7 +1078,7 @@ function initPortalDashboardEvents() {
 
         // アラートの表示タイミングを少しずらすことで、ボタンの緑フラッシュがユーザーの目に入るように調整
         setTimeout(() => {
-          alert("ワールドの進捗数値をFirestoreへ正常に保存しました！");
+          alert("ワールド情報をクラウドへ正常に保存しました！");
         }, 100);
       } catch (error) {
         console.error("🚨 保存エラー:", error);
