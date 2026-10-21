@@ -1308,46 +1308,47 @@ function bindCharacterPickerEvents() {
     }
 
     // ==========================================================================
-    // 🟢【新設】配列の先頭に「選択解除（空にする）」のアイテムを常に配置
+    // 🟢【修正】配列の先頭に「選択解除（空にする）」のアイテムを配置
     // ==========================================================================
-    // 枠がすでに空（未設定）の時は、この解除ボタン自体を表示しないか、または選択中表示にさせます
-    const removeButton = document.createElement("button");
-    removeButton.type = "button";
-    removeButton.className = "c-world-modal__card m-remove-chara";
-    if (!currentSelectedId) {
-      removeButton.classList.add("is-selected");
+    // 💡 ワールドの詳細設定（メインアイコン）から開かれた場合は、✖ボタンを表示しない（スキップする）
+    if (activeInputTargetId !== "js-portal-setting-character-id") {
+      const removeButton = document.createElement("button");
+      removeButton.type = "button";
+      removeButton.className = "c-world-modal__card m-remove-chara";
+      if (!currentSelectedId) {
+        removeButton.classList.add("is-selected");
+      }
+      removeButton.style.cssText =
+        "display:flex; align-items:center; justify-content:center; background:#fee2e2; border:1px dashed #ef4444;";
+      removeButton.title = "選択を解除する";
+
+      // 解除ボタンの見た目（バツ印などのテキストやアイコン）
+      const removeIcon = document.createElement("span");
+      removeIcon.textContent = "✖";
+      removeIcon.style.cssText =
+        "font-size: 16px; font-weight: bold; color: #ef4444;";
+      removeButton.appendChild(removeIcon);
+
+      // 解除ボタンをクリックした時のクリア処理
+      removeButton.addEventListener("click", () => {
+        if (activeInputTargetId) {
+          const targetInput = document.getElementById(activeInputTargetId);
+          if (targetInput) {
+            targetInput.value = ""; // IDを空にする
+            targetInput.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        }
+        if (activePreviewTargetId) {
+          const targetPreview = document.getElementById(activePreviewTargetId);
+          if (targetPreview) {
+            targetPreview.src = "";
+            targetPreview.classList.add("is-hidden"); // 画像を隠して、HTML側の「+」を復活させる
+          }
+        }
+        closeCharaModal();
+      });
+      gridContainer.appendChild(removeButton);
     }
-    removeButton.style.cssText =
-      "display:flex; align-items:center; justify-content:center; background:#fee2e2; border:1px dashed #ef4444;";
-    removeButton.title = "選択を解除する";
-
-    // 解除ボタンの見た目（バツ印などのテキストやアイコン）
-    const removeIcon = document.createElement("span");
-    removeIcon.textContent = "✖";
-    removeIcon.style.cssText =
-      "font-size: 16px; font-weight: bold; color: #ef4444;";
-    removeButton.appendChild(removeIcon);
-
-    // 解除ボタンをクリックした時のクリア処理
-    removeButton.addEventListener("click", () => {
-      if (activeInputTargetId) {
-        const targetInput = document.getElementById(activeInputTargetId);
-        if (targetInput) {
-          targetInput.value = ""; // IDを空にする
-          targetInput.dispatchEvent(new Event("change", { bubbles: true }));
-        }
-      }
-      if (activePreviewTargetId) {
-        const targetPreview = document.getElementById(activePreviewTargetId);
-        if (targetPreview) {
-          targetPreview.src = "";
-          targetPreview.classList.add("is-hidden"); // 画像を隠して、HTML側の「+」を復活させる
-        }
-      }
-      closeCharaModal();
-    });
-    gridContainer.appendChild(removeButton);
-    // ==========================================================================
 
     characterMaster.forEach((chara) => {
       if (attrFilter !== "all" && String(chara.attr).trim() !== attrFilter)
