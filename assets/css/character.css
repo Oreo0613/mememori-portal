@@ -1,0 +1,236 @@
+/**
+ * =========================================================================
+ * 🌐 メメモリアプリ：ワールド×キャラクター管理（一軍共通テーマ完全準拠版）
+ * =========================================================================
+ */
+
+/* 🔍 フィルターセクション（メインピッカーと同一の横並びフレックス構造にマッピング） */
+.filter-section {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.filter-label {
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--text-muted);
+  min-width: 48px;
+}
+
+/* 👥 一般ユーザー用キャラクター一覧グリッド (B案：アイコンのみ) */
+.user-char-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 14px;
+  padding: 8px 0 24px;
+}
+
+.character-grid__loading {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.user-char-card-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 未所持・グレーアウト化スタイル */
+.user-char-card-wrap.is-not-owned .user-char-icon img {
+  filter: grayscale(100%) contrast(85%) brightness(60%);
+  opacity: 0.45;
+}
+
+.user-char-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  background-color: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease;
+}
+
+.user-char-icon:hover {
+  transform: scale(1.08);
+  border-color: var(--accent-color);
+}
+
+.user-char-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 🔲 性能確認確認モーダル専用内部レイアウト（一軍変数ベース） */
+.c-modal__container.m-char-detail {
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.c-world-modal__content.m-char-detail-body {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
+  padding: 16px 20px 20px;
+  overflow-y: auto;
+  background-color: var(--bg-dark);
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .c-world-modal__content.m-char-detail-body {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 12px;
+  }
+}
+
+/* 左カラムプロフィールカード */
+.c-char-detail__side-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.c-char-detail__profile-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.c-char-detail__avatar-large {
+  width: 90px;
+  height: 90px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  border: 2px solid var(--border-color);
+  background-color: var(--bg-dark);
+  margin-bottom: 12px;
+}
+
+.c-char-detail__profile-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.c-char-detail__name {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.c-char-detail__badge-row {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.c-char-detail__tags {
+  font-size: 11px;
+  color: var(--accent-color);
+  margin-top: 4px;
+}
+
+/* ステータスボックス群 */
+.c-char-detail__stat-box {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.c-char-detail__stat-heading {
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  padding: 6px 12px;
+  color: #ffffff;
+}
+
+/* style.css の警告/成功色に合わせた明度コントロール */
+.c-char-detail__stat-heading.m-danger { background-color: #dc2626; }
+.c-char-detail__stat-heading.m-success { background-color: #059669; }
+.c-char-detail__stat-heading.m-accent { background-color: #d97706; }
+
+.c-char-detail__stat-grid {
+  padding: 4px 0;
+}
+
+.c-char-detail__stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 14px;
+  font-size: 12px;
+  color: var(--text-color);
+  border-bottom: 1px dashed var(--border-color);
+}
+
+.c-char-detail__stat-row.m-last {
+  border-bottom: none;
+}
+
+.c-char-detail__stat-label {
+  color: var(--text-muted);
+}
+
+.c-char-detail__stat-val {
+  font-family: monospace;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.c-char-detail__weapon-area {
+  padding: 12px 14px;
+}
+
+/* 右カラムスキル */
+.c-char-detail__main-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.c-char-detail__skill-box {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  padding: 12px 14px;
+}
+
+.c-char-detail__skill-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 6px;
+}

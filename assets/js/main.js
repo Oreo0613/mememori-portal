@@ -1154,6 +1154,20 @@ onAuthStateChanged(auth, async (user) => {
       if (activeWorldId) {
         await loadPortalDashboardData(user.uid, activeWorldId);
       }
+
+      // 🔥Firestoreの全ロードが完了したこの瞬間に、キャラクタータブの初期化を直接叩く！
+      if (typeof window.initUserCharacterTab === "function") {
+        console.log(
+          "🚀 [Main Bridge] インフラの準備が整ったため、キャラ一覧を即時展開します。",
+        );
+        window.initUserCharacterTab(
+          characterMaster,
+          db,
+          auth,
+          user.uid,
+          activeWorldId,
+        );
+      }
     } catch (error) {
       console.error("🚨 アカウント情報の自動ロードに失敗しました:", error);
     }
