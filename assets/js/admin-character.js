@@ -42,7 +42,7 @@ var TYPE_IMAGES = [
     name: "ウォーリアー",
     url: "assets/images/filter-icon/icon-type-warrior.png",
   },
-  { name: "スナイパー", url: "assets/images/filter-icon/icon-type-gunner.png" },
+  { name: "スナイパー", url: "assets/images/filter-icon/icon-type-sniper.png" },
   {
     name: "ソーサラー",
     url: "assets/images/filter-icon/icon-type-sorcerer.png",
