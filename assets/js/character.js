@@ -1,30 +1,8 @@
 /**
  * =========================================================================
- * 🌐 メメモリポータル：ワールド×キャラクター管理（B案・画像フィルター＆モーダルセレクト仕様）
+ * 🌐 メメモリポータル：ワールド×キャラクター管理（BEM・静的画像フィルター完全連動版）
  * =========================================================================
  */
-
-// 💡 指定いただいたアセット画像を100%再利用
-var ATTR_IMAGES = [
-  { name: "藍", url: "assets/images/filter-icon/icon-attr-blue.png" },
-  { name: "紅", url: "assets/images/filter-icon/icon-attr-red.png" },
-  { name: "翠", url: "assets/images/filter-icon/icon-attr-green.png" },
-  { name: "黄", url: "assets/images/filter-icon/icon-attr-yellow.png" },
-  { name: "天", url: "assets/images/filter-icon/icon-attr-holy.png" },
-  { name: "冥", url: "assets/images/filter-icon/icon-attr-dark.png" },
-];
-
-var TYPE_IMAGES = [
-  {
-    name: "ウォーリアー",
-    url: "assets/images/filter-icon/icon-type-warrior.png",
-  },
-  { name: "スナイパー", url: "assets/images/filter-icon/icon-type-gunner.png" },
-  {
-    name: "ソーサラー",
-    url: "assets/images/filter-icon/icon-type-sorcerer.png",
-  },
-];
 
 // 状態管理変数
 let characterMasterList = [];
@@ -52,11 +30,13 @@ const RARITY_OPTIONS = [
   "LR+10",
 ];
 
-// Firebaseインスタンスとセッション情報を一時格納する内部変数
+// Firebaseの各SDK関数および参照を保持する安全なスコープ変数
 let _db, _uid, _worldId;
+let _collection, _doc, _getDocs, _setDoc, _serverTimestamp;
 
 /**
  * 1. メインインフラ（main.js）のロード完了後に直接呼び出される初期化関数
+ * 🛠️ 修正：Firebaseモジュール関数をmain.jsのインポート環境から100%安全に引き継ぎます
  */
 window.initUserCharacterTab = async function (
   masterData,
@@ -67,12 +47,28 @@ window.initUserCharacterTab = async function (
 ) {
   console.log("👥 [CharacterTab] 起動トリガーを検知しました。");
 
-  // インフラ参照をスコープ変数へ保存
+  // インフラ参照を保存
   _db = db;
   _uid = uid;
   _worldId = worldId;
 
-  // main.jsから手渡された本物のマスタデータを格納
+  // 💡 window直下にない場合のエラーを回避するため、各種環境から安全にフォールバック取得
+  _collection =
+    window.collection ||
+    (window.FirebaseBundle ? window.FirebaseBundle.collection : null);
+  _doc =
+    window.doc || (window.FirebaseBundle ? window.FirebaseBundle.doc : null);
+  _getDocs =
+    window.getDocs ||
+    (window.FirebaseBundle ? window.FirebaseBundle.getDocs : null);
+  _setDoc =
+    window.setDoc ||
+    (window.FirebaseBundle ? window.FirebaseBundle.setDoc : null);
+  _serverTimestamp =
+    window.serverTimestamp ||
+    (window.FirebaseBundle ? window.FirebaseBundle.serverTimestamp : null);
+
+  // マスタデータを確実に格納
   if (masterData && masterData.length > 0) {
     characterMasterList = masterData;
   } else if (window.characterMaster && window.characterMaster.length > 0) {
@@ -86,8 +82,8 @@ window.initUserCharacterTab = async function (
     return;
   }
 
-  // ① 画像フィルターのボタンを動的に組み立て
-  buildUserFilterButtons();
+  // ① 静的HTML画像フィルターのイベント登録
+  bindUserFilterEvents();
 
   // ② クラウドからセーブデータを同期ロードして一覧を生成
   await loadAndRenderCharacterGrid();
@@ -98,6 +94,7 @@ window.initUserCharacterTab = async function (
 
 /**
  * 2. Firestoreから所持状況を同期ロード
+ * 🛠️ 修正：関数存在チェックを追加し、TypeErrorを完璧に防ぎます
  */
 async function loadAndRenderCharacterGrid() {
   const gridEl = document.getElementById("userCharGrid");
@@ -112,11 +109,31 @@ async function loadAndRenderCharacterGrid() {
     return;
   }
 
+  // インフラ関数が準備できているか安全チェック
+  if (!_collection || !_getDocs) {
+    if (window.FirebaseMeme) {
+      _collection = window.FirebaseMeme.collection;
+      _getDocs = window.FirebaseMeme.getDocs;
+      _doc = window.FirebaseMeme.doc;
+      _setDoc = window.FirebaseMeme.setDoc;
+      _serverTimestamp = window.FirebaseMeme.serverTimestamp;
+    } else if (window.db_functions) {
+      _collection = window.db_functions.collection;
+      _getDocs = window.db_functions.getDocs;
+      _doc = window.db_functions.doc;
+      _setDoc = window.db_functions.setDoc;
+    } else {
+      gridEl.innerHTML =
+        '<div class="character-grid__loading">インフラ初期化エラー。再読み込みしてください。</div>';
+      return;
+    }
+  }
+
   try {
     userOwnedData = {};
 
-    // サブコレクション（ownedCharacters）から所持レアリティをロード
-    const ownedRef = window.collection(
+    // 安全にバインドされたコレクション参照を使用
+    const ownedRef = _collection(
       _db,
       "users",
       _uid,
@@ -124,13 +141,13 @@ async function loadAndRenderCharacterGrid() {
       _worldId,
       "ownedCharacters",
     );
-    const querySnapshot = await window.getDocs(ownedRef);
+    const querySnapshot = await _getDocs(ownedRef);
 
     querySnapshot.forEach((docSnap) => {
       userOwnedData[docSnap.id] = docSnap.data();
     });
 
-    // グリッドを綺麗に描画
+    // グリッドを美しく描画
     renderCharacterGrid();
   } catch (error) {
     console.error("🚨 Firestoreからの所持状況のロードに失敗しました:", error);
@@ -140,7 +157,7 @@ async function loadAndRenderCharacterGrid() {
 }
 
 /**
- * 3. キャラクターアイコン一覧グリッドの生成（B案：アイコンのみ・グレーアウト連動仕様）
+ * 3. キャラクターアイコン一覧グリッドの生成（B案：アイコンのみ・グレーアウト連動）
  */
 function renderCharacterGrid() {
   const gridEl = document.getElementById("userCharGrid");
@@ -148,7 +165,6 @@ function renderCharacterGrid() {
 
   gridEl.innerHTML = "";
 
-  // 属性・タイプの二重フィルター処理
   const filteredList = characterMasterList.filter((char) => {
     const matchAttr =
       activeFilterAttr === "ALL" || char.attr === activeFilterAttr;
@@ -163,18 +179,15 @@ function renderCharacterGrid() {
     return;
   }
 
-  // 136体の魔女を純粋なアイコンカードとしてズラリと配置
   filteredList.forEach((char) => {
     const currentRarity = userOwnedData[char.id]?.rarity || "未所持";
     const isNotOwned = currentRarity === "未所持";
 
-    // カードのラッパー枠（グレーアウト判定クラス is-not-owned を付与）
     const wrapEl = document.createElement("div");
     wrapEl.className = `user-char-card-wrap js-char-wrap ${isNotOwned ? "is-not-owned" : ""}`;
     wrapEl.setAttribute("data-char-id", char.id);
-    wrapEl.id = `user-char-card-${char.id}`; // 後からモーダル側で動的に点灯させるための識別ID
+    wrapEl.id = `user-char-card-${char.id}`;
 
-    // キャラクターアイコン部分
     const iconEl = document.createElement("div");
     iconEl.className = "user-char-icon";
 
@@ -184,7 +197,6 @@ function renderCharacterGrid() {
     imgEl.loading = "lazy";
     iconEl.appendChild(imgEl);
 
-    // アイコンをクリックした時だけ、あの詳しい性能確認モーダルを起動
     iconEl.addEventListener("click", () => {
       openUserCharDetailModal(char);
     });
@@ -195,7 +207,7 @@ function renderCharacterGrid() {
 }
 
 /**
- * 4. ユーザー用性能確認モーダルの起動（一軍共通テーマ完全準拠 ＆ セレクトボックス内蔵版）
+ * 4. ユーザー用性能確認モーダルの起動（モーダル内レアリティセレクトボックス内蔵版）
  */
 function openUserCharDetailModal(char) {
   currentModalCharData = char;
@@ -216,7 +228,7 @@ function openUserCharDetailModal(char) {
   document.getElementById("ucd-type").textContent = char.type;
   document.getElementById("ucd-rarity").textContent = char.rarity || "限定";
 
-  // ⭕️ 内蔵されたレアリティセレクトボックスを動的に再生成・現在の値を復元
+  // ⭕️ モーダルに内蔵されたレアリティセレクトボックスを動的に再生成・現在の値を復元
   const selectEl = document.getElementById("js-modal-user-rarity-select");
   if (selectEl) {
     selectEl.innerHTML = "";
@@ -232,7 +244,7 @@ function openUserCharDetailModal(char) {
       selectEl.appendChild(optEl);
     });
 
-    // 💡 イベントの二重登録を防ぐため、一度クリアしてからイベントリスナーをセット
+    // 💡 イベントの二重登録を防ぐため、onchangeに直接関数を上書きセット
     selectEl.onchange = async (e) => {
       const nextRarity = e.target.value;
       console.log(`✨ [レアリティ変更・保存] ${char.name} : ${nextRarity}`);
@@ -240,8 +252,8 @@ function openUserCharDetailModal(char) {
       // ① ローカルの所持データを更新
       if (!userOwnedData[char.id]) userOwnedData[char.id] = {};
       userOwnedData[char.id].rarity = nextRarity;
-      userOwnedData[char.id].updatedAt = window.serverTimestamp
-        ? window.serverTimestamp()
+      userOwnedData[char.id].updatedAt = _serverTimestamp
+        ? _serverTimestamp()
         : new Date();
 
       // ② 一覧側の該当キャラクターカードのグレーアウトをリアルタイムに連動点灯
@@ -255,9 +267,9 @@ function openUserCharDetailModal(char) {
       }
 
       // ③ Firestoreへの即時クラウド同期セーブ
-      if (_db && _uid && _worldId) {
+      if (_db && _uid && _worldId && _doc && _setDoc) {
         try {
-          const docRef = window.doc(
+          const docRef = _doc(
             _db,
             "users",
             _uid,
@@ -266,7 +278,7 @@ function openUserCharDetailModal(char) {
             "ownedCharacters",
             char.id,
           );
-          await window.setDoc(
+          await _setDoc(
             docRef,
             {
               rarity: nextRarity,
@@ -280,6 +292,10 @@ function openUserCharDetailModal(char) {
         } catch (err) {
           console.error("🚨 所持状況のクラウド保存に失敗しました:", err);
         }
+      } else {
+        console.error(
+          "🚨 Firestoreのライブラリ関数（_doc または _setDoc）がロードされていないため保存をスキップしました。",
+        );
       }
     };
   }
@@ -289,7 +305,7 @@ function openUserCharDetailModal(char) {
     runUserStatusCalculationEngine(char.status, char.type);
   }
 
-  // ⭕️ モーダルを開いたときは、管理者ページに準拠し「ミカエル武器（mika）」の状態で初期描画
+  // ⭕️ モーダルを開いたときは「ミカエル武器（mika）」の状態で初期描画
   switchUserWeaponTrigger("mika");
 
   // パーティ編集モーダルと100%共通の挙動で開く
@@ -360,7 +376,7 @@ function runUserStatusCalculationEngine(status, type) {
 function switchUserWeaponTrigger(mode) {
   currentWeaponMode = mode;
 
-  // タブボタンのアクティブクラス(一軍の c-world-modal__filter-btn 仕様)の切り替え
+  // タブボタンのアクティブクラスの切り替え
   ["normal", "asta", "mika", "meta"].forEach((m) => {
     const btn = document.getElementById(`ubtn-wp-${m}`);
     if (btn) {
@@ -397,7 +413,7 @@ function switchUserWeaponTrigger(mode) {
         String(skill.ct) !== "0" &&
         String(skill.ct) !== ""
       ) {
-        ctArea.innerHTML = `<span class="c-world-modal__btn-world" style="background:#1e1b4b; color:#a5b4fc; font-size:10px; padding:2px 6px; border-radius:4px;">CT: ${skill.ct}</span>`;
+        ctArea.innerHTML = `<span class="c-world-modal__btn-world">CT: ${skill.ct}</span>`;
       } else {
         ctArea.innerHTML = "";
       }
@@ -438,7 +454,7 @@ function switchUserWeaponTrigger(mode) {
     }
   });
 
-  // 🛡️ 専用武器パッシブ基本ステータスの連動制御（管理者jsと完全同期）
+  // 🛡️ 専用武器パッシブ基本ステータスの連動制御
   const w = char.weapon;
   const wpNameEl = document.getElementById("uc-v-w-name");
   const wpValEl = document.getElementById("uc-v-w-val");
@@ -479,7 +495,7 @@ function switchUserWeaponTrigger(mode) {
 }
 
 /**
- * 7. モーダルおよび武器切り替えタブのイベント定義（.c-modal共通クローズ対応）
+ * 7. モーダルおよび武器切り替えタブのイベント定義
  */
 function setupUserModalEvents() {
   const modalEl = document.getElementById("userCharDetailModal");
@@ -502,101 +518,44 @@ function setupUserModalEvents() {
     document
       .getElementById(`ubtn-wp-${stage}`)
       ?.addEventListener("click", (e) => {
-        e.stopPropagation(); // 遮断幕へのクローズイベント連動をストップ
+        e.stopPropagation();
         switchUserWeaponTrigger(stage);
       });
   });
 }
 
 /**
- * 8. 一般ユーザー画面用：属性・タイプ画像フィルターボタンの動的生成
- * 🛠️ 修正：ご提示いただいた画像配列オブジェクトを完全に再利用する形へ最適化
+ * 8. 一般ユーザー画面用：HTML内に用意された静的画像ボタンへのイベントバインド
+ * 🛠️ 変更点：BEM修正された静的HTML側のクラス名（js-filter-attr / js-filter-type）に完全同期
  */
-function buildUserFilterButtons() {
-  const attrContainer = document.getElementById("userFilterAttrOptions");
-  const typeContainer = document.getElementById("userFilterTypeOptions");
+function bindUserFilterEvents() {
+  // ① 属性フィルターボタンのバインド
+  const attrButtons = document.querySelectorAll(".js-filter-attr");
+  attrButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const attrValue = btn.getAttribute("data-attr");
+      activeFilterAttr = attrValue;
 
-  // ① 属性フィルターの組み立て
-  if (attrContainer) {
-    attrContainer.innerHTML = "";
+      attrButtons.forEach((b) => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
 
-    // 「すべて」用の特別な全体画像ボタンを先頭に追加
-    const allBtn = document.createElement("button");
-    allBtn.type = "button";
-    allBtn.className = `c-world-modal__filter-btn ${activeFilterAttr === "ALL" ? "is-active" : ""}`;
-    allBtn.style =
-      "padding: 4px 12px; font-size:11px; font-weight:bold; height:32px; display:flex; align-items:center; gap:6px;";
-    allBtn.innerHTML = `<img src="assets/images/filter-icon/icon-all.png" style="width:16px; height:16px; object-fit:contain;" alt="全部"> 全部`;
-    allBtn.onclick = () => {
-      activeFilterAttr = "ALL";
-      Array.from(attrContainer.children).forEach((b) =>
-        b.classList.remove("is-active"),
-      );
-      allBtn.classList.add("is-active");
       renderCharacterGrid();
-    };
-    attrContainer.appendChild(allBtn);
-
-    // 配列をループして画像ボタンを生成
-    ATTR_IMAGES.forEach((item) => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = `c-world-modal__filter-btn ${item.name === activeFilterAttr ? "is-active" : ""}`;
-      btn.style =
-        "padding: 4px 12px; font-size:11px; font-weight:bold; height:32px; display:flex; align-items:center; gap:6px;";
-      btn.innerHTML = `<img src="${item.url}" style="width:16px; height:16px; object-fit:contain;" alt="${item.name}"> ${item.name}`;
-
-      btn.onclick = () => {
-        activeFilterAttr = item.name;
-        Array.from(attrContainer.children).forEach((b) =>
-          b.classList.remove("is-active"),
-        );
-        btn.classList.add("is-active");
-        renderCharacterGrid();
-      };
-      attrContainer.appendChild(btn);
     });
-  }
+  });
 
-  // ② タイプフィルターの組み立て
-  if (typeContainer) {
-    typeContainer.innerHTML = "";
+  // ② タイプフィルターボタンのバインド
+  const typeButtons = document.querySelectorAll(".js-filter-type");
+  typeButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const typeValue = btn.getAttribute("data-type");
+      activeFilterType = typeValue;
 
-    const allBtn = document.createElement("button");
-    allBtn.type = "button";
-    allBtn.className = `c-world-modal__filter-btn ${activeFilterType === "ALL" ? "is-active" : ""}`;
-    allBtn.style =
-      "padding: 4px 12px; font-size:11px; font-weight:bold; height:32px; display:flex; align-items:center; gap:6px;";
-    allBtn.innerHTML = `<img src="assets/images/filter-icon/icon-all.png" style="width:16px; height:16px; object-fit:contain;" alt="全部"> 全部`;
-    allBtn.onclick = () => {
-      activeFilterType = "ALL";
-      Array.from(typeContainer.children).forEach((b) =>
-        b.classList.remove("is-active"),
-      );
-      allBtn.classList.add("is-active");
+      typeButtons.forEach((b) => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+
       renderCharacterGrid();
-    };
-    typeContainer.appendChild(allBtn);
-
-    TYPE_IMAGES.forEach((item) => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = `c-world-modal__filter-btn ${item.name === activeFilterType ? "is-active" : ""}`;
-      btn.style =
-        "padding: 4px 12px; font-size:11px; font-weight:bold; height:32px; display:flex; align-items:center; gap:6px;";
-      btn.innerHTML = `<img src="${item.url}" style="width:16px; height:16px; object-fit:contain;" alt="${item.name}"> ${item.name}`;
-
-      btn.onclick = () => {
-        activeFilterType = item.name;
-        Array.from(typeContainer.children).forEach((b) =>
-          b.classList.remove("is-active"),
-        );
-        btn.classList.add("is-active");
-        renderCharacterGrid();
-      };
-      typeContainer.appendChild(btn);
     });
-  }
+  });
 }
 
 // 外部参照・手動テスト用のグローバル公開

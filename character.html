@@ -26,25 +26,61 @@
              ========================================================================= -->
         <div class="user-tab-content js-tab-content-character" id="tabCharacter">
 
-            <!-- 🔍 フィルターセクション（画像アイコンボタン仕様） -->
-            <div class="c-world-modal__content u-p-0 u-mb-16" style="background: none; border: none;">
-                <div class="filter-section">
-                    <div class="filter-row">
-                        <div class="filter-label">属性</div>
-                        <div class="c-world-modal__filter-flex" id="userFilterAttrOptions">
-                            <!-- JSで属性画像ボタン（すべて/藍/紅/翠/黄/天/冥）が動的生成されます -->
-                        </div>
-                    </div>
-                    <div class="filter-row">
-                        <div class="filter-label">タイプ</div>
-                        <div class="c-world-modal__filter-flex" id="userFilterTypeOptions">
-                            <!-- JSでタイプ画像ボタン（すべて/ウォーリアー/スナイパー/ソーサラー）が動的生成されます -->
-                        </div>
+            <!-- 🔍 BEMクリーンアップ仕様：フィルターセクション -->
+            <div class="c-filter">
+
+                <!-- 属性選択ブロック -->
+                <div class="c-filter__row">
+                    <div class="c-filter__label">属性</div>
+                    <div class="c-filter__flex">
+                        <button type="button" class="c-filter__btn is-active js-filter-attr" data-attr="ALL">
+                            <img class="c-filter__img" src="assets/images/filter-icon/icon-all.png" alt="全部">
+                        </button>
+                        <button type="button" class="c-filter__btn js-filter-attr" data-attr="藍">
+                            <img class="c-filter__img" src="assets/images/filter-icon/icon-attr-blue.png" alt="藍">
+                        </button>
+                        <button type="button" class="c-filter__btn js-filter-attr" data-attr="紅">
+                            <img class="c-filter__img" src="assets/images/filter-icon/icon-attr-red.png" alt="紅">
+                        </button>
+                        <button type="button" class="c-filter__btn js-filter-attr" data-attr="翠">
+                            <img class="c-filter__img" src="assets/images/filter-icon/icon-attr-green.png" alt="翠">
+                        </button>
+                        <button type="button" class="c-filter__btn js-filter-attr" data-attr="黄">
+                            <img class="c-filter__img" src="assets/images/filter-icon/icon-attr-yellow.png" alt="黄">
+                        </button>
+                        <button type="button" class="c-filter__btn js-filter-attr" data-attr="天">
+                            <img class="c-filter__img" src="assets/images/filter-icon/icon-attr-holy.png" alt="天">
+                        </button>
+                        <button type="button" class="c-filter__btn js-filter-attr" data-attr="冥">
+                            <img class="c-filter__img" src="assets/images/filter-icon/icon-attr-dark.png" alt="冥">
+                        </button>
                     </div>
                 </div>
+
+                <!-- タイプ選択ブロック -->
+                <div class="c-filter__row">
+                    <div class="c-filter__label">タイプ</div>
+                    <div class="c-filter__flex">
+                        <button type="button" class="c-filter__btn is-active js-filter-type" data-type="ALL">
+                            <img class="c-filter__img" src="assets/images/filter-icon/icon-all.png" alt="全部">
+                        </button>
+                        <button type="button" class="c-filter__btn js-filter-type" data-type="ウォーリアー">
+                            <img class="c-filter__img" src="assets/images/filter-icon/icon-type-warrior.png"
+                                alt="ウォーリアー">
+                        </button>
+                        <button type="button" class="c-filter__btn js-filter-type" data-type="スナイパー">
+                            <img class="c-filter__img" src="assets/images/filter-icon/icon-type-sniper.png" alt="スナイパー">
+                        </button>
+                        <button type="button" class="c-filter__btn js-filter-type" data-type="ソーサラー">
+                            <img class="c-filter__img" src="assets/images/filter-icon/icon-type-sorcerer.png"
+                                alt="ソーサラー">
+                        </button>
+                    </div>
+                </div>
+
             </div>
 
-            <!-- 👥 キャラクター一覧グリッド（B案仕様：純粋なアイコンのみが美しく並ぶ） -->
+            <!-- 👥 キャラクター一覧グリッド（純粋なアイコン用箱） -->
             <div class="user-char-grid" id="userCharGrid">
                 <div class="character-grid__loading">キャラクターデータを読み込み中...</div>
             </div>
@@ -52,14 +88,14 @@
         </div>
 
         <!-- =========================================================================
-             🔲 ユーザー専用：キャラクター性能確認モーダル（デザイン共通化・安全設計）
+             🔲 ユーザー専用：キャラクター性能確認モーダル（BEMクリーンアップ・安全設計）
              ========================================================================= -->
         <div id="userCharDetailModal" class="c-modal c-world-modal" aria-hidden="true" inert>
             <!-- 遮断幕（背景クリックで閉じる用） -->
             <div class="c-modal__overlay js-user-char-modal-close"></div>
 
             <!-- モーダルメインコンテナ -->
-            <div class="c-modal__container c-modal__container--large m-char-detail">
+            <div class="c-modal__container  p-character-modal__container ">
 
                 <!-- ヘッダー：プロファイル情報 -->
                 <header class="c-world-modal__header">
@@ -71,17 +107,12 @@
                 </header>
 
                 <!-- 専用武器・装備状態切り替えタブバー -->
-                <div class="c-world-modal__content u-pb-0"
-                    style="border-bottom: 1px solid var(--border-color); background: var(--bg-card);">
-                    <div class="c-world-modal__filter-flex u-mb-8">
-                        <button type="button" class="c-world-modal__filter-btn" id="ubtn-wp-normal"
-                            style="font-size:12px; font-weight:bold; width:auto; padding:0 16px;">通常時</button>
-                        <button type="button" class="c-world-modal__filter-btn" id="ubtn-wp-asta"
-                            style="font-size:12px; font-weight:bold; width:auto; padding:0 16px;">サタン</button>
-                        <button type="button" class="c-world-modal__filter-btn" id="ubtn-wp-mika"
-                            style="font-size:12px; font-weight:bold; width:auto; padding:0 16px;">ミカエル</button>
-                        <button type="button" class="c-world-modal__filter-btn" id="ubtn-wp-meta"
-                            style="font-size:12px; font-weight:bold; width:auto; padding:0 16px;">メタトロン</button>
+                <div class="c-world-modal__content p-character-modal__content">
+                    <div class="c-filter__flex">
+                        <button type="button" class="c-world-modal__filter-btn" id="ubtn-wp-normal">通常時</button>
+                        <button type="button" class="c-world-modal__filter-btn" id="ubtn-wp-asta">サタン</button>
+                        <button type="button" class="c-world-modal__filter-btn" id="ubtn-wp-mika">ミカエル</button>
+                        <button type="button" class="c-world-modal__filter-btn" id="ubtn-wp-meta">メタトロン</button>
                     </div>
                 </div>
 
@@ -93,26 +124,21 @@
 
                         <!-- アバターとレアリティセレクトを集約 -->
                         <div class="c-char-detail__profile-card">
-                            <img src="" id="ucd-avatar" class="c-char-detail__avatar-large" alt="アバター" />
+                            <img src="" id="ucd-avatar" class="c-char-detail__avatar-large" alt="アバター">
                             <div class="c-char-detail__profile-meta">
                                 <h3 id="ucd-name" class="c-char-detail__name">キャラクター名</h3>
                                 <div class="c-char-detail__badge-row">
-                                    <span id="ucd-attr" class="c-world-modal__btn-world"
-                                        style="background: var(--bg-dark); padding:2px 6px; border-radius:4px; font-size:10px;">属性</span>
-                                    <span id="ucd-type" class="c-world-modal__btn-world"
-                                        style="background: var(--bg-dark); padding:2px 6px; border-radius:4px; font-size:10px;">タイプ</span>
-                                    <span id="ucd-rarity" class="c-world-modal__btn-name"
-                                        style="font-size:11px; color:var(--text-muted);">限定</span>
+                                    <span id="ucd-attr" class="c-world-modal__btn-world">属性</span>
+                                    <span id="ucd-type" class="c-world-modal__btn-world">タイプ</span>
+                                    <span id="ucd-rarity" class="c-world-modal__btn-name">限定</span>
                                 </div>
                                 <span id="ucd-tags-display" class="c-char-detail__tags"></span>
                             </div>
 
-                            <!-- 📥 移動したレアリティセレクトボックス -->
-                            <div class="c-form__group u-w-100 u-mt-12">
-                                <label class="c-form__label u-mb-4"
-                                    style="font-size:11px; color:var(--text-muted);">所持レアリティ設定</label>
-                                <select id="js-modal-user-rarity-select" class="c-form__input"
-                                    style="padding: 6px 12px; font-size: 13px; font-weight: bold; background-color: var(--bg-dark); text-align: center;"></select>
+                            <!-- 移動したレアリティセレクトボックス -->
+                            <div class="c-form__group m-modal-select-wrap">
+                                <label class="c-form__label">所持レアリティ設定</label>
+                                <select id="js-modal-user-rarity-select" class="c-form__input m-modal-select"></select>
                             </div>
                         </div>
 
@@ -170,15 +196,10 @@
                             <div class="c-char-detail__stat-heading m-accent"><i class="fa-solid fa-wand-sparkles"></i>
                                 専用武器</div>
                             <div id="uc-v-weapon-area" class="c-char-detail__weapon-area">
-                                <div id="uc-v-w-name" class="c-world-modal__btn-name"
-                                    style="font-size:13px; font-weight:bold; color:var(--text-color);">未装備</div>
-                                <span id="uc-v-w-val"
-                                    style="font-size:11px; color:var(--accent-color); font-weight:bold;">固有値: -</span>
-                                <span id="uc-v-w-passives-lbl" class="c-form__label u-mt-8 u-mb-4"
-                                    style="font-size:11px; display:block;">専用パッシブ効果</span>
-                                <ul id="uc-v-w-passives" class="c-world-form__help"
-                                    style="list-style:none; padding-left:0; display:flex; flex-direction:column; gap:4px;">
-                                </ul>
+                                <div id="uc-v-w-name" class="c-world-modal__btn-name">未装備</div>
+                                <span id="uc-v-w-val">固有値: -</span>
+                                <span id="uc-v-w-passives-lbl" class="c-form__label">専用パッシブ効果</span>
+                                <ul id="uc-v-w-passives" class="c-world-form__help"></ul>
                             </div>
                         </div>
                     </div>
@@ -187,53 +208,37 @@
                     <div class="c-char-detail__main-col">
                         <div class="c-char-detail__skill-box">
                             <div class="c-char-detail__skill-header"><span id="uc-sk-A1-name"
-                                    class="c-world-modal__btn-name"
-                                    style="font-size:14px; font-weight:bold;">-</span><span
-                                    class="c-world-modal__btn-world"
-                                    style="background:var(--bg-dark); font-size:10px; padding:2px 6px; border-radius:4px; color:var(--text-muted);">ACTIVE
-                                    1</span><span id="uc-sk-A1-ct-area"></span></div>
-                            <div id="uc-sk-A1-text" class="c-world-form__help"
-                                style="font-size:13px; line-height:1.6; color:var(--text-color);"></div>
+                                    class="c-world-modal__btn-name">-</span><span
+                                    class="c-world-modal__btn-world">ACTIVE 1</span><span id="uc-sk-A1-ct-area"></span>
+                            </div>
+                            <div id="uc-sk-A1-text" class="c-world-form__help"></div>
                         </div>
                         <div class="c-char-detail__skill-box">
                             <div class="c-char-detail__skill-header"><span id="uc-sk-A2-name"
-                                    class="c-world-modal__btn-name"
-                                    style="font-size:14px; font-weight:bold;">-</span><span
-                                    class="c-world-modal__btn-world"
-                                    style="background:var(--bg-dark); font-size:10px; padding:2px 6px; border-radius:4px; color:var(--text-muted);">ACTIVE
-                                    2</span><span id="uc-sk-A2-ct-area"></span></div>
-                            <div id="uc-sk-A2-text" class="c-world-form__help"
-                                style="font-size:13px; line-height:1.6; color:var(--text-color);"></div>
+                                    class="c-world-modal__btn-name">-</span><span
+                                    class="c-world-modal__btn-world">ACTIVE 2</span><span id="uc-sk-A2-ct-area"></span>
+                            </div>
+                            <div id="uc-sk-A2-text" class="c-world-form__help"></div>
                         </div>
                         <div class="c-char-detail__skill-box">
                             <div class="c-char-detail__skill-header"><span id="uc-sk-P1-name"
-                                    class="c-world-modal__btn-name"
-                                    style="font-size:14px; font-weight:bold;">-</span><span
-                                    class="c-world-modal__btn-world"
-                                    style="background:var(--bg-dark); font-size:10px; padding:2px 6px; border-radius:4px; color:var(--text-muted);">PASSIVE
-                                    1</span><span id="uc-sk-P1-ct-area"></span></div>
-                            <div id="uc-sk-P1-text" class="c-world-form__help"
-                                style="font-size:13px; line-height:1.6; color:var(--text-color);"></div>
+                                    class="c-world-modal__btn-name">-</span><span
+                                    class="c-world-modal__btn-world">PASSIVE 1</span><span id="uc-sk-P1-ct-area"></span>
+                            </div>
+                            <div id="uc-sk-P1-text" class="c-world-form__help"></div>
                         </div>
                         <div class="c-char-detail__skill-box">
                             <div class="c-char-detail__skill-header"><span id="uc-sk-P2-name"
-                                    class="c-world-modal__btn-name"
-                                    style="font-size:14px; font-weight:bold;">-</span><span
-                                    class="c-world-modal__btn-world"
-                                    style="background:var(--bg-dark); font-size:10px; padding:2px 6px; border-radius:4px; color:var(--text-muted);">PASSIVE
-                                    2</span><span id="uc-sk-P2-ct-area"></span></div>
-                            <div id="uc-sk-P2-text" class="c-world-form__help"
-                                style="font-size:13px; line-height:1.6; color:var(--text-color);"></div>
+                                    class="c-world-modal__btn-name">-</span><span
+                                    class="c-world-modal__btn-world">PASSIVE 2</span><span id="uc-sk-P2-ct-area"></span>
+                            </div>
+                            <div id="uc-sk-P2-text" class="c-world-form__help"></div>
                         </div>
                         <div class="c-char-detail__skill-box">
                             <div class="c-char-detail__skill-header"><span id="uc-sk-WP-name"
-                                    class="c-world-modal__btn-name"
-                                    style="font-size:14px; font-weight:bold;">-</span><span
-                                    class="c-world-modal__btn-world"
-                                    style="background:var(--bg-dark); font-size:10px; padding:2px 6px; border-radius:4px; color:var(--text-muted);">その他</span><span
-                                    id="uc-sk-WP-ct-area"></span></div>
-                            <div id="uc-sk-WP-text" class="c-world-form__help"
-                                style="font-size:13px; line-height:1.6; color:var(--text-color);"></div>
+                                    class="c-world-modal__btn-name">-</span><span
+                                    class="c-world-modal__btn-world">その他</span><span id="uc-sk-WP-ct-area"></span></div>
+                            <div id="uc-sk-WP-text" class="c-world-form__help"></div>
                         </div>
                     </div>
 
