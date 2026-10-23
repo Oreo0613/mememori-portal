@@ -253,42 +253,68 @@ function openUserCharDetailModal(char) {
   document.getElementById("ucd-type").textContent = char.type;
   document.getElementById("ucd-rarity").textContent = char.rarity || "限定";
 
-  // ⭕️ モーダルに内蔵されたレアリティセレクトボックスを動的に再生成・現在の値を復元
-  const selectEl = document.getElementById("js-modal-user-rarity-select");
-  if (selectEl) {
-    selectEl.innerHTML = "";
+  // ⭕️ プラスマイナスボタンによるレアリティ変更の連動ロジック
+  const minusBtn = document.getElementById("js-modal-rarity-minus");
+  const plusBtn = document.getElementById("js-modal-rarity-plus");
+  const displayEl = document.getElementById("js-modal-rarity-display");
 
-    // 現在のFirestore上のレアリティを取得
+  if (minusBtn && plusBtn && displayEl) {
+    // 現在のFirestore上のレアリティを取得し、RARITY_OPTIONSのどこにあるかインデックスを探す
     const savedRarity = userOwnedData[char.id]?.rarity || "未所持";
+    let currentIndex = RARITY_OPTIONS.indexOf(savedRarity);
+    if (currentIndex === -1) currentIndex = 0; // 万が一見つからなければ「未所持(0)」にする安全ガード
 
-    RARITY_OPTIONS.forEach((opt) => {
-      const optEl = document.createElement("option");
-      optEl.value = opt;
-      optEl.textContent = opt;
-      if (opt === savedRarity) optEl.selected = true;
-      selectEl.appendChild(optEl);
-    });
+    // 表示とボタンの活性・非活性状態を同期する内部関数
+    const updateRarityControlUI = (index) => {
+      const targetRarity = RARITY_OPTIONS[index];
+      displayEl.textContent = targetRarity;
 
-    // 💡 イベントの二重登録を防ぐため、onchangeに直接関数を上書きセット
-    selectEl.onchange = (e) => {
-      const nextRarity = e.target.value;
-      console.log(`✨ [レアリティ一時変更] ${char.name} : ${nextRarity}`);
+      // 下限・上限に達したらボタンを押せなくするガード
+      minusBtn.disabled = index === 0;
+      plusBtn.disabled = index === RARITY_OPTIONS.length - 1;
 
-      // ① ローカルの所持データ（メモリ上）だけを更新
+      // ① ローカルの所持データ（メモリ上）を更新
       if (!userOwnedData[char.id]) {
         userOwnedData[char.id] = {};
       }
-      userOwnedData[char.id].rarity = nextRarity;
+      userOwnedData[char.id].rarity = targetRarity;
       userOwnedData[char.id].isDirty = true; // ★一括保存ボタン用の「変更あり」目印フラグ
 
       // ② 一覧側の該当キャラクターカードのグレーアウトをリアルタイムに連動点灯
       const listCard = document.getElementById(`user-char-card-${char.id}`);
       if (listCard) {
-        if (nextRarity === "未所持") {
+        if (targetRarity === "未所持") {
           listCard.classList.add("is-not-owned");
         } else {
           listCard.classList.remove("is-not-owned");
         }
+      }
+    };
+
+    // 初期状態の表示を適用
+    updateRarityControlUI(currentIndex);
+
+    // マイナスボタンを押した時（レアリティを下げる）
+    minusBtn.onclick = (e) => {
+      e.stopPropagation();
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateRarityControlUI(currentIndex);
+        console.log(
+          `✨ [レアリティ減少変更] ${char.name} : ${RARITY_OPTIONS[currentIndex]}`,
+        );
+      }
+    };
+
+    // プラスボタンを押した時（レアリティを上げる）
+    plusBtn.onclick = (e) => {
+      e.stopPropagation();
+      if (currentIndex < RARITY_OPTIONS.length - 1) {
+        currentIndex++;
+        updateRarityControlUI(currentIndex);
+        console.log(
+          `✨ [レアリティ増加変更] ${char.name} : ${RARITY_OPTIONS[currentIndex]}`,
+        );
       }
     };
   }

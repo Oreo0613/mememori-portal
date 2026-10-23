@@ -394,6 +394,26 @@ svg {
     }
 }
 
+.c-floating-header .c-world-selector__btn {
+    position: fixed;
+    z-index: 1;
+    top: 2vh;
+    background-color: var(--theme-bg-surface);
+    opacity: 0.9;
+    padding: 4px 8px;
+    border-radius: 16px;
+
+    background-color: var(--theme-bg-surface);
+    border: 1px solid var(--theme-border-main);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+
+}
+
+.c-floating-header .c-world-selector {
+    padding: 0;
+    border: none;
+}
+
 /* ==========================================================================
    フッターエリア ＆ 固定ナビゲーション
    ========================================================================== */

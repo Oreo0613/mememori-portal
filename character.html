@@ -24,7 +24,8 @@
             <div class="c-portal__mask">
             </div>
             <div class="c-portal__header">
-                <div id="js-world-selector-container" class="c-main__header js-header-container"></div>
+                <div id="js-world-selector-container" class="c-main__header c-floating-header js-header-container">
+                </div>
             </div>
 
             <div class="c-portal__content">
@@ -150,12 +151,23 @@
                                         <span id="ucd-tags-display" class="c-char-detail__tags"></span>
                                     </div>
 
-                                    <!-- 移動したレアリティセレクトボックス -->
+                                    <!-- プラスマイナスボタンによるレアリティ変更UI -->
                                     <div class="c-form__group m-modal-select-wrap">
                                         <label class="c-form__label">所持レアリティ設定</label>
-                                        <select id="js-modal-user-rarity-select"
-                                            class="c-form__input m-modal-select"></select>
+                                        <div class="c-rarity-control">
+                                            <button type="button" id="js-modal-rarity-minus"
+                                                class="c-rarity-control__btn m-minus" aria-label="レアリティを下げる">
+                                                <i class="fa-solid fa-minus"></i>
+                                            </button>
+                                            <span id="js-modal-rarity-display"
+                                                class="c-rarity-control__display">未所持</span>
+                                            <button type="button" id="js-modal-rarity-plus"
+                                                class="c-rarity-control__btn m-plus" aria-label="レアリティを上げる">
+                                                <i class="fa-solid fa-plus"></i>
+                                            </button>
+                                        </div>
                                     </div>
+
                                 </div>
 
                                 <!-- OFFENSE パラメータ -->

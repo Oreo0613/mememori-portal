@@ -218,13 +218,30 @@
     justify-content: center;
 }
 
+/* 🌟 ここを丸ごと書き換えてください */
 .c-form__input.m-modal-select {
+    display: block;
+    width: 100%;
     padding: 8px 12px;
-    font-size: 13px;
+    font-size: 16px; /* 📱 スマホでの自動画面ズームとはみ出しを強制停止 */
     font-weight: bold;
     background-color: var(--color-white);
+    color: var(--theme-text-main);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 6px;
     text-align: center;
     cursor: pointer;
+    
+    /* 💻 PCブラウザで展開した時にOS標準のスクロールバーを正しく発火させる */
+    overflow-y: auto;
+}
+
+/* 🌟 追加：PCブラウザで開いたときの選択肢リストのバグ防止 */
+.c-form__input.m-modal-select option {
+    background-color: var(--color-white);
+    color: var(--theme-text-main);
+    padding: 8px;
+    font-size: 14px;
 }
 
 /* -------------------------------------------------------------------------
@@ -381,4 +398,65 @@
 .c-portal {
     max-width: 1080px;
     margin: 0 auto;
+    margin-top: 80px;
+}
+
+/* -------------------------------------------------------------------------
+   ➕➖ レアリティ変更プラスマイナスボタンUI
+   ------------------------------------------------------------------------- */
+   .c-rarity-control {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background-color: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 8px;
+    padding: 4px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* 押しやすい44px四方のボタン */
+.c-rarity-control__btn {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-gray-100);
+    color: var(--theme-text-main);
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+    border: none;
+}
+
+.c-rarity-control__btn:hover {
+    background-color: var(--theme-interactive-hover);
+    color: var(--theme-interactive);
+}
+
+.c-rarity-control__btn:active {
+    transform: scale(0.95);
+}
+
+/* 端に到達してこれ以上変更できない時の無効化表示 */
+.c-rarity-control__btn:disabled {
+    background-color: var(--color-gray-50);
+    color: var(--color-gray-200);
+    cursor: not-allowed;
+    transform: none;
+    opacity: 0.5;
+}
+
+/* 中央の現在のレアリティ文字表示 */
+.c-rarity-control__display {
+    flex: 1;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--theme-text-main);
+    user-select: none;
+    padding: 0 8px;
 }
