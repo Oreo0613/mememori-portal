@@ -396,7 +396,7 @@ svg {
 
 .c-floating-header .c-world-selector__btn {
     position: fixed;
-    z-index: 1;
+    z-index: 10;
     top: 2vh;
     background-color: var(--theme-bg-surface);
     opacity: 0.9;
@@ -1159,3 +1159,76 @@ svg {
     box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
 }
 
+
+/* ==========================================================================
+   🧱 【重なり・透過バグ根本解決】z-index ＆ 不透明レイヤーの階層統制（確定版）
+   ========================================================================== */
+
+/* 1. 画面のベース（一番奥：カードグリッド、フィルター、一般コンテンツ） */
+.user-char-grid,
+.c-filter,
+.c-portal-main,
+.user-tab-content {
+    position: relative;
+    z-index: 1; /* レイヤー基準を一番奥に固定 */
+}
+
+/* 2. 画面に固定されるヘッダー・ナビ（中間層：コンテンツより上、モーダルより下） */
+.c-floating-header,
+.c-footer-nav {
+    z-index: 100 !important; 
+}
+
+/* 💡 重要：画面右下の「更新する」ボタン固定レイヤー（中間層の最上部）
+   モーダル（9999）より確実に低い「500」に設定し、絶対にモーダルの上に出さない */
+.c-floating-container {
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    pointer-events: none;
+    z-index: 500 !important; /* モーダルより絶対に下、コンテンツより上 */
+}
+
+/* 3. モーダル全体の最外枠（最前面層：ここを地上最高の「9999」に引き上げる） */
+.c-modal,
+.c-world-modal,
+.c-create-modal,
+.c-account-modal,
+.c-archive-modal {
+    position: fixed !important;
+    z-index: 9999 !important; /* 画面上のあらゆる突き抜けを完全にシャットアウト */
+}
+
+/* 4. モーダル内のパーツ（黒幕と白箱の前後関係を絶対ルール化） */
+.c-modal__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1 !important; /* 黒幕はモーダル内の一番奥 */
+    background-color: rgba(30, 30, 35, 0.8) !important; /* 暗さを少し濃くして視認性アップ */
+    backdrop-filter: blur(4px) !important;
+}
+
+/* 5. すべてのモーダル共通の白コンテナ（黒幕の前に配置し、絶対に不透明にする） */
+.c-modal__container,
+.p-character-modal__container,
+.c-create-modal__container,
+.c-account-modal__container,
+.c-archive-modal__container {
+    position: relative;
+    z-index: 2 !important; /* 黒幕（1）よりも確実に手前 */
+    
+    /* 背景リセット：変数バグに左右されない純粋な不透明の白を強制適用 */
+    background-color: #ffffff !important; 
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25) !important;
+    border: 1px solid var(--theme-border-main);
+}
+
+/* 6. アーカイブワールド内のリスト要素も文字がハッキリ読めるように念押し */
+#js-archive-world-list li {
+    background-color: #f8fafc !important;
+    opacity: 1 !important;
+}
