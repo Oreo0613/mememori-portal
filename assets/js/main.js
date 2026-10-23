@@ -861,8 +861,28 @@ async function loadPortalDashboardData(userId, worldId) {
       }
     }
 
-    // 🟢【最重要修正】すべてのマッピングが終わったこのタイミングで、左上ヘッダーセレクターへ値を同期する！
+    // 🟢すべてのマッピングが終わったこのタイミングで、左上ヘッダーセレクターへ値を同期する！
     syncHeaderWorldSelector(data.worldNumber, data.worldName, data.characterId);
+
+    // ✨ワールド切り替え時に、キャラクター一覧側のグリッドも最新データで再描画させる
+
+    if (typeof window.initUserCharacterTab === "function") {
+      console.log(
+        "🔄 [World Switch Bridge] ワールド変更を検知したため、キャラクター一覧を再展開します。",
+      );
+      window.initUserCharacterTab(
+        characterMaster,
+        db,
+        auth,
+        userId,
+        worldId,
+        collection,
+        getDocs,
+        doc,
+        setDoc,
+        serverTimestamp,
+      );
+    }
 
     console.log("✅ ダッシュボードデータのUIマッピングが完了しました");
   } catch (error) {
@@ -1181,7 +1201,7 @@ onAuthStateChanged(auth, async (user) => {
           getDocs,
           doc,
           setDoc,
-          serverTimestamp
+          serverTimestamp,
         );
       }
     } catch (error) {

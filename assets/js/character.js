@@ -27,6 +27,10 @@ const RARITY_OPTIONS = [
   "LR+3",
   "LR+4",
   "LR+5",
+  "LR+6",
+  "LR+7",
+  "LR+8",
+  "LR+9",
   "LR+10",
 ];
 
