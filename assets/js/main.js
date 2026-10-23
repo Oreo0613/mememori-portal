@@ -744,6 +744,7 @@ async function loadPortalDashboardData(userId, worldId) {
     const docSnap = await getDoc(worldDocRef);
     if (!docSnap.exists()) return;
 
+    // --- main.js の修正対象箇所 (修正後) ---
     const data = docSnap.data();
 
     // クエスト章・ステージのバラバラ分解配置連動
@@ -755,28 +756,38 @@ async function loadPortalDashboardData(userId, worldId) {
       chapter = parts[0];
       stage = parts[1];
     }
-    document.getElementById("js-portal-quest-chapter").value = chapter;
-    document.getElementById("js-portal-quest-stage").value = stage;
+
+    // 💡 安全ガードを追加：要素が存在する場合のみ値をセットする
+    const inputChapter = document.getElementById("js-portal-quest-chapter");
+    const inputStage = document.getElementById("js-portal-quest-stage");
+    if (inputChapter) inputChapter.value = chapter;
+    if (inputStage) inputStage.value = stage;
 
     // 各種塔・数値インプットの同期
-    document.getElementById("js-portal-muguu").value = data.towerMuguu || "";
-    document.getElementById("js-portal-tower-blue").value =
-      data.towerBlue || "";
-    document.getElementById("js-portal-tower-red").value = data.towerRed || "";
-    document.getElementById("js-portal-tower-green").value =
-      data.towerGreen || "";
-    document.getElementById("js-portal-tower-yellow").value =
-      data.towerYellow || "";
-    document.getElementById("js-portal-world-memo").value =
-      data.worldMemo || "";
+    const elMuguu = document.getElementById("js-portal-muguu");
+    const elBlue = document.getElementById("js-portal-tower-blue");
+    const elRed = document.getElementById("js-portal-tower-red");
+    const elGreen = document.getElementById("js-portal-tower-green");
+    const elYellow = document.getElementById("js-portal-tower-yellow");
+    const elMemo = document.getElementById("js-portal-world-memo");
+
+    if (elMuguu) elMuguu.value = data.towerMuguu || "";
+    if (elBlue) elBlue.value = data.towerBlue || "";
+    if (elRed) elRed.value = data.towerRed || "";
+    if (elGreen) elGreen.value = data.towerGreen || "";
+    if (elYellow) elYellow.value = data.towerYellow || "";
+    if (elMemo) elMemo.value = data.worldMemo || "";
 
     // 詳細設定アコーディオンパーツの同期
-    document.getElementById("js-portal-setting-name").value =
-      data.worldName || "";
-    document.getElementById("js-portal-setting-start-date").value =
-      data.startDate || "";
-    document.getElementById("js-portal-setting-link").value =
-      data.externalLink || "";
+    const elSettingName = document.getElementById("js-portal-setting-name");
+    const elSettingDate = document.getElementById(
+      "js-portal-setting-start-date",
+    );
+    const elSettingLink = document.getElementById("js-portal-setting-link");
+
+    if (elSettingName) elSettingName.value = data.worldName || "";
+    if (elSettingDate) elSettingDate.value = data.startDate || "";
+    if (elSettingLink) elSettingLink.value = data.externalLink || "";
 
     // 💡 HTML側の id="js-portal-setting-character-id" と完全に一致させ、値を復元
     const charIdField = document.getElementById(
@@ -1166,6 +1177,11 @@ onAuthStateChanged(auth, async (user) => {
           auth,
           user.uid,
           activeWorldId,
+          collection,
+          getDocs,
+          doc,
+          setDoc,
+          serverTimestamp
         );
       }
     } catch (error) {

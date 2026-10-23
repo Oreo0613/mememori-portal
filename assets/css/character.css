@@ -25,9 +25,7 @@
     align-items: center;
 }
 
-/* 未所持（初期状態含む）はグレーアウトさせる明度コントロール */
 .user-char-card-wrap.is-not-owned .user-char-icon img {
-    filter: grayscale(100%) contrast(85%) brightness(60%);
     opacity: 0.45;
 }
 
@@ -66,6 +64,9 @@
     max-height: 85vh;
     padding: 20px;
     background-color: var(--theme-bg-surface);
+
+    overflow-y: scroll;
+    position: relative;
 }
 
 /* 武器切り替えタブバーのコンテナ */
@@ -82,8 +83,9 @@
 
 /* 武器切り替え用のトグルボタン装飾 */
 .c-world-modal__content.p-character-modal__content .c-world-modal__filter-btn {
-    padding: 6px 16px;
-    font-size: 13px;
+    width: auto;
+    padding: 4px 8px;
+    font-size: 1.2rem;
     font-weight: bold;
     color: var(--color-gray-600);
     background-color: var(--color-white);
@@ -91,6 +93,7 @@
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s ease;
+    margin-right: 4px;
 }
 
 .c-world-modal__content.p-character-modal__content .c-world-modal__filter-btn:hover {
@@ -368,4 +371,14 @@
     font-size: 13px;
     line-height: 1.6;
     color: var(--theme-text-main);
+}
+
+.c-world-modal__ct {
+    margin-left: auto;
+}
+
+
+.c-portal {
+    max-width: 1080px;
+    margin: 0 auto;
 }

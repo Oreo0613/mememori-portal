@@ -178,6 +178,8 @@ svg {
 
 .c-modal__container {
     z-index: 2;
+    
+    border-radius: 16px;
 }
 
 .c-modal .c-modal__close-btn {
@@ -1043,4 +1045,97 @@ svg {
     padding-top: 4px;
 }
 
+.c-filter {
+    display: flex;
+    flex-direction: column;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    gap: 4px;
+    border-radius: 16px;
+    border: 1px solid var(--theme-border-main);
+}
+
+.c-filter__img {
+    width: 28px;
+}
+
+.c-filter__row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.c-filter__label {
+    width: 60px;
+}
+
+.c-filter__btn {
+    opacity: 0.3;
+    transition: all 0.2s ease;
+}
+
+.c-filter__btn.is-active {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+
+.c-footer__update-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: white;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1.3rem;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);
+    
+    background-color: rgba(16, 185, 129, 0.9) !important; /* ほんの少し透けさせる */
+    backdrop-filter: blur(8px); /* ボタンの後ろに重なったコンテンツをボカす */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+
+
+
+    position: absolute;
+    right: 20px;
+    bottom: 12vh;
+    pointer-events: auto;
+
+    transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.2s, box-shadow 0.25s;
+}
+
+/* ボタンを乗せるための、画面いっぱいに広がる透明な固定レイヤー */
+.c-floating-container {
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    pointer-events: none;
+    /* 下にある入力欄をクリックできるようにするガード */
+    z-index: 100;
+}
+
+/* 中央寄せのインナー枠（ここに最大幅を設定する） */
+.c-floating-inner {
+    max-width: 1024px;
+    /* アプリのメインコンテンツの最大幅（wrapperなど）に合わせる */
+    margin: 0 auto;
+    position: relative;
+    height: 60px;
+    /* ボタンの高さ分 */
+}
+
+.c-footer__update-btn:hover {
+    transform: translateY(-2px);
+    background-color: #059669;
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.c-footer__update-btn:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
+}
 

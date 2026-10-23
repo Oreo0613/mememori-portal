@@ -38,12 +38,19 @@ let _collection, _doc, _getDocs, _setDoc, _serverTimestamp;
  * 1. メインインフラ（main.js）のロード完了後に直接呼び出される初期化関数
  * 🛠️ 修正：Firebaseモジュール関数をmain.jsのインポート環境から100%安全に引き継ぎます
  */
+// --- character.js 修正後 ---
 window.initUserCharacterTab = async function (
   masterData,
   db,
   auth,
   uid,
   worldId,
+  // ★ main.jsから渡されたFirebase関数をここで受け取る
+  fbCollection,
+  fbGetDocs,
+  fbDoc,
+  fbSetDoc,
+  fbServerTimestamp,
 ) {
   console.log("👥 [CharacterTab] 起動トリガーを検知しました。");
 
@@ -52,19 +59,25 @@ window.initUserCharacterTab = async function (
   _uid = uid;
   _worldId = worldId;
 
-  // 💡 window直下にない場合のエラーを回避するため、各種環境から安全にフォールバック取得
+  // ★ 渡された関数を優先的に代入し、なければ従来のフォールバックを行う
   _collection =
+    fbCollection ||
     window.collection ||
     (window.FirebaseBundle ? window.FirebaseBundle.collection : null);
-  _doc =
-    window.doc || (window.FirebaseBundle ? window.FirebaseBundle.doc : null);
   _getDocs =
+    fbGetDocs ||
     window.getDocs ||
     (window.FirebaseBundle ? window.FirebaseBundle.getDocs : null);
+  _doc =
+    fbDoc ||
+    window.doc ||
+    (window.FirebaseBundle ? window.FirebaseBundle.doc : null);
   _setDoc =
+    fbSetDoc ||
     window.setDoc ||
     (window.FirebaseBundle ? window.FirebaseBundle.setDoc : null);
   _serverTimestamp =
+    fbServerTimestamp ||
     window.serverTimestamp ||
     (window.FirebaseBundle ? window.FirebaseBundle.serverTimestamp : null);
 
@@ -90,6 +103,14 @@ window.initUserCharacterTab = async function (
 
   // ③ 性能確認モーダルの開閉・タブ切り替えイベントを登録
   setupUserModalEvents();
+
+  // 画面下の「更新する」ボタンに一括保存イベントをバインドします
+  const charUpdateBtn = document.getElementById("js-character-btn-update");
+  if (charUpdateBtn) {
+    charUpdateBtn.onclick = async () => {
+      await saveAllCharacterRarityData();
+    };
+  }
 };
 
 /**
@@ -245,16 +266,16 @@ function openUserCharDetailModal(char) {
     });
 
     // 💡 イベントの二重登録を防ぐため、onchangeに直接関数を上書きセット
-    selectEl.onchange = async (e) => {
+    selectEl.onchange = (e) => {
       const nextRarity = e.target.value;
-      console.log(`✨ [レアリティ変更・保存] ${char.name} : ${nextRarity}`);
+      console.log(`✨ [レアリティ一時変更] ${char.name} : ${nextRarity}`);
 
-      // ① ローカルの所持データを更新
-      if (!userOwnedData[char.id]) userOwnedData[char.id] = {};
+      // ① ローカルの所持データ（メモリ上）だけを更新
+      if (!userOwnedData[char.id]) {
+        userOwnedData[char.id] = {};
+      }
       userOwnedData[char.id].rarity = nextRarity;
-      userOwnedData[char.id].updatedAt = _serverTimestamp
-        ? _serverTimestamp()
-        : new Date();
+      userOwnedData[char.id].isDirty = true; // ★一括保存ボタン用の「変更あり」目印フラグ
 
       // ② 一覧側の該当キャラクターカードのグレーアウトをリアルタイムに連動点灯
       const listCard = document.getElementById(`user-char-card-${char.id}`);
@@ -264,38 +285,6 @@ function openUserCharDetailModal(char) {
         } else {
           listCard.classList.remove("is-not-owned");
         }
-      }
-
-      // ③ Firestoreへの即時クラウド同期セーブ
-      if (_db && _uid && _worldId && _doc && _setDoc) {
-        try {
-          const docRef = _doc(
-            _db,
-            "users",
-            _uid,
-            "worlds",
-            _worldId,
-            "ownedCharacters",
-            char.id,
-          );
-          await _setDoc(
-            docRef,
-            {
-              rarity: nextRarity,
-              updatedAt: userOwnedData[char.id].updatedAt,
-            },
-            { merge: true },
-          );
-          console.log(
-            `💾 [Firestore] ${char.name} の所持状況をマージ保存しました。`,
-          );
-        } catch (err) {
-          console.error("🚨 所持状況のクラウド保存に失敗しました:", err);
-        }
-      } else {
-        console.error(
-          "🚨 Firestoreのライブラリ関数（_doc または _setDoc）がロードされていないため保存をスキップしました。",
-        );
       }
     };
   }
@@ -314,6 +303,15 @@ function openUserCharDetailModal(char) {
     modalEl.classList.add("is-open");
     modalEl.removeAttribute("aria-hidden");
     modalEl.removeAttribute("inert");
+
+    // モーダルを開いた瞬間に、外枠と内枠両方のスクロール位置を一番上にリセットする
+    const modalContainer = modalEl.querySelector(
+      ".p-character-modal__container",
+    );
+    const modalBody = modalEl.querySelector(".m-char-detail-body");
+
+    if (modalContainer) modalContainer.scrollTop = 0;
+    if (modalBody) modalBody.scrollTop = 0;
   }
 }
 
@@ -502,9 +500,22 @@ function setupUserModalEvents() {
 
   const closeModal = () => {
     if (modalEl) {
+      // ★ 1. 非表示にする前に、現在モーダル内の要素（閉じるボタン等）に当たっているフォーカスを解除する
+      const activeEl = document.activeElement;
+      if (activeEl && modalEl.contains(activeEl)) {
+        activeEl.blur(); // フォーカスを強制解除
+      }
+
+      // 2. モーダルを眠らせる
       modalEl.classList.remove("is-open");
       modalEl.setAttribute("aria-hidden", "true");
       modalEl.setAttribute("inert", "");
+
+      // ★ 3. 画面全体のフォーカスが迷子にならないよう、キャラクターグリッドの親コンテナにフォーカスを移す
+      const gridEl = document.getElementById("userCharGrid");
+      if (gridEl) {
+        gridEl.focus();
+      }
     }
   };
 
@@ -556,6 +567,87 @@ function bindUserFilterEvents() {
       renderCharacterGrid();
     });
   });
+}
+
+// --- character.js の一番最後に追加するコード ---
+
+/**
+ * 💾 9. 「更新する」ボタン押下時の一括Firestore保存処理
+ */
+async function saveAllCharacterRarityData() {
+  const updateBtn = document.getElementById("js-character-btn-update");
+  if (!updateBtn) return;
+
+  if (!_db || !_uid || !_worldId || !_doc || !_setDoc) {
+    alert("インフラが初期化されていません。再読み込みしてください。");
+    return;
+  }
+
+  // userOwnedData の中から isDirty フラグが true になっているキャラのIDだけを抽出
+  const dirtyCharIds = Object.keys(userOwnedData).filter(
+    (id) => userOwnedData[id].isDirty === true,
+  );
+
+  if (dirtyCharIds.length === 0) {
+    alert("変更されたデータはありません。");
+    return;
+  }
+
+  try {
+    // ⏳ ボタンをローディング状態（二重クリック防止）にする
+    updateBtn.disabled = true;
+    updateBtn.innerHTML =
+      '<i class="fa-solid fa-spinner fa-spin"></i> 保存中...';
+
+    // 変更があったキャラの分だけFirestoreにまとめて書き込み（並列実行）
+    await Promise.all(
+      dirtyCharIds.map(async (charId) => {
+        const docRef = _doc(
+          _db,
+          "users",
+          _uid,
+          "worlds",
+          _worldId,
+          "ownedCharacters",
+          charId,
+        );
+
+        await _setDoc(
+          docRef,
+          {
+            rarity: userOwnedData[charId].rarity,
+            updatedAt: _serverTimestamp ? _serverTimestamp() : new Date(),
+          },
+          { merge: true },
+        );
+
+        // クラウド保存が成功したので、一時変更フラグをリセット
+        userOwnedData[charId].isDirty = false;
+      }),
+    );
+
+    console.log(
+      `💾 [Firestore] ${dirtyCharIds.length}件のキャラ所持状況を一括保存しました。`,
+    );
+
+    // ✨【アニメーション演出】成功フラッシュ文字とアイコン切り替え
+    updateBtn.classList.add("is-success-flash");
+    updateBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> 更新完了！';
+
+    setTimeout(() => {
+      alert("すべてのキャラクター所持状況を正常に保存しました！");
+    }, 100);
+  } catch (error) {
+    console.error("🚨 キャラクターデータの保存に失敗しました:", error);
+    alert("データの保存に失敗しました。通信環境を確認してください。");
+  } finally {
+    // ⏳ ロックを解除して、1.5秒後にボタンの見た目を「更新する」に戻す
+    updateBtn.disabled = false;
+    setTimeout(() => {
+      updateBtn.classList.remove("is-success-flash");
+      updateBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> 更新する';
+    }, 1500);
+  }
 }
 
 // 外部参照・手動テスト用のグローバル公開
