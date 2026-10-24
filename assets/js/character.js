@@ -333,6 +333,8 @@ function openUserCharDetailModal(char) {
     modalEl.classList.add("is-open");
     modalEl.removeAttribute("aria-hidden");
     modalEl.removeAttribute("inert");
+    
+    document.body.classList.add("is-modal-open");
 
     // モーダルを開いた瞬間に、外枠と内枠両方のスクロール位置を一番上にリセットする
     const modalContainer = modalEl.querySelector(
@@ -540,6 +542,8 @@ function setupUserModalEvents() {
       modalEl.classList.remove("is-open");
       modalEl.setAttribute("aria-hidden", "true");
       modalEl.setAttribute("inert", "");
+
+      document.body.classList.remove("is-modal-open");
 
       // ★ 3. 画面全体のフォーカスが迷子にならないよう、キャラクターグリッドの親コンテナにフォーカスを移す
       const gridEl = document.getElementById("userCharGrid");
