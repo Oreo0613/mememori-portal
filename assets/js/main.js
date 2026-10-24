@@ -219,7 +219,8 @@ async function loadWorldList(userId) {
           modalSelect.setAttribute("inert", "");
         }
 
-        // 💡 【修正】要素の安全ガードを追加（nullエラーによるJS停止を完全に防止）
+        document.body.classList.remove("is-modal-open");
+        
         const openSelectBtn = document.getElementById("js-world-modal-open");
         if (openSelectBtn) openSelectBtn.focus();
       });
@@ -393,6 +394,8 @@ function initWorldSelectorEvent() {
       modalSelect.classList.add("is-open");
       modalSelect.removeAttribute("aria-hidden");
       modalSelect.removeAttribute("inert");
+
+      document.body.classList.add("is-modal-open");
     });
   }
 
@@ -401,6 +404,8 @@ function initWorldSelectorEvent() {
       modalSelect.classList.remove("is-open");
       modalSelect.setAttribute("aria-hidden", "true");
       modalSelect.setAttribute("inert", "");
+
+      document.body.classList.remove("is-modal-open");
       if (openSelectBtn) openSelectBtn.focus();
     }
   };
@@ -425,6 +430,8 @@ function initWorldSelectorEvent() {
       modalArchive.classList.add("is-open");
       modalArchive.removeAttribute("aria-hidden");
       modalArchive.removeAttribute("inert");
+
+      document.body.classList.add("is-modal-open");
     });
   }
 
@@ -433,6 +440,8 @@ function initWorldSelectorEvent() {
       modalArchive.classList.remove("is-open");
       modalArchive.setAttribute("aria-hidden", "true");
       modalArchive.setAttribute("inert", "");
+
+      document.body.classList.remove("is-modal-open");
     }
   };
   if (closeArchiveBtn)
@@ -1491,6 +1500,9 @@ function initPartySystemEvents() {
     modalParty.classList.remove("is-open");
     modalParty.setAttribute("aria-hidden", "true");
     modalParty.setAttribute("inert", "");
+
+    document.body.classList.remove("is-modal-open");
+
     activeEditingPartyIndex = null;
   };
   closePartyBtns.forEach((btn) =>
@@ -1581,20 +1593,20 @@ function renderPartyListUI() {
   currentPartiesState.forEach((party, index) => {
     const card = document.createElement("button");
     card.type = "button";
-    card.className = "c-portal-party-card";
+    card.className = "p-portal-party-card";
 
     const nameSpan = document.createElement("span");
-    nameSpan.className = "c-portal-party-card__name";
+    nameSpan.className = "p-portal-party-card__name";
     nameSpan.textContent = party.partyName;
     card.appendChild(nameSpan);
 
     const slotsDiv = document.createElement("div");
-    slotsDiv.className = "c-portal-party__slots";
+    slotsDiv.className = "p-portal-party__slots";
 
     // 🟢 修正箇所：キャラクターが存在する場合にクラス「has-character」を付与する
     party.members.forEach((charaId) => {
       const slotIcon = document.createElement("div");
-      slotIcon.className = "c-portal-party__slot";
+      slotIcon.className = "p-portal-party__slot";
 
       if (charaId && Array.isArray(characterMaster)) {
         const found = characterMaster.find(
@@ -1661,6 +1673,8 @@ function openPartyEditModal(index) {
     modalParty.classList.add("is-open");
     modalParty.removeAttribute("aria-hidden");
     modalParty.removeAttribute("inert");
+
+    document.body.classList.add("is-modal-open")
   }
 }
 
@@ -1668,7 +1682,7 @@ function openPartyEditModal(index) {
 // 🟢 バグを修正した正しいイベント処理
 function initPartyDragAndDrop() {
   const slots = document.querySelectorAll(
-    ".js-party-modal-slots .c-portal-party__slot",
+    ".js-party-modal-slots .p-portal-party__slot",
   );
   let draggedSlot = null;
 
