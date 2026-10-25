@@ -4,23 +4,32 @@ const FAVICON_API_BASE = "http://www.google.com/s2/favicons?domain=";
 // 🔮 魔女マスタデータのキャッシュ用変数（配列に変更）
 let characterMaster = [];
 
-// 📜 魔女マスタデータ（JSON）の非同期読み込み処理（完了時ヘッダー同期連動版）
+// 📜 魔女マスタデータ（JSON）の非同期読み込み処理
 async function fetchCharacterMaster() {
   try {
     const response = await fetch("assets/json/character-master.json");
     if (!response.ok)
       throw new Error("キャラクターマスタの読み込みに失敗しました");
+
     characterMaster = await response.json();
+
+    // 💡 window側にも確実に同期
+    window.characterMaster = characterMaster;
+
     console.log(
-      "✅ キャラクターマスタデータのロードが完了しました",
-      characterMaster,
+      "✅ キャラクターマスタデータのロードが完了しました。件数:",
+      characterMaster.length,
     );
 
-    // 💡【ロード遅延対策】マスタの読み込みが完了した時点で、すでに選択中のワールドがあればヘッダーアイコンを再同期させる
+    // 💡【追加】マスタのロードが完了した瞬間に、もしパーティ表示関数があれば自動で再描画をかける！
+    if (typeof renderPartyListUI === "function") {
+      renderPartyListUI();
+    }
+
+    // 💡 選択中のワールドがあればヘッダーアイコンも再同期
     const activeWorldId = sessionStorage.getItem("app_current_world_id");
     const user = auth.currentUser;
     if (user && activeWorldId) {
-      // データの再取得を軽く行うためにダッシュボードロードを再実行、またはセッションからヘッダーのみ更新
       const worldDocRef = doc(db, "users", user.uid, "worlds", activeWorldId);
       const docSnap = await getDoc(worldDocRef);
       if (docSnap.exists()) {
@@ -150,15 +159,7 @@ async function loadWorldList(userId) {
       const worldName = data.worldName || "";
       const charId = data.characterId || null;
 
-      let iconSrc = "assets/images/chara-icon/1.webp";
-      if (charId && Array.isArray(characterMaster)) {
-        const foundChara = characterMaster.find(
-          (c) => String(c.id) === String(charId),
-        );
-        if (foundChara && foundChara.iconUrl) {
-          iconSrc = foundChara.iconUrl;
-        }
-      }
+      const iconSrc = getWorldIconSrc(charId);
 
       const li = document.createElement("li");
       li.className = "c-world-modal__item";
@@ -220,7 +221,7 @@ async function loadWorldList(userId) {
         }
 
         document.body.classList.remove("is-modal-open");
-        
+
         const openSelectBtn = document.getElementById("js-world-modal-open");
         if (openSelectBtn) openSelectBtn.focus();
       });
@@ -291,6 +292,25 @@ function setActiveNavigation() {
       }
     }
   });
+}
+
+// 🔮 キャラクターIDからアイコンURLを確実に取得する共通ヘルパー関数
+function getWorldIconSrc(characterId) {
+  const DEFAULT_ICON_PATH = "assets/images/chara-icon/1.webp"; // 共通の初期値アイコン
+
+  if (
+    characterId &&
+    Array.isArray(characterMaster) &&
+    characterMaster.length > 0
+  ) {
+    const foundChara = characterMaster.find(
+      (c) => String(c.id).trim() === String(characterId).trim(),
+    );
+    if (foundChara && foundChara.iconUrl) {
+      return foundChara.iconUrl;
+    }
+  }
+  return DEFAULT_ICON_PATH; // 未設定、またはマスタにない場合は初期値を返す
 }
 
 // 🌐 ワールドセレクターHTML挿入
@@ -699,47 +719,19 @@ function syncHeaderWorldSelector(worldNumber, worldName, characterId = null) {
   }
 
   if (iconWrap) {
-    let iconSrc = "";
-
-    console.log(
-      `[IconSync] 渡されたキャラID: ${characterId}, マスタの状態: ${Array.isArray(characterMaster) ? characterMaster.length + "件" : "未ロード"}`,
-    );
-
-    if (
-      characterId &&
-      Array.isArray(characterMaster) &&
-      characterMaster.length > 0
-    ) {
-      // 💡 Stringにして型変換の安全マージをして比較
-      const foundChara = characterMaster.find(
-        (c) => String(c.id).trim() === String(characterId).trim(),
-      );
-
-      if (foundChara) {
-        iconSrc = foundChara.iconUrl;
-        console.log(`[IconSync] マスタから画像パスを発見しました: ${iconSrc}`);
-      } else {
-        console.warn(
-          `[IconSync] キャラID [${characterId}] に一致する魔女がマスタ内に見つかりません`,
-        );
-      }
-    }
+    // 💡【修正】共通関数を使ってアイコンURLを取得（未設定なら自動的に1.webpになる）
+    const iconSrc = getWorldIconSrc(characterId);
 
     iconWrap.innerHTML = "";
 
-    if (iconSrc) {
-      const img = document.createElement("img");
-      img.className = "c-world-selector__img";
-      img.src = iconSrc;
-      img.alt = worldName || "ワールドアイコン";
-      img.style.cssText =
-        "width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;";
-      iconWrap.appendChild(img);
-    } else {
-      const icon = document.createElement("i");
-      icon.className = "fa-solid fa-earth-asia";
-      iconWrap.appendChild(icon);
-    }
+    // 💡【修正】フォントアイコンは廃止し、常に詳細設定と同じimgタグの見た目に統一
+    const img = document.createElement("img");
+    img.className = "c-world-selector__img";
+    img.src = iconSrc;
+    img.alt = worldName || "ワールドアイコン";
+    img.style.cssText =
+      "width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;";
+    iconWrap.appendChild(img);
   }
 }
 
@@ -810,18 +802,13 @@ async function loadPortalDashboardData(userId, worldId) {
     const previewImg = document.getElementById(
       "js-portal-setting-icon-preview",
     );
-    if (previewImg && data.characterId && Array.isArray(characterMaster)) {
-      const foundChara = characterMaster.find(
-        (c) => String(c.id) === String(data.characterId),
-      );
-      if (foundChara && foundChara.iconUrl) {
-        previewImg.src = foundChara.iconUrl;
-      } else {
-        previewImg.src = "assets/images/chara-icon/1.webp";
-      }
+    if (previewImg) {
+      // 💡【修正】共通関数を使って、未設定（空）の場合も自動で初期値になるよう同期
+      previewImg.src = getWorldIconSrc(data.characterId);
     }
 
     const statusSelect = document.getElementById("js-portal-setting-status");
+
     if (statusSelect) {
       // 過去データがtrue（または未設定）なら active、明示的に false の場合のみ archived を選択
       statusSelect.value = data.isActive !== false ? "active" : "archived";
@@ -1590,35 +1577,67 @@ function renderPartyListUI() {
     return;
   }
 
+  const master = window.characterMaster || [];
+
   currentPartiesState.forEach((party, index) => {
     const card = document.createElement("button");
     card.type = "button";
     card.className = "p-portal-party-card";
 
+    // ── ① パーティ名 ＆ 並び替えボタンを包むヘッダーエリア ──
+    const headerDiv = document.createElement("div");
+    headerDiv.style.cssText =
+      "display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 8px;";
+
     const nameSpan = document.createElement("span");
     nameSpan.className = "p-portal-party-card__name";
     nameSpan.textContent = party.partyName;
-    card.appendChild(nameSpan);
+    headerDiv.appendChild(nameSpan);
 
+    // ↕️ 上下並び替えボタンのコンテナ
+    const orderBtnsDiv = document.createElement("div");
+    orderBtnsDiv.style.cssText = "display: flex; gap: 4px;";
+
+    const upBtn = document.createElement("button");
+    upBtn.type = "button";
+    upBtn.className = "js-party-order-up p-party-order-btn";
+    upBtn.textContent = "▲";
+    upBtn.disabled = index === 0;
+    upBtn.style.cssText = "font-size: 10px; padding: 2px 6px; cursor: pointer;";
+    upBtn.addEventListener("click", (e) => movePartyOrder(index, "up", e));
+
+    const downBtn = document.createElement("button");
+    downBtn.type = "button";
+    downBtn.className = "js-party-order-down p-party-order-btn";
+    downBtn.textContent = "▼";
+    downBtn.disabled = index === currentPartiesState.length - 1;
+    downBtn.style.cssText =
+      "font-size: 10px; padding: 2px 6px; cursor: pointer;";
+    downBtn.addEventListener("click", (e) => movePartyOrder(index, "down", e));
+
+    orderBtnsDiv.appendChild(upBtn);
+    orderBtnsDiv.appendChild(downBtn);
+    headerDiv.appendChild(orderBtnsDiv);
+
+    card.appendChild(headerDiv);
+
+    // ── ② キャラクターのスロット部分 ──
     const slotsDiv = document.createElement("div");
     slotsDiv.className = "p-portal-party__slots";
 
-    // 🟢 修正箇所：キャラクターが存在する場合にクラス「has-character」を付与する
-    party.members.forEach((charaId) => {
+    party.members.forEach((charaId, slotIdx) => {
       const slotIcon = document.createElement("div");
       slotIcon.className = "p-portal-party__slot";
 
-      if (charaId && Array.isArray(characterMaster)) {
-        const found = characterMaster.find(
-          (c) => String(c.id) === String(charaId),
+      if (charaId && Array.isArray(master) && master.length > 0) {
+        const found = master.find(
+          (c) => String(c.id).trim() === String(charaId).trim(),
         );
         if (found) {
-          // 💡【追加】キャラデータが見つかり、画像が入る枠にだけクラス名を付与！
           slotIcon.classList.add("has-character");
-
           const img = document.createElement("img");
-          img.src = found.iconUrl;
-          img.alt = found.name;
+          img.src = found.iconUrl || "assets/images/chara-icon/1.webp";
+          img.alt = found.name || "";
           slotIcon.appendChild(img);
         } else {
           slotIcon.innerHTML = "<span>+</span>";
@@ -1674,7 +1693,7 @@ function openPartyEditModal(index) {
     modalParty.removeAttribute("aria-hidden");
     modalParty.removeAttribute("inert");
 
-    document.body.classList.add("is-modal-open")
+    document.body.classList.add("is-modal-open");
   }
 }
 
@@ -1760,4 +1779,21 @@ function initPartyDragAndDrop() {
       destInput.dispatchEvent(new Event("change", { bubbles: true }));
     });
   });
+}
+
+// 🔄 パーティの並び順を上下させる関数
+function movePartyOrder(index, direction, event) {
+  if (event) event.stopPropagation();
+  const targetIndex = direction === "up" ? index - 1 : index + 1;
+
+  // 配列の範囲外にいかないようにガード
+  if (targetIndex < 0 || targetIndex >= currentPartiesState.length) return;
+
+  // 配列内で要素を入れ替える（スワップ）
+  const temp = currentPartiesState[index];
+  currentPartiesState[index] = currentPartiesState[targetIndex];
+  currentPartiesState[targetIndex] = temp;
+
+  // 画面を再描画して新しい並び順を反映
+  renderPartyListUI();
 }
