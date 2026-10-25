@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>アルカナ｜メメモリ</title>
+
+    <!-- リセットCSS & Googleフォントやアイコンなど -->
+    <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/destyle.css@4.0.0/destyle.min.css" />
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/arcana.css">
+    <script src="https://kit.fontawesome.com/d36bec305b.js" crossorigin="anonymous"></script>
+
+    <script src="assets/js/main.js" type="module"></script>
+    <script src="assets/js/arcana.js"></script>
+</head>
+
+<body>
+    <div class="l-container">
+        <header class="l-header c-floating-header">
+            <div id="js-world-selector-container" class="c-main__header js-header-container"></div>
+        </header>
+        <main class="l-main p-arcana">
+            <div class="p-arcana-main">
+                <div class="p-arcana__content">
+ 
+                    <div class="c-update-btn__wrapper">
+                        <div class="c-update-btn__wrap">
+                            <button type="button" id="js-character-btn-update" class="c-btn c-update-btn">
+                                <i class="fa-solid fa-rotate"></i> 更新する
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="l-sidebar"></div>
+
+    <!-- 外部から読み込むフッターの受け皿 -->
+    <footer id="js-footer-container" class="l-footer js-footer-container"></footer>
+
+</body>
+
+</html>

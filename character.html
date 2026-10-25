@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>キャラクターページ</title>
+    <title>キャラクター｜メメモリ</title>
 
     <!-- リセットCSS & Googleフォントやアイコンなど -->
     <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
@@ -28,79 +28,72 @@
                     <!-- =========================================================================
                      🌐 ワールド×キャラクター タブコンテンツ（一般ユーザー用）
                      ========================================================================= -->
-                    <div class="user-tab-content js-tab-content-character" id="tabCharacter">
+                    <!-- 🔍 BEMクリーンアップ仕様：フィルターセクション -->
+                    <div class="c-filter">
 
-                        <!-- 🔍 BEMクリーンアップ仕様：フィルターセクション -->
-                        <div class="c-filter">
-
-                            <!-- 属性選択ブロック -->
-                            <div class="c-filter__row">
-                                <div class="c-filter__label">属性</div>
-                                <div class="c-filter__flex">
-                                    <button type="button" class="c-filter__btn is-active js-filter-attr"
-                                        data-attr="ALL">
-                                        <img class="c-filter__img" src="assets/images/filter-icon/icon-all.png"
-                                            alt="全部">
-                                    </button>
-                                    <button type="button" class="c-filter__btn js-filter-attr" data-attr="藍">
-                                        <img class="c-filter__img" src="assets/images/filter-icon/icon-attr-blue.png"
-                                            alt="藍">
-                                    </button>
-                                    <button type="button" class="c-filter__btn js-filter-attr" data-attr="紅">
-                                        <img class="c-filter__img" src="assets/images/filter-icon/icon-attr-red.png"
-                                            alt="紅">
-                                    </button>
-                                    <button type="button" class="c-filter__btn js-filter-attr" data-attr="翠">
-                                        <img class="c-filter__img" src="assets/images/filter-icon/icon-attr-green.png"
-                                            alt="翠">
-                                    </button>
-                                    <button type="button" class="c-filter__btn js-filter-attr" data-attr="黄">
-                                        <img class="c-filter__img" src="assets/images/filter-icon/icon-attr-yellow.png"
-                                            alt="黄">
-                                    </button>
-                                    <button type="button" class="c-filter__btn js-filter-attr" data-attr="天">
-                                        <img class="c-filter__img" src="assets/images/filter-icon/icon-attr-holy.png"
-                                            alt="天">
-                                    </button>
-                                    <button type="button" class="c-filter__btn js-filter-attr" data-attr="冥">
-                                        <img class="c-filter__img" src="assets/images/filter-icon/icon-attr-dark.png"
-                                            alt="冥">
-                                    </button>
-                                </div>
+                        <!-- 属性選択ブロック -->
+                        <div class="c-filter__row">
+                            <div class="c-filter__label">属性</div>
+                            <div class="c-filter__flex">
+                                <button type="button" class="c-filter__btn is-active js-filter-attr" data-attr="ALL">
+                                    <img class="c-filter__img" src="assets/images/filter-icon/icon-all.png" alt="全部">
+                                </button>
+                                <button type="button" class="c-filter__btn js-filter-attr" data-attr="藍">
+                                    <img class="c-filter__img" src="assets/images/filter-icon/icon-attr-blue.png"
+                                        alt="藍">
+                                </button>
+                                <button type="button" class="c-filter__btn js-filter-attr" data-attr="紅">
+                                    <img class="c-filter__img" src="assets/images/filter-icon/icon-attr-red.png"
+                                        alt="紅">
+                                </button>
+                                <button type="button" class="c-filter__btn js-filter-attr" data-attr="翠">
+                                    <img class="c-filter__img" src="assets/images/filter-icon/icon-attr-green.png"
+                                        alt="翠">
+                                </button>
+                                <button type="button" class="c-filter__btn js-filter-attr" data-attr="黄">
+                                    <img class="c-filter__img" src="assets/images/filter-icon/icon-attr-yellow.png"
+                                        alt="黄">
+                                </button>
+                                <button type="button" class="c-filter__btn js-filter-attr" data-attr="天">
+                                    <img class="c-filter__img" src="assets/images/filter-icon/icon-attr-holy.png"
+                                        alt="天">
+                                </button>
+                                <button type="button" class="c-filter__btn js-filter-attr" data-attr="冥">
+                                    <img class="c-filter__img" src="assets/images/filter-icon/icon-attr-dark.png"
+                                        alt="冥">
+                                </button>
                             </div>
-
-                            <!-- タイプ選択ブロック -->
-                            <div class="c-filter__row">
-                                <div class="c-filter__label">タイプ</div>
-                                <div class="c-filter__flex">
-                                    <button type="button" class="c-filter__btn is-active js-filter-type"
-                                        data-type="ALL">
-                                        <img class="c-filter__img" src="assets/images/filter-icon/icon-all.png"
-                                            alt="全部">
-                                    </button>
-                                    <button type="button" class="c-filter__btn js-filter-type" data-type="ウォーリアー">
-                                        <img class="c-filter__img" src="assets/images/filter-icon/icon-type-warrior.png"
-                                            alt="ウォーリアー">
-                                    </button>
-                                    <button type="button" class="c-filter__btn js-filter-type" data-type="スナイパー">
-                                        <img class="c-filter__img" src="assets/images/filter-icon/icon-type-sniper.png"
-                                            alt="スナイパー">
-                                    </button>
-                                    <button type="button" class="c-filter__btn js-filter-type" data-type="ソーサラー">
-                                        <img class="c-filter__img"
-                                            src="assets/images/filter-icon/icon-type-sorcerer.png" alt="ソーサラー">
-                                    </button>
-                                </div>
-                            </div>
-
                         </div>
 
-                        <!-- 👥 キャラクター一覧グリッド（純粋なアイコン用箱） -->
-                        <div class="user-char-grid" id="userCharGrid">
-                            <div class="character-grid__loading">キャラクターデータを読み込み中...</div>
+                        <!-- タイプ選択ブロック -->
+                        <div class="c-filter__row">
+                            <div class="c-filter__label">タイプ</div>
+                            <div class="c-filter__flex">
+                                <button type="button" class="c-filter__btn is-active js-filter-type" data-type="ALL">
+                                    <img class="c-filter__img" src="assets/images/filter-icon/icon-all.png" alt="全部">
+                                </button>
+                                <button type="button" class="c-filter__btn js-filter-type" data-type="ウォーリアー">
+                                    <img class="c-filter__img" src="assets/images/filter-icon/icon-type-warrior.png"
+                                        alt="ウォーリアー">
+                                </button>
+                                <button type="button" class="c-filter__btn js-filter-type" data-type="スナイパー">
+                                    <img class="c-filter__img" src="assets/images/filter-icon/icon-type-sniper.png"
+                                        alt="スナイパー">
+                                </button>
+                                <button type="button" class="c-filter__btn js-filter-type" data-type="ソーサラー">
+                                    <img class="c-filter__img" src="assets/images/filter-icon/icon-type-sorcerer.png"
+                                        alt="ソーサラー">
+                                </button>
+                            </div>
                         </div>
 
                     </div>
+
+                    <!-- 👥 キャラクター一覧グリッド（純粋なアイコン用箱） -->
+                    <div class="user-char-grid" id="userCharGrid">
+                        <div class="character-grid__loading">キャラクターデータを読み込み中...</div>
+                    </div>
+
 
                     <!-- =========================================================================
                          🔲 ユーザー専用：キャラクター性能確認モーダル（BEMクリーンアップ・安全設計）
