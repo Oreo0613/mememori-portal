@@ -168,8 +168,14 @@ async function loadAndRenderCharacterGrid() {
     );
     const querySnapshot = await _getDocs(ownedRef);
 
+    // --- loadAndRenderCharacterGrid 内のクエリ取得ループ部分を以下に差し替え ---
     querySnapshot.forEach((docSnap) => {
-      userOwnedData[docSnap.id] = docSnap.data();
+      const data = docSnap.data();
+
+      // 💡【追加】あとで変更があったか比較できるように、読み込み時の初期値を保存しておく
+      data.originalRarity = data.rarity || "未所持";
+
+      userOwnedData[docSnap.id] = data;
     });
 
     // グリッドを美しく描画
@@ -264,23 +270,27 @@ function openUserCharDetailModal(char) {
     let currentIndex = RARITY_OPTIONS.indexOf(savedRarity);
     if (currentIndex === -1) currentIndex = 0; // 万が一見つからなければ「未所持(0)」にする安全ガード
 
-    // 表示とボタンの活性・非活性状態を同期する内部関数
+    // --- openUserCharDetailModal 内の updateRarityControlUI を以下に差し替え ---
     const updateRarityControlUI = (index) => {
       const targetRarity = RARITY_OPTIONS[index];
       displayEl.textContent = targetRarity;
 
-      // 下限・上限に達したらボタンを押せなくするガード
       minusBtn.disabled = index === 0;
       plusBtn.disabled = index === RARITY_OPTIONS.length - 1;
 
-      // ① ローカルの所持データ（メモリ上）を更新
+      // 💡【追加】最初にFirestoreから読み込んだ時のオリジナルレアリティを取得（なければ未所持）
+      const originalRarity = userOwnedData[char.id]?.originalRarity || "未所持";
+
       if (!userOwnedData[char.id]) {
         userOwnedData[char.id] = {};
       }
       userOwnedData[char.id].rarity = targetRarity;
-      userOwnedData[char.id].isDirty = true; // ★一括保存ボタン用の「変更あり」目印フラグ
 
-      // ② 一覧側の該当キャラクターカードのグレーアウトをリアルタイムに連動点灯
+      // 💡【修正】画面上のレアリティと、読み込み時のレアリティが「異なる場合のみ」変更扱いにする！
+      const isChanged = targetRarity !== originalRarity;
+      userOwnedData[char.id].isDirty = isChanged;
+
+      // 一覧側の該当キャラクターカードのグレーアウトをリアルタイムに連動点灯
       const listCard = document.getElementById(`user-char-card-${char.id}`);
       if (listCard) {
         if (targetRarity === "未所持") {
@@ -333,7 +343,7 @@ function openUserCharDetailModal(char) {
     modalEl.classList.add("is-open");
     modalEl.removeAttribute("aria-hidden");
     modalEl.removeAttribute("inert");
-    
+
     document.body.classList.add("is-modal-open");
 
     // モーダルを開いた瞬間に、外枠と内枠両方のスクロール位置を一番上にリセットする
@@ -603,10 +613,8 @@ function bindUserFilterEvents() {
   });
 }
 
-// --- character.js の一番最後に追加するコード ---
-
 /**
- * 💾 9. 「更新する」ボタン押下時の一括Firestore保存処理
+ * 💾 9. 「更新する」ボタン押下時の一括Firestore保存処理（更新キャラ名お知らせ版）
  */
 async function saveAllCharacterRarityData() {
   const updateBtn = document.getElementById("js-character-btn-update");
@@ -617,7 +625,7 @@ async function saveAllCharacterRarityData() {
     return;
   }
 
-  // userOwnedData の中から isDirty フラグが true になっているキャラのIDだけを抽出
+  // 💡【厳密判定】本当に最初のロード時（または前回保存時）から値が変わっているキャラのみを抽出
   const dirtyCharIds = Object.keys(userOwnedData).filter(
     (id) => userOwnedData[id].isDirty === true,
   );
@@ -626,6 +634,12 @@ async function saveAllCharacterRarityData() {
     alert("変更されたデータはありません。");
     return;
   }
+
+  // 💡【確定】保存を実行する直前のタイミングで、確実に変更されているキャラクター名のみをリスト化
+  const updatedCharNames = dirtyCharIds.map((id) => {
+    const match = characterMasterList.find((c) => String(c.id) === String(id));
+    return match ? match.name : "不明な魔女";
+  });
 
   try {
     // ⏳ ボタンをローディング状態（二重クリック防止）にする
@@ -655,6 +669,9 @@ async function saveAllCharacterRarityData() {
           { merge: true },
         );
 
+        // 💡【重要解決策】保存に成功したので、現在のレアリティを次の比較用の「初期値」として上書き
+        userOwnedData[charId].originalRarity = userOwnedData[charId].rarity;
+
         // クラウド保存が成功したので、一時変更フラグをリセット
         userOwnedData[charId].isDirty = false;
       }),
@@ -668,8 +685,12 @@ async function saveAllCharacterRarityData() {
     updateBtn.classList.add("is-success-flash");
     updateBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> 更新完了！';
 
+    // 💡【通知】プラスマイナスゼロで戻したキャラは含まれず、本当にデータが変動した魔女だけを列挙してアラート
     setTimeout(() => {
-      alert("すべてのキャラクター所持状況を正常に保存しました！");
+      const charListText = updatedCharNames.join("、");
+      alert(
+        `【クラウド保存完了】\n以下のキャラクターの所持状況を正常に更新しました！\n\n対象: ${charListText}`,
+      );
     }, 100);
   } catch (error) {
     console.error("🚨 キャラクターデータの保存に失敗しました:", error);
