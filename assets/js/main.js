@@ -49,23 +49,6 @@ async function fetchCharacterMaster() {
 // ==========================================================================
 // 🔥 ① FIREBASE INFRASTRUCTURE (初期化・認証・基本監視)
 // ==========================================================================
-// import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-// import {
-//   getFirestore,
-//   collection,
-//   addDoc,
-//   serverTimestamp,
-// } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-
-// import {
-//   getAuth,
-//   onAuthStateChanged,
-//   signOut,
-// } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-
-// ==========================================================================
-// 🔥 ① FIREBASE INFRASTRUCTURE (初期化・認証・基本監視)
-// ==========================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import {
   getFirestore,
