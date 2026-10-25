@@ -650,3 +650,9 @@
 .p-portal-party__slot:has(img:not(.is-hidden)) span {
     display: none !important;
 }
+
+.p-party-order-btn {
+    border: 1px solid var(--theme-border-main);
+    border-radius: 4px;
+    background-color: var(--theme-bg-surface);
+}
