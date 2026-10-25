@@ -122,7 +122,7 @@ async function fetchUserArcanaStatus() {
 }
 
 /**
- * 📊 アルカナ一覧テーブルを動的に描画
+ * 📊 アルカナ一覧テーブルを動的に描画（1つのテーブル内グループ化・開閉版）
  */
 function renderArcanaTable() {
   const tbody = document.getElementById("arcanaTableBody");
@@ -131,62 +131,145 @@ function renderArcanaTable() {
 
   if (arcanaMaster.length === 0) {
     tbody.innerHTML =
-      '<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-sub);">表示可能なデータがありません</td></tr>';
+      '<tr><td colspan="4" class="p-arcana-table__loading" style="text-align:center; padding:20px;">表示可能なデータがありません</td></tr>';
     return;
   }
 
   const charMaster = window.characterMaster || [];
 
-  arcanaMaster.forEach((ar) => {
-    const row = document.createElement("tr");
-    row.id = `arcana-row-${ar.id}`;
-
-    // 4枠のキャラアイコンスロットを生成
-    const makeSlotHtml = (idx) => {
-      const cId = ar[`charId${idx}`];
-      if (!cId) return '<div class="slot slot--hide">-</div>';
-
-      const foundChar = charMaster.find(
-        (ch) => String(ch.id).trim() === String(cId).trim(),
-      );
-      const inner = foundChar
-        ? `<img src="${foundChar.iconUrl}" alt="${foundChar.name}" title="${foundChar.name}">`
-        : `<div style="font-size:10px;">${cId}</div>`;
-      return `<div class="slot">${inner}</div>`;
+  // ① 優先度グループの受け皿を初期化
+  const groups = {};
+  PRIORITY_OPTIONS.forEach((opt) => {
+    groups[opt.value] = {
+      label: opt.label || "未設定",
+      list: [],
     };
+  });
 
-    // 優先度評価のセレクトボックス生成
+  // ② 全アルカナを現在の優先度ごとに仕分ける
+  arcanaMaster.forEach((ar) => {
     const currentPriority = userArcanaStatusMap[ar.id] || "";
-    let selectOptionsHtml = "";
-    PRIORITY_OPTIONS.forEach((opt) => {
-      const selected = currentPriority === opt.value ? "selected" : "";
-      selectOptionsHtml += `<option value="${opt.value}" ${selected}>${opt.label}</option>`;
-    });
+    if (groups[currentPriority]) {
+      groups[currentPriority].list.push(ar);
+    } else {
+      groups[""].list.push(ar);
+    }
+  });
 
-    row.innerHTML = `
-      <td class="p-arcana-table__td-name">
-        <span class="p-arcana-table__id-badge">${ar.id}</span>
-        <strong class="p-arcana-table__name-text">${ar.name}</strong>
-      </td>
-      <td class="p-arcana-table__td-chars">
-        <div class="slots">
-          ${makeSlotHtml(1)}
-          ${makeSlotHtml(2)}
-          ${makeSlotHtml(3)}
-          ${makeSlotHtml(4)}
+  // 💡【記憶保持】現在どのグループが閉じられている（collapsed）かの状態を維持するためのマップ
+  if (!window.collapsedArcanaGroups) {
+    window.collapsedArcanaGroups = { "": true }; // デフォルトで「未設定」グループだけは閉じておく親切設計
+  }
+
+  tbody.innerHTML = "";
+
+  // ③ 1つのtbodyの中に、グループ見出し行とデータ行を連続で追加していく
+  PRIORITY_OPTIONS.forEach((opt) => {
+    const group = groups[opt.value];
+    if (group.list.length === 0) return; // 0件のグループは表示しない
+
+    // 🌟 3-1. グループの「区切り見出し行」を生成
+    const headerRow = document.createElement("tr");
+    headerRow.className = "p-arcana-group-header";
+    // 💡 閉じている状態ならクラスを付与
+    if (window.collapsedArcanaGroups[opt.value]) {
+      headerRow.classList.add("is-collapsed");
+    }
+
+    // 4列分の幅を1本にぶち抜く（colspan="4"）
+    headerRow.innerHTML = `
+      <td colspan="4">
+        <div class="p-arcana-group-header__content">
+          <span class="p-arcana-group-header__title">${group.label}</span>
+          <span class="p-arcana-group-header__badge">${group.list.length}件</span>
         </div>
-      </td>
-      <td class="p-arcana-table__td-effect">${ar.effect}</td>
-      <td class="p-arcana-table__td-priority">
-        <select class="p-arcana-priority-select" data-arcana-id="${ar.id}" onchange="handlePrioritySelectChange(this)">
-          ${selectOptionsHtml}
-        </select>
       </td>
     `;
 
-    tbody.appendChild(row);
+    // 🔘 見出し行をクリックした時の開閉切り替えイベントを仕込む
+    headerRow.onclick = () => {
+      const isCurrentlyCollapsed = window.collapsedArcanaGroups[opt.value];
+      // 状態を反転
+      window.collapsedArcanaGroups[opt.value] = !isCurrentlyCollapsed;
+
+      // 💡 テーブル全体の再描画を走らせて、滑らかに表示を切り替える（SPAの王道アプローチ）
+      renderArcanaTable();
+    };
+
+    tbody.appendChild(headerRow);
+
+    // 🌟 3-2. グループに所属する「データ行」を生成して追加
+    group.list.forEach((ar) => {
+      const row = document.createElement("tr");
+      row.id = `arcana-row-${ar.id}`;
+
+      // 💡 親のグループ見出しが閉じられている場合は、非表示用のクラスを仕込む
+      row.className = "p-arcana-table__data-row";
+      if (window.collapsedArcanaGroups[opt.value]) {
+        row.classList.add("is-hidden");
+      }
+
+      // 解放済み（LR解放済）の行をうっすら暗くするGAS仕様も完全キープ
+      const currentPriority = userArcanaStatusMap[ar.id] || "";
+      if (currentPriority === "LR解放済") {
+        row.classList.add("ar-done");
+      }
+
+      const makeSlotHtml = (idx) => {
+        const cId = ar[`charId${idx}`];
+        if (!cId) return '<div class="slot slot--hide">-</div>';
+
+        const foundChar = charMaster.find(
+          (ch) => String(ch.id).trim() === String(cId).trim(),
+        );
+        return foundChar
+          ? `<div class="slot"><img src="${foundChar.iconUrl}" alt="${foundChar.name}" title="${foundChar.name}"></div>`
+          : `<div class="slot slot__id-fallback">${cId}</div>`;
+      };
+
+      let selectOptionsHtml = "";
+      PRIORITY_OPTIONS.forEach((item) => {
+        const selected = opt.value === item.value ? "selected" : "";
+        selectOptionsHtml += `<option value="${item.value}" ${selected}>${item.label}</option>`;
+      });
+
+      row.innerHTML = `
+        <td class="p-arcana-table__td-name">
+          <span class="p-arcana-table__id-badge">${ar.id}</span>
+          <strong class="p-arcana-table__name-text">${ar.name}</strong>
+        </td>
+        <td class="p-arcana-table__td-chars">
+          <div class="slots">
+            ${makeSlotHtml(1)}
+            ${makeSlotHtml(2)}
+            ${makeSlotHtml(3)}
+            ${makeSlotHtml(4)}
+          </div>
+        </td>
+        <td class="p-arcana-table__td-effect">${ar.effect}</td>
+        <td class="p-arcana-table__td-priority">
+          <select class="p-arcana-priority-select" data-arcana-id="${ar.id}" onchange="handlePrioritySelectChange(this)">
+            ${selectOptionsHtml}
+          </select>
+        </td>
+      `;
+
+      tbody.appendChild(row);
+    });
   });
 }
+
+/**
+ * 🔄 セレクトボックス変更時：メモリを更新して自動並び替え再描画
+ */
+window.handlePrioritySelectChange = function (selectElement) {
+  const arcanaId = selectElement.getAttribute("data-arcana-id");
+  const newPriority = selectElement.value;
+  userArcanaStatusMap[arcanaId] = newPriority;
+
+  // 💡 変更した瞬間、1本のテーブルの中で自動で別の進捗グループ行へ「カシャッ」と引っ越しが走ります
+  renderArcanaTable();
+};
 
 /**
  * 🔄 セレクトボックス変更時：即時保存はせず、ローカルのメモリ（マップ）だけを更新する
@@ -242,6 +325,10 @@ function initUpdateEvent() {
       );
 
       console.log("✨ アルカナの優先度を一括保存しました！");
+
+      // 💡【重要解決策】クラウドへの一括保存が正常に完了したので、最新のマップデータに基づいてテーブルを再レンダリング！
+      // これにより、保存後のきれいな状態（AR-DONEのグレーアウト表示など）にテーブルが完全にリフレッシュされます。
+      renderArcanaTable();
 
       // 成功演出（ボタンの色が変わるなど）
       updateBtn.classList.add("is-success-flash");

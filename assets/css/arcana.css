@@ -38,7 +38,7 @@
 
 
 .p-arcana-table th {
-    background-color: var(--bg-sub, #f8fafc);
+    background-color: #f6f6f6;
     font-weight: bold;
     color: var(--text-sub, #64748b);
     white-space: nowrap;
@@ -51,11 +51,11 @@
 }
 
 .p-arcana-table__th-name {
-    width: 180px;
+    width: 220px;
 }
 
 .p-arcana-table__th-chars {
-    width: 160px;
+    width: 180px;
 }
 
 .p-arcana-table__th-priority {
@@ -197,6 +197,73 @@
     text-align: center;
 }
 
+/* ==========================================================================
+   📂 一体型テーブル内・グループ見出し行（tr）の専用スタイル
+   ========================================================================= */
+
+/* 💡 グループ区切りの横長見出し行（行全体をクリックできるようにする） */
+.p-arcana-group-header {
+    background-color: var(--color-gray-200) !important;
+    /* ゼブラ柄ホバーに負けない背景色 */
+    cursor: pointer;
+    user-select: none;
+}
+
+.p-arcana-group-header:hover {
+    background-color: var(--border-color, #cbd5e1) !important;
+}
+
+/* 見出し行の中のtdの余白調整 */
+.p-arcana-group-header td {
+    padding: 10px 16px !important;
+}
+
+/* フレックスでタイトルと件数バッジを配置 */
+.p-arcana-group-header__content {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    width: 100%;
+}
+
+.p-arcana-group-header__title {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--text-main, #1e293b);
+    display: flex;
+    align-items: center;
+}
+
+/* 💡 見出しの頭につく「▼」マークの設定 */
+.p-arcana-group-header__title::before {
+    content: "▼";
+    font-size: 9px;
+    margin-right: 8px;
+    color: var(--text-sub, #94a3b8);
+    transition: transform 0.15s ease;
+}
+
+/* 💡 グループが閉じている（is-collapsed）時は、矢印を右（▶）に向かせる */
+.p-arcana-group-header.is-collapsed .p-arcana-group-header__title::before {
+    transform: rotate(-90deg);
+}
+
+/* グループ内の件数バッジ */
+.p-arcana-group-header__badge {
+    background-color: var(--bg-card, #ffffff);
+    color: var(--text-sub, #64748b);
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color, #e2e8f0);
+}
+
+/* 🌟【最重要】見出しが閉じられている時、下のデータ行（tr）を完全に非表示にする命令 */
+.p-arcana-table tr.p-arcana-table__data-row.is-hidden {
+    display: none !important;
+}
 
 
 /* ==========================================================================
