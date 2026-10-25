@@ -18,22 +18,19 @@
 </head>
 
 <body>
-    <header class="l-header c-floating-header">
-        <div id="js-world-selector-container" class="c-main__header js-header-container"></div>
-    </header>
     <div class="l-container">
+        <header class="l-header c-floating-header">
+            <div id="js-world-selector-container" class="c-main__header js-header-container"></div>
+        </header>
         <main class="l-main p-portal">
 
-            <!-- 📦 メインコンテナ：PCでは横並び、スマホでは縦並びにCSSで可変 -->
             <div class="p-portal-main">
 
                 <div class="p-portal__content">
                     <div class="p-portal-wrapper">
 
-                        <!-- 👈 左側：進捗数値入力・四属性の塔・活動メモエリア -->
                         <div class="p-portal-main__left">
 
-                            <!-- クエスト（章-ステージ分割） ＆ メインの塔進捗入力 -->
                             <div class="p-portal-progress">
                                 <div class="p-portal-progress__box m-quest-box">
                                     <span class="p-portal-progress__label">クエスト</span>
@@ -52,7 +49,6 @@
                                 </div>
                             </div>
 
-                            <!-- 四属性の塔（藍・紅・翠·黄）数値入力 -->
                             <div class="p-portal-towers">
                                 <div class="p-portal-towers__box m-blue">
                                     <span class="p-portal-towers__label">藍の塔</span>
@@ -76,7 +72,6 @@
                                 </div>
                             </div>
 
-                            <!-- ワールドの概要備考メモ・活動コメント -->
                             <div class="p-portal-memo">
                                 <h4 class="p-portal-memo__title">ワールド活動メモ</h4>
                                 <textarea id="js-portal-world-memo" class="p-portal-textarea" placeholder="自由に記述できます"
@@ -85,7 +80,6 @@
 
                         </div>
 
-                        <!-- 👉 右側：パーティ編成エリア -->
                         <div class="p-portal-main__right">
                             <div class="p-portal-party-container">
                                 <header class="p-portal-party-container__header">
@@ -105,7 +99,7 @@
 
 
                     </div>
-                    <!-- ⚙️ 詳細設定エリア（開閉アコーディオン仕様） -->
+
                     <div class="p-portal-settings-accordion">
                         <button type="button" id="js-portal-settings-toggle" class="p-portal-settings-toggle">
                             <i class="fa-solid fa-gear"></i> ワールドの詳細設定を編集
@@ -154,7 +148,6 @@
                             </div>
                         </div>
                     </div>
-                    <!-- 🗓️ 日付・各種アクションフッター -->
                     <div class="p-portal-footer">
                         <span id="js-portal-world-updated">最終更新: ──</span>
                         <div class="p-portal-actions">
@@ -189,18 +182,15 @@
                     </header>
 
                     <div class="c-world-modal__content m-party-edit">
-                        <!-- 🏷️ パーティ名入力フォーム -->
                         <div class="c-form__group">
                             <label for="js-input-party-name" class="c-form__label">パーティ名</label>
                             <input type="text" id="js-input-party-name" class="c-form__input"
                                 placeholder="例：メインパーティー / 組みたいパーティー">
                         </div>
 
-                        <!-- 👥 キャラクター枠（旧 index.html の5枠構成を移植） -->
                         <div class="p-portal-party__edit-zone">
                             <label class="c-form__label">編成メンバー</label>
                             <div class="p-portal-party__slots js-party-modal-slots">
-                                <!-- 枠1〜5 (JSで動的にターゲットID付きで再配置しても良いですが、構造は固定) -->
                                 <button type="button" class="p-portal-party__slot js-open-character-picker"
                                     data-target-input="js-portal-modal-chara-1"
                                     data-target-preview="js-portal-modal-img-1">
@@ -240,7 +230,6 @@
                             <p class="c-world-form__help u-mt-8">※ドラッグ＆ドロップして並び替え出来ます。</p>
                         </div>
 
-                        <!-- ⚠️ アクションボタンエリア -->
                         <div class="p-portal-party__modal-actions">
                             <button type="button" id="js-portal-btn-delete-party" class="c-btn m-delete-action">
                                 <i class="fa-solid fa-trash-can"></i> パーティ削除
