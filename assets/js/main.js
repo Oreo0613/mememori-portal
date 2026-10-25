@@ -84,6 +84,9 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+window.db = db;
+window.auth = auth;
+
 // アカウント情報の保存処理
 async function saveAccountData(userId, accountData) {
   try {

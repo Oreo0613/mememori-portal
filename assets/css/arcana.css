@@ -1,0 +1,270 @@
+/* ==========================================================================
+   🧩 アルカナ管理ページ専用スタイル (管理者風デザイン ＆ スマホ対応)
+   ========================================================================= */
+
+.p-arcana-main {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.p-arcana-wrapper {
+    background-color: var(--bg-card, #ffffff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+/* 📊 PC用アルカナ一覧テーブル */
+.p-arcana-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 14px;
+    color: var(--text-main, #1e293b);
+}
+
+.p-arcana-table tr {
+    border-bottom: 1px solid var(--border-color, #e2e8f0);
+    padding: 200px;
+}
+
+.p-arcana-table th,
+.p-arcana-table td {
+    padding: 14px 16px;
+    vertical-align: middle;
+}
+
+
+.p-arcana-table th {
+    background-color: var(--bg-sub, #f8fafc);
+    font-weight: bold;
+    color: var(--text-sub, #64748b);
+    white-space: nowrap;
+}
+
+/* カラム幅の調整 */
+.p-arcana-table__th-id {
+    width: 60px;
+    text-align: center;
+}
+
+.p-arcana-table__th-name {
+    width: 180px;
+}
+
+.p-arcana-table__th-chars {
+    width: 160px;
+}
+
+.p-arcana-table__th-priority {
+    width: 140px;
+    text-align: center;
+}
+
+/* 👥 キャラクタースロット（4枠）のレイアウト */
+.p-arcana-table .slots {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.p-arcana-table .slot {
+    width: 38px;
+    height: 38px;
+    border-radius: 6px;
+    background-color: var(--bg-slot, #f1f5f9);
+    border: 1px solid var(--border-color, #cbd5e1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.p-arcana-table .slot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.p-arcana-table .slot.slot--hide {
+    color: var(--text-sub, #94a3b8);
+    font-size: 1.2rem;
+    border-color: transparent;
+    background-color: unset;
+}
+
+/* ==========================================================================
+   ⭐ 優先度セレクトボックス（公式設定画面風・シンプル王道版）
+   ========================================================================= */
+
+/* ① セレクトボックスを包むセルの設定 */
+.p-arcana-table__td-priority {
+    text-align: center;
+    position: relative;
+}
+
+/* ② セレクトボックス本体：他の入力フォームやカードと馴染むシンプルな引き締め */
+.p-arcana-priority-select {
+    width: 100%;
+    padding: 8px 30px 8px 12px;
+    border-radius: 6px;
+    /* 💡 境界線や背景色を、他のフォームと100%同じトーンにして画面に馴染ませる */
+    border: 1px solid var(--theme-border-main);
+    background-color: var(--theme-bg-input);
+    color: var(--text-main, #1e293b);
+    font-size: 13px;
+    font-weight: 500;
+    /* 💡 文字をほんの少しだけ扱いやすく */
+    cursor: pointer;
+    outline: none;
+    transition: background-color 0.15s;
+
+    /* 標準のダサい矢印をリセット */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    text-align: left;
+}
+
+/* ③ 右端の▼マーク：主張しすぎない、馴染みの良いダークグレーの小さな三角 */
+.p-arcana-table__td-priority::after {
+    content: "▼";
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%) scale(0.85);
+    /* 💡 少しだけ小さくして上品に */
+
+    font-size: 10px;
+    color: var(--text-sub, #94a3b8);
+    /* 💡 色を一段薄くして、文字の邪魔をしないように */
+    pointer-events: none;
+}
+
+/* 🖱️ マウスを乗せたとき（ほんのり明るいグレーに変えて手応えを出すだけ） */
+.p-arcana-priority-select:hover {
+    background-color: var(--bg-sub, #f8fafc);
+}
+
+/* 🔓 選択中の演出（青い光の影を消し、シンプルな色替えのみに） */
+.p-arcana-priority-select:focus {
+    border-color: var(--text-sub, #94a3b8);
+}
+
+/* ==========================================================================
+   🧩 テーブルセル(td)用の固有スタイル定義
+   ========================================================================= */
+
+/* 💡 アルカナ名とIDバッジを包含する列（PCでもスマホでも高さが綺麗に揃う） */
+.p-arcana-table__td-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+/* 💡 スッキリ綺麗なIDバッジ装飾 */
+.p-arcana-table__id-badge {
+    background-color: var(--bg-slot, #f1f5f9);
+    color: var(--text-sub, #64748b);
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+    min-width: 24px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.p-arcana-table__name-text {
+    color: var(--text-main, #1e293b);
+}
+
+.p-arcana-table__td-chars {
+    white-space: nowrap;
+}
+
+.p-arcana-table__td-effect {
+    line-height: 1.5;
+}
+
+.p-arcana-table__td-priority {
+    text-align: center;
+}
+
+
+
+/* ==========================================================================
+   📱 スマホ表示対応（画面幅 768px 以下）
+   ========================================================================= */
+@media screen and (max-width: 768px) {
+
+    .p-arcana-wrapper {
+        background-color: unset;
+        border-color: transparent;
+        box-shadow: none;
+    }
+
+    .p-arcana-table thead {
+        display: none;
+    }
+
+    /* 1つのアルカナ行を独立した「カード」に見せる */
+    .p-arcana-table tr {
+        background-color: var(--bg-card, #ffffff);
+        border: 1px solid var(--border-color, #e2e8f0);
+        border-radius: 8px;
+        margin-bottom: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        padding: 12px;
+        display: block;
+        width: 100%;
+    }
+
+    /* スマホ版ではセルを素直にブロック要素として縦に並べる */
+    .p-arcana-table td {
+        border-bottom: none;
+        padding: 6px 0;
+        display: block;
+        width: 100%;
+    }
+
+    /* 💡【解決】1つ目のセル（アルカナ名）は、スマホ版カードの「ヘッダー」としてアンダーラインを引く */
+    .p-arcana-table td.p-arcana-table__td-name {
+        display: flex;
+        padding-bottom: 8px;
+        font-size: 15px;
+    }
+
+    /* ③ キャラ編成スロット */
+    .p-arcana-table td.p-arcana-table__td-chars {
+        padding: 4px 0 8px 0;
+    }
+
+    .p-arcana-table .slots {
+        justify-content: flex-start;
+    }
+
+    .p-arcana-table .slot {
+        width: 44px;
+        height: 44px;
+    }
+
+    /* ④ 効果文言 */
+    .p-arcana-table td.p-arcana-table__td-effect {
+        font-size: 1.3rem;
+        color: var(--text-main, #334155);
+        border-radius: 6px;
+    }
+
+    .p-arcana-priority-select {
+        font-size: 1.4rem;
+        padding: 10px;
+    }
+
+}

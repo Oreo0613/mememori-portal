@@ -56,6 +56,7 @@
     --theme-bg-main: var(--color-gray-50);
     --theme-text-main: var(--color-gray-900);
     --theme-bg-surface: var(--color-white);
+    --theme-bg-input: var(--color-gray-100);
     --theme-text-muted: var(--color-gray-400);
     --theme-border-main: var(--color-green-500-alpha15);
 

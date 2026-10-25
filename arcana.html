@@ -14,7 +14,7 @@
     <script src="https://kit.fontawesome.com/d36bec305b.js" crossorigin="anonymous"></script>
 
     <script src="assets/js/main.js" type="module"></script>
-    <script src="assets/js/arcana.js"></script>
+    <script src="assets/js/arcana.js" type="module"></script>
 </head>
 
 <body>
@@ -25,14 +25,34 @@
         <main class="l-main p-arcana">
             <div class="p-arcana-main">
                 <div class="p-arcana__content">
- 
+
+                    <div class="p-arcana-wrapper">
+                        <table class="p-arcana-table">
+                            <thead>
+                                <tr>
+                                    <th class="p-arcana-table__th-name">アルカナ名</th>
+                                    <th class="p-arcana-table__th-chars">キャラ編成</th>
+                                    <th>効果</th>
+                                    <th class="p-arcana-table__th-priority">優先度</th>
+                                </tr>
+                            </thead>
+                            <tbody id="arcanaTableBody">
+                                <tr>
+                                    <td colspan="5" class="p-arcana-table__loading">
+                                        データ受信中...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                     <div class="c-update-btn__wrapper">
                         <div class="c-update-btn__wrap">
-                            <button type="button" id="js-character-btn-update" class="c-btn c-update-btn">
+                            <button type="button" id="js-arcana-btn-update" class="c-btn c-update-btn">
                                 <i class="fa-solid fa-rotate"></i> 更新する
                             </button>
                         </div>
                     </div>
+
                 </div>
             </div>
         </main>
