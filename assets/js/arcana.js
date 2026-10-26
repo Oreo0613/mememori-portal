@@ -440,7 +440,7 @@ function injectArcanaTotalModal() {
         modal.setAttribute("aria-hidden", "true");
         modal.setAttribute("inert", "");
 
-        document.body.classList.remove("is-modal-open")
+        document.body.classList.remove("is-modal-open");
       }
     });
   });
@@ -530,8 +530,13 @@ function initUpdateEvent() {
   if (!updateBtn) return;
 
   updateBtn.addEventListener("click", async () => {
+    const currentWorldId = sessionStorage.getItem("app_current_world_id");
+
+    // 🛑 【ガード追加】ワールドが選択されていない、または未登録の場合のブロック
     if (!currentUserId || !currentWorldId || !window.db) {
-      alert("ユーザー情報またはワールド情報が取得できません。");
+      alert(
+        "ワールドが選択されていません。「ワールド選択」から有効なワールドを選んでから更新してください。",
+      );
       return;
     }
 

@@ -620,8 +620,12 @@ async function saveAllCharacterRarityData() {
   const updateBtn = document.getElementById("js-character-btn-update");
   if (!updateBtn) return;
 
-  if (!_db || !_uid || !_worldId || !_doc || !_setDoc) {
-    alert("インフラが初期化されていません。再読み込みしてください。");
+  // 🛑 【ガード追加】有効なワールドIDが存在するか厳密にチェック
+  const currentWorldId = sessionStorage.getItem("app_current_world_id");
+  if (!_db || !_uid || !currentWorldId || !_doc || !_setDoc) {
+    alert(
+      "ワールドが選択されていません。「ワールド選択」から有効なワールドを選んでから更新してください。",
+    );
     return;
   }
 
