@@ -6,8 +6,18 @@
         "charId2": "19",
         "charId3": "",
         "charId4": "",
-        "effect": "物理防御力3000, 魔法防御力3000",
-        "tags": "物理防御力"
+        "effectsList": [
+            {
+                "status": "物理防御力",
+                "type": "fixed",
+                "value": 3000
+            },
+            {
+                "status": "魔法防御力",
+                "type": "fixed",
+                "value": 3000
+            }
+        ]
     },
     {
         "id": "2",
@@ -16,8 +26,18 @@
         "charId2": "29",
         "charId3": "",
         "charId4": "",
-        "effect": "物理クリダメ緩和15%, クリティカル耐性1500",
-        "tags": "物理クリダメ緩和"
+        "effectsList": [
+            {
+                "status": "物理クリダメ緩和",
+                "type": "percent",
+                "value": 15
+            },
+            {
+                "status": "クリティカル耐性",
+                "type": "fixed",
+                "value": 1500
+            }
+        ]
     },
     {
         "id": "3",
@@ -26,8 +46,18 @@
         "charId2": "24",
         "charId3": "33",
         "charId4": "",
-        "effect": "防御力1%, 回避1500",
-        "tags": "防御力"
+        "effectsList": [
+            {
+                "status": "防御力",
+                "type": "percent",
+                "value": 1
+            },
+            {
+                "status": "回避",
+                "type": "fixed",
+                "value": 1500
+            }
+        ]
     },
     {
         "id": "4",
@@ -36,8 +66,18 @@
         "charId2": "36",
         "charId3": "20",
         "charId4": "",
-        "effect": "弱体効果命中1%, 弱体効果耐性1500",
-        "tags": "弱体効果命中"
+        "effectsList": [
+            {
+                "status": "弱体効果命中",
+                "type": "percent",
+                "value": 1
+            },
+            {
+                "status": "弱体効果耐性",
+                "type": "fixed",
+                "value": 1500
+            }
+        ]
     },
     {
         "id": "5",
@@ -46,8 +86,18 @@
         "charId2": "18",
         "charId3": "38",
         "charId4": "30",
-        "effect": "攻撃力5000, クリダメ強化15%",
-        "tags": "攻撃力"
+        "effectsList": [
+            {
+                "status": "攻撃力",
+                "type": "fixed",
+                "value": 5000
+            },
+            {
+                "status": "クリダメ強化",
+                "type": "percent",
+                "value": 15
+            }
+        ]
     },
     {
         "id": "6",
@@ -56,8 +106,18 @@
         "charId2": "37",
         "charId3": "27",
         "charId4": "31",
-        "effect": "攻撃力1%, 腕力3000",
-        "tags": "攻撃力"
+        "effectsList": [
+            {
+                "status": "攻撃力",
+                "type": "percent",
+                "value": 1
+            },
+            {
+                "status": "腕力",
+                "type": "fixed",
+                "value": 3000
+            }
+        ]
     },
     {
         "id": "7",
@@ -66,8 +126,18 @@
         "charId2": "28",
         "charId3": "25",
         "charId4": "21",
-        "effect": "HP1%, 魔力3000",
-        "tags": "HP"
+        "effectsList": [
+            {
+                "status": "HP",
+                "type": "percent",
+                "value": 1
+            },
+            {
+                "status": "魔力",
+                "type": "fixed",
+                "value": 3000
+            }
+        ]
     },
     {
         "id": "8",
@@ -76,8 +146,18 @@
         "charId2": "37",
         "charId3": "",
         "charId4": "",
-        "effect": "HP5%, 防御力キャラLv×15",
-        "tags": "HP"
+        "effectsList": [
+            {
+                "status": "HP",
+                "type": "percent",
+                "value": 5
+            },
+            {
+                "status": "防御力",
+                "type": "charLv",
+                "value": 15
+            }
+        ]
     },
     {
         "id": "9",
@@ -86,8 +166,18 @@
         "charId2": "24",
         "charId3": "",
         "charId4": "",
-        "effect": "クリダメ強化10%, 腕力キャラLv×30",
-        "tags": "クリダメ強化"
+        "effectsList": [
+            {
+                "status": "クリダメ強化",
+                "type": "percent",
+                "value": 10
+            },
+            {
+                "status": "腕力",
+                "type": "charLv",
+                "value": 30
+            }
+        ]
     },
     {
         "id": "10",
@@ -96,8 +186,18 @@
         "charId2": "17",
         "charId3": "25",
         "charId4": "",
-        "effect": "HP5%, 命中キャラLv×70",
-        "tags": "HP"
+        "effectsList": [
+            {
+                "status": "HP",
+                "type": "percent",
+                "value": 5
+            },
+            {
+                "status": "命中",
+                "type": "charLv",
+                "value": 70
+            }
+        ]
     },
     {
         "id": "11",
@@ -106,8 +206,18 @@
         "charId2": "22",
         "charId3": "30",
         "charId4": "",
-        "effect": "魔法クリダメ緩和15%, 弱体効果命中キャラLv×70",
-        "tags": "魔法クリダメ緩和"
+        "effectsList": [
+            {
+                "status": "魔法クリダメ緩和",
+                "type": "percent",
+                "value": 15
+            },
+            {
+                "status": "弱体効果命中",
+                "type": "charLv",
+                "value": 70
+            }
+        ]
     },
     {
         "id": "12",
@@ -116,8 +226,18 @@
         "charId2": "18",
         "charId3": "38",
         "charId4": "",
-        "effect": "攻撃力1.6%, 技力キャラLv×30",
-        "tags": "攻撃力"
+        "effectsList": [
+            {
+                "status": "攻撃力",
+                "type": "percent",
+                "value": 1.6
+            },
+            {
+                "status": "技力",
+                "type": "charLv",
+                "value": 30
+            }
+        ]
     },
     {
         "id": "13",
@@ -126,8 +246,18 @@
         "charId2": "28",
         "charId3": "19",
         "charId4": "",
-        "effect": "HPドレイン5%, 魔力キャラLv×30",
-        "tags": "HPドレイン"
+        "effectsList": [
+            {
+                "status": "HPドレイン",
+                "type": "percent",
+                "value": 5
+            },
+            {
+                "status": "魔力",
+                "type": "charLv",
+                "value": 30
+            }
+        ]
     },
     {
         "id": "14",
@@ -136,8 +266,13 @@
         "charId2": "27",
         "charId3": "",
         "charId4": "",
-        "effect": "物魔防御貫通500",
-        "tags": "物魔防御貫通"
+        "effectsList": [
+            {
+                "status": "物魔防御貫通",
+                "type": "fixed",
+                "value": 500
+            }
+        ]
     },
     {
         "id": "15",
@@ -146,8 +281,18 @@
         "charId2": "32",
         "charId3": "",
         "charId4": "",
-        "effect": "耐久力キャラLv×30, 防御力キャラLv×15",
-        "tags": "耐久力"
+        "effectsList": [
+            {
+                "status": "耐久力",
+                "type": "charLv",
+                "value": 30
+            },
+            {
+                "status": "防御力",
+                "type": "charLv",
+                "value": 15
+            }
+        ]
     },
     {
         "id": "16",
@@ -156,8 +301,18 @@
         "charId2": "20",
         "charId3": "",
         "charId4": "",
-        "effect": "魔力キャラLv×30, 弱体効果命中1%",
-        "tags": "魔力"
+        "effectsList": [
+            {
+                "status": "魔力",
+                "type": "charLv",
+                "value": 30
+            },
+            {
+                "status": "弱体効果命中",
+                "type": "percent",
+                "value": 1
+            }
+        ]
     },
     {
         "id": "17",
@@ -166,8 +321,18 @@
         "charId2": "33",
         "charId3": "",
         "charId4": "",
-        "effect": "物理防御力2%, 回避キャラLv×50",
-        "tags": "物理防御力"
+        "effectsList": [
+            {
+                "status": "物理防御力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "回避",
+                "type": "charLv",
+                "value": 50
+            }
+        ]
     },
     {
         "id": "18",
@@ -176,8 +341,18 @@
         "charId2": "34",
         "charId3": "",
         "charId4": "",
-        "effect": "攻撃力2%, 命中キャラLv×70",
-        "tags": "攻撃力"
+        "effectsList": [
+            {
+                "status": "攻撃力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "命中",
+                "type": "charLv",
+                "value": 70
+            }
+        ]
     },
     {
         "id": "19",
@@ -186,8 +361,18 @@
         "charId2": "23",
         "charId3": "21",
         "charId4": "",
-        "effect": "HP5%, 物理クリダメ緩和10%",
-        "tags": "HP"
+        "effectsList": [
+            {
+                "status": "HP",
+                "type": "percent",
+                "value": 5
+            },
+            {
+                "status": "物理クリダメ緩和",
+                "type": "percent",
+                "value": 10
+            }
+        ]
     },
     {
         "id": "20",
@@ -196,8 +381,18 @@
         "charId2": "24",
         "charId3": "",
         "charId4": "",
-        "effect": "耐久力キャラLv×40, 防御力キャラLv×15",
-        "tags": "耐久力"
+        "effectsList": [
+            {
+                "status": "耐久力",
+                "type": "charLv",
+                "value": 40
+            },
+            {
+                "status": "防御力",
+                "type": "charLv",
+                "value": 15
+            }
+        ]
     },
     {
         "id": "21",
@@ -206,8 +401,18 @@
         "charId2": "31",
         "charId3": "21",
         "charId4": "",
-        "effect": "クリダメ強化10%, HPドレイン5%",
-        "tags": "クリダメ強化"
+        "effectsList": [
+            {
+                "status": "クリダメ強化",
+                "type": "percent",
+                "value": 10
+            },
+            {
+                "status": "HPドレイン",
+                "type": "percent",
+                "value": 5
+            }
+        ]
     },
     {
         "id": "22",
@@ -216,8 +421,13 @@
         "charId2": "63",
         "charId3": "",
         "charId4": "",
-        "effect": "防御貫通200",
-        "tags": "防御貫通"
+        "effectsList": [
+            {
+                "status": "防御貫通",
+                "type": "fixed",
+                "value": 200
+            }
+        ]
     },
     {
         "id": "23",
@@ -226,8 +436,18 @@
         "charId2": "33",
         "charId3": "",
         "charId4": "",
-        "effect": "クリティカル耐性キャラLv×30, 命中キャラLv×70",
-        "tags": "クリティカル耐性"
+        "effectsList": [
+            {
+                "status": "クリティカル耐性",
+                "type": "charLv",
+                "value": 30
+            },
+            {
+                "status": "命中",
+                "type": "charLv",
+                "value": 70
+            }
+        ]
     },
     {
         "id": "24",
@@ -236,8 +456,18 @@
         "charId2": "28",
         "charId3": "",
         "charId4": "",
-        "effect": "攻撃力2%, 物理クリダメ緩和10%",
-        "tags": "攻撃力"
+        "effectsList": [
+            {
+                "status": "攻撃力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "物理クリダメ緩和",
+                "type": "percent",
+                "value": 10
+            }
+        ]
     },
     {
         "id": "25",
@@ -246,8 +476,18 @@
         "charId2": "18",
         "charId3": "",
         "charId4": "",
-        "effect": "クリティカルキャラLv×70, 技力キャラLv×30",
-        "tags": "クリティカル"
+        "effectsList": [
+            {
+                "status": "クリティカル",
+                "type": "charLv",
+                "value": 70
+            },
+            {
+                "status": "技力",
+                "type": "charLv",
+                "value": 30
+            }
+        ]
     },
     {
         "id": "26",
@@ -256,8 +496,18 @@
         "charId2": "38",
         "charId3": "",
         "charId4": "",
-        "effect": "クリダメ強化10%, 命中キャラLv×70",
-        "tags": "クリダメ強化"
+        "effectsList": [
+            {
+                "status": "クリダメ強化",
+                "type": "percent",
+                "value": 10
+            },
+            {
+                "status": "命中",
+                "type": "charLv",
+                "value": 70
+            }
+        ]
     },
     {
         "id": "27",
@@ -266,8 +516,18 @@
         "charId2": "36",
         "charId3": "",
         "charId4": "",
-        "effect": "攻撃力2%, 耐久力キャラLv×30",
-        "tags": "攻撃力"
+        "effectsList": [
+            {
+                "status": "攻撃力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "耐久力",
+                "type": "charLv",
+                "value": 30
+            }
+        ]
     },
     {
         "id": "28",
@@ -276,8 +536,18 @@
         "charId2": "35",
         "charId3": "",
         "charId4": "",
-        "effect": "物理防御力2%, 命中1500",
-        "tags": "物理防御力"
+        "effectsList": [
+            {
+                "status": "物理防御力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "命中",
+                "type": "fixed",
+                "value": 1500
+            }
+        ]
     },
     {
         "id": "29",
@@ -286,8 +556,18 @@
         "charId2": "26",
         "charId3": "",
         "charId4": "",
-        "effect": "HP5%, 物理クリダメ緩和10%",
-        "tags": "HP"
+        "effectsList": [
+            {
+                "status": "HP",
+                "type": "percent",
+                "value": 5
+            },
+            {
+                "status": "物理クリダメ緩和",
+                "type": "percent",
+                "value": 10
+            }
+        ]
     },
     {
         "id": "30",
@@ -296,8 +576,18 @@
         "charId2": "38",
         "charId3": "",
         "charId4": "",
-        "effect": "耐久力3000, 魔法防御力2%",
-        "tags": "耐久力"
+        "effectsList": [
+            {
+                "status": "耐久力",
+                "type": "fixed",
+                "value": 3000
+            },
+            {
+                "status": "魔法防御力",
+                "type": "percent",
+                "value": 2
+            }
+        ]
     },
     {
         "id": "31",
@@ -306,8 +596,18 @@
         "charId2": "34",
         "charId3": "",
         "charId4": "",
-        "effect": "HP5%, 攻撃力2%",
-        "tags": "HP"
+        "effectsList": [
+            {
+                "status": "HP",
+                "type": "percent",
+                "value": 5
+            },
+            {
+                "status": "攻撃力",
+                "type": "percent",
+                "value": 2
+            }
+        ]
     },
     {
         "id": "32",
@@ -316,8 +616,18 @@
         "charId2": "19",
         "charId3": "",
         "charId4": "",
-        "effect": "魔法防御力2%, 弱体効果命中1.5%",
-        "tags": "魔法防御力"
+        "effectsList": [
+            {
+                "status": "魔法防御力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "弱体効果命中",
+                "type": "percent",
+                "value": 1.5
+            }
+        ]
     },
     {
         "id": "33",
@@ -326,8 +636,18 @@
         "charId2": "26",
         "charId3": "23",
         "charId4": "",
-        "effect": "HP5%, 魔法クリダメ緩和10%",
-        "tags": "HP"
+        "effectsList": [
+            {
+                "status": "HP",
+                "type": "percent",
+                "value": 5
+            },
+            {
+                "status": "魔法クリダメ緩和",
+                "type": "percent",
+                "value": 10
+            }
+        ]
     },
     {
         "id": "34",
@@ -336,8 +656,18 @@
         "charId2": "35",
         "charId3": "",
         "charId4": "",
-        "effect": "クリダメ強化10%, 耐久力キャラLv×30",
-        "tags": "クリダメ強化"
+        "effectsList": [
+            {
+                "status": "クリダメ強化",
+                "type": "percent",
+                "value": 10
+            },
+            {
+                "status": "耐久力",
+                "type": "charLv",
+                "value": 30
+            }
+        ]
     },
     {
         "id": "35",
@@ -346,8 +676,13 @@
         "charId2": "17",
         "charId3": "",
         "charId4": "",
-        "effect": "カウンタ3%",
-        "tags": "カウンタ"
+        "effectsList": [
+            {
+                "status": "カウンタ",
+                "type": "percent",
+                "value": 3
+            }
+        ]
     },
     {
         "id": "36",
@@ -356,8 +691,18 @@
         "charId2": "36",
         "charId3": "",
         "charId4": "",
-        "effect": "攻撃力2%, クリティカルキャラLv×70",
-        "tags": "攻撃力"
+        "effectsList": [
+            {
+                "status": "攻撃力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "クリティカル",
+                "type": "charLv",
+                "value": 70
+            }
+        ]
     },
     {
         "id": "37",
@@ -366,8 +711,18 @@
         "charId2": "29",
         "charId3": "",
         "charId4": "",
-        "effect": "クリティカルキャラLv×70, 技力キャラLv×40",
-        "tags": "クリティカル"
+        "effectsList": [
+            {
+                "status": "クリティカル",
+                "type": "charLv",
+                "value": 70
+            },
+            {
+                "status": "技力",
+                "type": "charLv",
+                "value": 40
+            }
+        ]
     },
     {
         "id": "38",
@@ -376,8 +731,18 @@
         "charId2": "37",
         "charId3": "",
         "charId4": "",
-        "effect": "HP5%, 物理防御力2%",
-        "tags": "HP"
+        "effectsList": [
+            {
+                "status": "HP",
+                "type": "percent",
+                "value": 5
+            },
+            {
+                "status": "物理防御力",
+                "type": "percent",
+                "value": 2
+            }
+        ]
     },
     {
         "id": "39",
@@ -386,8 +751,18 @@
         "charId2": "32",
         "charId3": "",
         "charId4": "",
-        "effect": "HP5%, 魔力キャラLv×30",
-        "tags": "HP"
+        "effectsList": [
+            {
+                "status": "HP",
+                "type": "percent",
+                "value": 5
+            },
+            {
+                "status": "魔力",
+                "type": "charLv",
+                "value": 30
+            }
+        ]
     },
     {
         "id": "40",
@@ -396,8 +771,18 @@
         "charId2": "20",
         "charId3": "",
         "charId4": "",
-        "effect": "魔法クリダメ緩和10%, 魔力キャラLv×40",
-        "tags": "魔法クリダメ緩和"
+        "effectsList": [
+            {
+                "status": "魔法クリダメ緩和",
+                "type": "percent",
+                "value": 10
+            },
+            {
+                "status": "魔力",
+                "type": "charLv",
+                "value": 40
+            }
+        ]
     },
     {
         "id": "41",
@@ -406,8 +791,18 @@
         "charId2": "22",
         "charId3": "29",
         "charId4": "",
-        "effect": "魔法防御力2%, 弱体効果命中1.5%",
-        "tags": "魔法防御力"
+        "effectsList": [
+            {
+                "status": "魔法防御力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "弱体効果命中",
+                "type": "percent",
+                "value": 1.5
+            }
+        ]
     },
     {
         "id": "42",
@@ -416,8 +811,18 @@
         "charId2": "25",
         "charId3": "",
         "charId4": "",
-        "effect": "攻撃力2%, 物魔防御貫通250",
-        "tags": "攻撃力"
+        "effectsList": [
+            {
+                "status": "攻撃力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "物魔防御貫通",
+                "type": "fixed",
+                "value": 250
+            }
+        ]
     },
     {
         "id": "43",
@@ -426,8 +831,13 @@
         "charId2": "30",
         "charId3": "",
         "charId4": "",
-        "effect": "カウンタ3%",
-        "tags": "カウンタ"
+        "effectsList": [
+            {
+                "status": "カウンタ",
+                "type": "percent",
+                "value": 3
+            }
+        ]
     },
     {
         "id": "44",
@@ -436,8 +846,18 @@
         "charId2": "27",
         "charId3": "",
         "charId4": "",
-        "effect": "耐久力キャラLv×40, 防御力キャラLv×15",
-        "tags": "耐久力"
+        "effectsList": [
+            {
+                "status": "耐久力",
+                "type": "charLv",
+                "value": 40
+            },
+            {
+                "status": "防御力",
+                "type": "charLv",
+                "value": 15
+            }
+        ]
     },
     {
         "id": "45",
@@ -446,8 +866,18 @@
         "charId2": "33",
         "charId3": "",
         "charId4": "",
-        "effect": "クリティカルキャラLv×70, 弱体効果命中1.5%",
-        "tags": "クリティカル"
+        "effectsList": [
+            {
+                "status": "クリティカル",
+                "type": "charLv",
+                "value": 70
+            },
+            {
+                "status": "弱体効果命中",
+                "type": "percent",
+                "value": 1.5
+            }
+        ]
     },
     {
         "id": "46",
@@ -456,8 +886,18 @@
         "charId2": "21",
         "charId3": "",
         "charId4": "",
-        "effect": "技力キャラLv×40, 弱体効果命中1.5%",
-        "tags": "技力"
+        "effectsList": [
+            {
+                "status": "技力",
+                "type": "charLv",
+                "value": 40
+            },
+            {
+                "status": "弱体効果命中",
+                "type": "percent",
+                "value": 1.5
+            }
+        ]
     },
     {
         "id": "47",
@@ -466,8 +906,18 @@
         "charId2": "34",
         "charId3": "",
         "charId4": "",
-        "effect": "攻撃力2%, 回避1500",
-        "tags": "攻撃力"
+        "effectsList": [
+            {
+                "status": "攻撃力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "回避",
+                "type": "fixed",
+                "value": 1500
+            }
+        ]
     },
     {
         "id": "48",
@@ -476,8 +926,18 @@
         "charId2": "42",
         "charId3": "",
         "charId4": "",
-        "effect": "防御力キャラLv×15, 腕力キャラLv×40",
-        "tags": "防御力"
+        "effectsList": [
+            {
+                "status": "防御力",
+                "type": "charLv",
+                "value": 15
+            },
+            {
+                "status": "腕力",
+                "type": "charLv",
+                "value": 40
+            }
+        ]
     },
     {
         "id": "49",
@@ -486,8 +946,18 @@
         "charId2": "18",
         "charId3": "",
         "charId4": "",
-        "effect": "攻撃力2%, 魔法クリダメ緩和10%",
-        "tags": "攻撃力"
+        "effectsList": [
+            {
+                "status": "攻撃力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "魔法クリダメ緩和",
+                "type": "percent",
+                "value": 10
+            }
+        ]
     },
     {
         "id": "50",
@@ -496,8 +966,18 @@
         "charId2": "30",
         "charId3": "",
         "charId4": "",
-        "effect": "クリティカル耐性キャラLv×70, 技力3000",
-        "tags": "クリティカル"
+        "effectsList": [
+            {
+                "status": "クリティカル耐性",
+                "type": "charLv",
+                "value": 70
+            },
+            {
+                "status": "技力",
+                "type": "fixed",
+                "value": 3000
+            }
+        ]
     },
     {
         "id": "51",
@@ -506,8 +986,18 @@
         "charId2": "17",
         "charId3": "",
         "charId4": "",
-        "effect": "防御貫通200, 腕力キャラLv×40",
-        "tags": "防御貫通"
+        "effectsList": [
+            {
+                "status": "防御貫通",
+                "type": "fixed",
+                "value": 200
+            },
+            {
+                "status": "腕力",
+                "type": "charLv",
+                "value": 40
+            }
+        ]
     },
     {
         "id": "52",
@@ -516,8 +1006,18 @@
         "charId2": "29",
         "charId3": "",
         "charId4": "",
-        "effect": "耐久力キャラLv×30, 弱体効果命中1.5%",
-        "tags": "耐久力"
+        "effectsList": [
+            {
+                "status": "耐久力",
+                "type": "charLv",
+                "value": 30
+            },
+            {
+                "status": "弱体効果命中",
+                "type": "percent",
+                "value": 1.5
+            }
+        ]
     },
     {
         "id": "53",
@@ -526,8 +1026,18 @@
         "charId2": "27",
         "charId3": "",
         "charId4": "",
-        "effect": "HP3%, 技力キャラLv×30",
-        "tags": "HP"
+        "effectsList": [
+            {
+                "status": "HP",
+                "type": "percent",
+                "value": 3
+            },
+            {
+                "status": "技力",
+                "type": "charLv",
+                "value": 30
+            }
+        ]
     },
     {
         "id": "54",
@@ -536,8 +1046,18 @@
         "charId2": "20",
         "charId3": "",
         "charId4": "",
-        "effect": "魔力キャラLv×40, 弱体効果耐性キャラLv×70",
-        "tags": "魔力"
+        "effectsList": [
+            {
+                "status": "魔力",
+                "type": "charLv",
+                "value": 40
+            },
+            {
+                "status": "弱体効果耐性",
+                "type": "charLv",
+                "value": 70
+            }
+        ]
     },
     {
         "id": "55",
@@ -546,8 +1066,18 @@
         "charId2": "22",
         "charId3": "",
         "charId4": "",
-        "effect": "攻撃力2%, 腕力キャラLv×40",
-        "tags": "攻撃力"
+        "effectsList": [
+            {
+                "status": "攻撃力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "腕力",
+                "type": "charLv",
+                "value": 40
+            }
+        ]
     },
     {
         "id": "56",
@@ -556,8 +1086,18 @@
         "charId2": "23",
         "charId3": "",
         "charId4": "",
-        "effect": "HPドレイン5%, 腕力キャラLv×40",
-        "tags": "HPドレイン"
+        "effectsList": [
+            {
+                "status": "HPドレイン",
+                "type": "percent",
+                "value": 5
+            },
+            {
+                "status": "腕力",
+                "type": "charLv",
+                "value": 40
+            }
+        ]
     },
     {
         "id": "57",
@@ -566,8 +1106,13 @@
         "charId2": "10",
         "charId3": "12",
         "charId4": "14",
-        "effect": "パーティLv上限5",
-        "tags": "パーティLv上限"
+        "effectsList": [
+            {
+                "status": "パーティLv上限",
+                "type": "fixed",
+                "value": 5
+            }
+        ]
     },
     {
         "id": "58",
@@ -576,8 +1121,18 @@
         "charId2": "31",
         "charId3": "",
         "charId4": "",
-        "effect": "クリダメ強化10%, 防御力1%",
-        "tags": "クリダメ強化"
+        "effectsList": [
+            {
+                "status": "クリダメ強化",
+                "type": "percent",
+                "value": 10
+            },
+            {
+                "status": "防御力",
+                "type": "percent",
+                "value": 1
+            }
+        ]
     },
     {
         "id": "59",
@@ -586,8 +1141,18 @@
         "charId2": "32",
         "charId3": "",
         "charId4": "",
-        "effect": "魔力キャラLv×30, 弱体効果命中1.5%",
-        "tags": "魔力"
+        "effectsList": [
+            {
+                "status": "魔力",
+                "type": "charLv",
+                "value": 30
+            },
+            {
+                "status": "弱体効果命中",
+                "type": "percent",
+                "value": 1.5
+            }
+        ]
     },
     {
         "id": "60",
@@ -596,8 +1161,18 @@
         "charId2": "5",
         "charId3": "",
         "charId4": "",
-        "effect": "攻撃力2%, 腕力キャラLv×70",
-        "tags": "攻撃力"
+        "effectsList": [
+            {
+                "status": "攻撃力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "腕力",
+                "type": "charLv",
+                "value": 70
+            }
+        ]
     },
     {
         "id": "61",
@@ -606,8 +1181,18 @@
         "charId2": "34",
         "charId3": "",
         "charId4": "",
-        "effect": "物理クリダメ緩和10%, 物理防御力3000",
-        "tags": "物理クリダメ緩和"
+        "effectsList": [
+            {
+                "status": "物理クリダメ緩和",
+                "type": "percent",
+                "value": 10
+            },
+            {
+                "status": "物理防御力",
+                "type": "fixed",
+                "value": 3000
+            }
+        ]
     },
     {
         "id": "62",
@@ -616,8 +1201,18 @@
         "charId2": "21",
         "charId3": "",
         "charId4": "",
-        "effect": "魔法クリダメ緩和10%, 魔法防御力3000",
-        "tags": "魔法クリダメ緩和"
+        "effectsList": [
+            {
+                "status": "魔法クリダメ緩和",
+                "type": "percent",
+                "value": 10
+            },
+            {
+                "status": "魔法防御力",
+                "type": "fixed",
+                "value": 3000
+            }
+        ]
     },
     {
         "id": "63",
@@ -626,8 +1221,18 @@
         "charId2": "5",
         "charId3": "",
         "charId4": "",
-        "effect": "技力キャラLv×40, 命中1.5%",
-        "tags": "技力"
+        "effectsList": [
+            {
+                "status": "技力",
+                "type": "charLv",
+                "value": 40
+            },
+            {
+                "status": "命中",
+                "type": "percent",
+                "value": 1.5
+            }
+        ]
     },
     {
         "id": "64",
@@ -636,8 +1241,18 @@
         "charId2": "76",
         "charId3": "",
         "charId4": "",
-        "effect": "HP3%, 攻撃力2%",
-        "tags": "HP"
+        "effectsList": [
+            {
+                "status": "HP",
+                "type": "percent",
+                "value": 3
+            },
+            {
+                "status": "攻撃力",
+                "type": "percent",
+                "value": 2
+            }
+        ]
     },
     {
         "id": "65",
@@ -646,8 +1261,18 @@
         "charId2": "70",
         "charId3": "",
         "charId4": "",
-        "effect": "物理クリダメ緩和10%, 耐久力3000",
-        "tags": "物理クリダメ緩和"
+        "effectsList": [
+            {
+                "status": "物理クリダメ緩和",
+                "type": "percent",
+                "value": 10
+            },
+            {
+                "status": "耐久力",
+                "type": "fixed",
+                "value": 3000
+            }
+        ]
     },
     {
         "id": "66",
@@ -656,8 +1281,18 @@
         "charId2": "97",
         "charId3": "",
         "charId4": "",
-        "effect": "魔力キャラLv×30, 回避キャラLv×15",
-        "tags": "魔力"
+        "effectsList": [
+            {
+                "status": "魔力",
+                "type": "charLv",
+                "value": 30
+            },
+            {
+                "status": "回避",
+                "type": "charLv",
+                "value": 15
+            }
+        ]
     },
     {
         "id": "67",
@@ -666,8 +1301,18 @@
         "charId2": "26",
         "charId3": "31",
         "charId4": "",
-        "effect": "攻撃力2%, クリティカルキャラLv×70",
-        "tags": "攻撃力"
+        "effectsList": [
+            {
+                "status": "攻撃力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "クリティカル",
+                "type": "charLv",
+                "value": 70
+            }
+        ]
     },
     {
         "id": "68",
@@ -676,8 +1321,18 @@
         "charId2": "23",
         "charId3": "",
         "charId4": "",
-        "effect": "クリティカルキャラLv×70, 防御力キャラLv×15",
-        "tags": "クリティカル"
+        "effectsList": [
+            {
+                "status": "クリティカル",
+                "type": "charLv",
+                "value": 70
+            },
+            {
+                "status": "防御力",
+                "type": "charLv",
+                "value": 15
+            }
+        ]
     },
     {
         "id": "69",
@@ -686,8 +1341,13 @@
         "charId2": "8",
         "charId3": "13",
         "charId4": "15",
-        "effect": "パーティLv上限5",
-        "tags": "パーティLv上限"
+        "effectsList": [
+            {
+                "status": "パーティLv上限",
+                "type": "fixed",
+                "value": 5
+            }
+        ]
     },
     {
         "id": "70",
@@ -696,8 +1356,18 @@
         "charId2": "47",
         "charId3": "",
         "charId4": "",
-        "effect": "HPドレイン5%, 魔法防御力1%",
-        "tags": "HPドレイン"
+        "effectsList": [
+            {
+                "status": "HPドレイン",
+                "type": "percent",
+                "value": 5
+            },
+            {
+                "status": "魔法防御力",
+                "type": "percent",
+                "value": 1
+            }
+        ]
     },
     {
         "id": "71",
@@ -706,8 +1376,18 @@
         "charId2": "47",
         "charId3": "20",
         "charId4": "",
-        "effect": "物理クリダメ緩和10%, 防御貫通200",
-        "tags": "物理クリダメ緩和"
+        "effectsList": [
+            {
+                "status": "物理クリダメ緩和",
+                "type": "percent",
+                "value": 10
+            },
+            {
+                "status": "防御貫通",
+                "type": "fixed",
+                "value": 200
+            }
+        ]
     },
     {
         "id": "72",
@@ -716,8 +1396,18 @@
         "charId2": "59",
         "charId3": "",
         "charId4": "",
-        "effect": "魔法防御力2%, 技力キャラLv×70",
-        "tags": "魔法防御力"
+        "effectsList": [
+            {
+                "status": "魔法防御力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "技力",
+                "type": "charLv",
+                "value": 70
+            }
+        ]
     },
     {
         "id": "73",
@@ -726,8 +1416,18 @@
         "charId2": "42",
         "charId3": "",
         "charId4": "",
-        "effect": "技力キャラLv×30, 弱体効果耐性キャラLv×70",
-        "tags": "技力"
+        "effectsList": [
+            {
+                "status": "技力",
+                "type": "charLv",
+                "value": 30
+            },
+            {
+                "status": "弱体効果耐性",
+                "type": "charLv",
+                "value": 70
+            }
+        ]
     },
     {
         "id": "74",
@@ -736,8 +1436,18 @@
         "charId2": "77",
         "charId3": "",
         "charId4": "",
-        "effect": "HP5%, クリダメ強化10%",
-        "tags": "HP"
+        "effectsList": [
+            {
+                "status": "HP",
+                "type": "percent",
+                "value": 5
+            },
+            {
+                "status": "クリダメ強化",
+                "type": "percent",
+                "value": 10
+            }
+        ]
     },
     {
         "id": "75",
@@ -746,8 +1456,18 @@
         "charId2": "59",
         "charId3": "",
         "charId4": "",
-        "effect": "耐久力キャラLv×40, 弱体効果命中1.5%",
-        "tags": "耐久力"
+        "effectsList": [
+            {
+                "status": "耐久力",
+                "type": "charLv",
+                "value": 40
+            },
+            {
+                "status": "弱体効果命中",
+                "type": "percent",
+                "value": 1.5
+            }
+        ]
     },
     {
         "id": "76",
@@ -756,8 +1476,18 @@
         "charId2": "102",
         "charId3": "106",
         "charId4": "",
-        "effect": "クリダメ強化10%, カウンタ3%",
-        "tags": "クリダメ強化"
+        "effectsList": [
+            {
+                "status": "クリダメ強化",
+                "type": "percent",
+                "value": 10
+            },
+            {
+                "status": "カウンタ",
+                "type": "percent",
+                "value": 3
+            }
+        ]
     },
     {
         "id": "77",
@@ -766,8 +1496,18 @@
         "charId2": "36",
         "charId3": "",
         "charId4": "",
-        "effect": "クリダメ強化10%, 命中キャラLv×70",
-        "tags": "クリダメ強化"
+        "effectsList": [
+            {
+                "status": "クリダメ強化",
+                "type": "percent",
+                "value": 10
+            },
+            {
+                "status": "命中",
+                "type": "charLv",
+                "value": 70
+            }
+        ]
     },
     {
         "id": "78",
@@ -776,8 +1516,18 @@
         "charId2": "93",
         "charId3": "",
         "charId4": "",
-        "effect": "防御力2%, 弱体効果耐性キャラLv×70",
-        "tags": "防御力"
+        "effectsList": [
+            {
+                "status": "防御力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "弱体効果耐性",
+                "type": "charLv",
+                "value": 70
+            }
+        ]
     },
     {
         "id": "79",
@@ -786,8 +1536,18 @@
         "charId2": "110",
         "charId3": "",
         "charId4": "",
-        "effect": "魔法クリダメ緩和10%, クリティカル耐性キャラLv×70",
-        "tags": "魔法クリダメ緩和"
+        "effectsList": [
+            {
+                "status": "魔法クリダメ緩和",
+                "type": "percent",
+                "value": 10
+            },
+            {
+                "status": "クリティカル耐性",
+                "type": "charLv",
+                "value": 70
+            }
+        ]
     },
     {
         "id": "80",
@@ -796,8 +1556,18 @@
         "charId2": "43",
         "charId3": "",
         "charId4": "",
-        "effect": "物理防御力2%, 回避キャラLv×50",
-        "tags": "物理防御力"
+        "effectsList": [
+            {
+                "status": "物理防御力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "回避",
+                "type": "charLv",
+                "value": 50
+            }
+        ]
     },
     {
         "id": "81",
@@ -806,8 +1576,18 @@
         "charId2": "28",
         "charId3": "",
         "charId4": "",
-        "effect": "物理クリダメ緩和10%, 腕力キャラLv×40",
-        "tags": "物理クリダメ緩和"
+        "effectsList": [
+            {
+                "status": "物理クリダメ緩和",
+                "type": "percent",
+                "value": 10
+            },
+            {
+                "status": "腕力",
+                "type": "charLv",
+                "value": 40
+            }
+        ]
     },
     {
         "id": "82",
@@ -816,8 +1596,13 @@
         "charId2": "9",
         "charId3": "11",
         "charId4": "16",
-        "effect": "パーティLv上限5",
-        "tags": "パーティLv上限"
+        "effectsList": [
+            {
+                "status": "パーティLv上限",
+                "type": "fixed",
+                "value": 5
+            }
+        ]
     },
     {
         "id": "83",
@@ -826,8 +1611,18 @@
         "charId2": "45",
         "charId3": "",
         "charId4": "",
-        "effect": "物魔防御貫通250, 命中1.5%",
-        "tags": "物魔防御貫通"
+        "effectsList": [
+            {
+                "status": "物魔防御貫通",
+                "type": "fixed",
+                "value": 250
+            },
+            {
+                "status": "命中",
+                "type": "percent",
+                "value": 1.5
+            }
+        ]
     },
     {
         "id": "84",
@@ -836,8 +1631,18 @@
         "charId2": "116",
         "charId3": "",
         "charId4": "",
-        "effect": "防御貫通200, 魔力キャラLv×70",
-        "tags": "防御貫通"
+        "effectsList": [
+            {
+                "status": "防御貫通",
+                "type": "fixed",
+                "value": 200
+            },
+            {
+                "status": "魔力",
+                "type": "charLv",
+                "value": 70
+            }
+        ]
     },
     {
         "id": "85",
@@ -846,8 +1651,18 @@
         "charId2": "117",
         "charId3": "",
         "charId4": "",
-        "effect": "攻撃力2%, 技力キャラLv×40",
-        "tags": "攻撃力"
+        "effectsList": [
+            {
+                "status": "攻撃力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "技力",
+                "type": "charLv",
+                "value": 40
+            }
+        ]
     },
     {
         "id": "86",
@@ -856,8 +1671,18 @@
         "charId2": "103",
         "charId3": "",
         "charId4": "",
-        "effect": "耐久力3000, 魔法防御力2%",
-        "tags": "耐久力"
+        "effectsList": [
+            {
+                "status": "耐久力",
+                "type": "fixed",
+                "value": 3000
+            },
+            {
+                "status": "魔法防御力",
+                "type": "percent",
+                "value": 2
+            }
+        ]
     },
     {
         "id": "87",
@@ -866,8 +1691,18 @@
         "charId2": "61",
         "charId3": "",
         "charId4": "",
-        "effect": "HP5%, 弱体効果耐性キャラLv×70",
-        "tags": "HP"
+        "effectsList": [
+            {
+                "status": "HP",
+                "type": "percent",
+                "value": 5
+            },
+            {
+                "status": "弱体効果耐性",
+                "type": "charLv",
+                "value": 70
+            }
+        ]
     },
     {
         "id": "88",
@@ -876,8 +1711,18 @@
         "charId2": "45",
         "charId3": "",
         "charId4": "",
-        "effect": "攻撃力2%, クリティカル耐性キャラLv×50",
-        "tags": "攻撃力"
+        "effectsList": [
+            {
+                "status": "攻撃力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "クリティカル耐性",
+                "type": "charLv",
+                "value": 50
+            }
+        ]
     },
     {
         "id": "89",
@@ -886,8 +1731,18 @@
         "charId2": "94",
         "charId3": "76",
         "charId4": "",
-        "effect": "HPドレイン5%, クリティカルキャラLv×70",
-        "tags": "HPドレイン"
+        "effectsList": [
+            {
+                "status": "HPドレイン",
+                "type": "percent",
+                "value": 5
+            },
+            {
+                "status": "クリティカル",
+                "type": "charLv",
+                "value": 70
+            }
+        ]
     },
     {
         "id": "90",
@@ -896,8 +1751,18 @@
         "charId2": "38",
         "charId3": "",
         "charId4": "",
-        "effect": "物理防御力2%, 回避キャラLv×50",
-        "tags": "物理防御力"
+        "effectsList": [
+            {
+                "status": "物理防御力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "回避",
+                "type": "charLv",
+                "value": 50
+            }
+        ]
     },
     {
         "id": "91",
@@ -906,8 +1771,18 @@
         "charId2": "109",
         "charId3": "",
         "charId4": "",
-        "effect": "魔法クリダメ緩和10%, 腕力キャラLv×40",
-        "tags": "魔法クリダメ緩和"
+        "effectsList": [
+            {
+                "status": "魔法クリダメ緩和",
+                "type": "percent",
+                "value": 10
+            },
+            {
+                "status": "腕力",
+                "type": "charLv",
+                "value": 40
+            }
+        ]
     },
     {
         "id": "92",
@@ -916,8 +1791,18 @@
         "charId2": "58",
         "charId3": "",
         "charId4": "",
-        "effect": "耐久力キャラLv×40, 防御力2%",
-        "tags": "耐久力"
+        "effectsList": [
+            {
+                "status": "耐久力",
+                "type": "charLv",
+                "value": 40
+            },
+            {
+                "status": "防御力",
+                "type": "percent",
+                "value": 2
+            }
+        ]
     },
     {
         "id": "93",
@@ -926,8 +1811,18 @@
         "charId2": "124",
         "charId3": "",
         "charId4": "",
-        "effect": "HP5%, 物魔防御貫通250",
-        "tags": "HP"
+        "effectsList": [
+            {
+                "status": "HP",
+                "type": "percent",
+                "value": 5
+            },
+            {
+                "status": "物魔防御貫通",
+                "type": "fixed",
+                "value": 250
+            }
+        ]
     },
     {
         "id": "94",
@@ -936,8 +1831,18 @@
         "charId2": "127",
         "charId3": "",
         "charId4": "",
-        "effect": "HP5%, 弱体効果耐性キャラLv×70",
-        "tags": "HP"
+        "effectsList": [
+            {
+                "status": "HP",
+                "type": "percent",
+                "value": 5
+            },
+            {
+                "status": "弱体効果耐性",
+                "type": "charLv",
+                "value": 70
+            }
+        ]
     },
     {
         "id": "95",
@@ -946,8 +1851,18 @@
         "charId2": "129",
         "charId3": "",
         "charId4": "",
-        "effect": "防御貫通250, 命中1.5%",
-        "tags": "防御貫通"
+        "effectsList": [
+            {
+                "status": "防御貫通",
+                "type": "fixed",
+                "value": 250
+            },
+            {
+                "status": "命中",
+                "type": "percent",
+                "value": 1.5
+            }
+        ]
     },
     {
         "id": "96",
@@ -956,8 +1871,18 @@
         "charId2": "51",
         "charId3": "19",
         "charId4": "",
-        "effect": "物理クリダメ緩和10%, 回避キャラLv×50",
-        "tags": "物理クリダメ緩和"
+        "effectsList": [
+            {
+                "status": "物理クリダメ緩和",
+                "type": "percent",
+                "value": 10
+            },
+            {
+                "status": "回避",
+                "type": "charLv",
+                "value": 50
+            }
+        ]
     },
     {
         "id": "97",
@@ -966,8 +1891,18 @@
         "charId2": "90",
         "charId3": "",
         "charId4": "",
-        "effect": "魔力キャラLv×70, 命中1.5%",
-        "tags": "魔力"
+        "effectsList": [
+            {
+                "status": "魔力",
+                "type": "charLv",
+                "value": 70
+            },
+            {
+                "status": "命中",
+                "type": "percent",
+                "value": 1.5
+            }
+        ]
     },
     {
         "id": "98",
@@ -976,8 +1911,18 @@
         "charId2": "133",
         "charId3": "",
         "charId4": "",
-        "effect": "攻撃力2%, 耐久力キャラLv×30",
-        "tags": "攻撃力"
+        "effectsList": [
+            {
+                "status": "攻撃力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "耐久力",
+                "type": "charLv",
+                "value": 30
+            }
+        ]
     },
     {
         "id": "99",
@@ -986,8 +1931,18 @@
         "charId2": "120",
         "charId3": "",
         "charId4": "",
-        "effect": "防御力2%, 命中キャラLv×70",
-        "tags": "防御力"
+        "effectsList": [
+            {
+                "status": "防御力",
+                "type": "percent",
+                "value": 2
+            },
+            {
+                "status": "命中",
+                "type": "charLv",
+                "value": 70
+            }
+        ]
     },
     {
         "id": "100",
@@ -996,8 +1951,18 @@
         "charId2": "135",
         "charId3": "",
         "charId4": "",
-        "effect": "攻撃力2％, 腕力キャラLv×40",
-        "tags": "攻撃力"
+        "effectsList": [
+            {
+                "status": "攻撃力",
+                "type": "fixed",
+                "value": 2
+            },
+            {
+                "status": "腕力",
+                "type": "charLv",
+                "value": 40
+            }
+        ]
     },
     {
         "id": "101",
@@ -1006,7 +1971,17 @@
         "charId2": "79",
         "charId3": "",
         "charId4": "",
-        "effect": "カウンタ3％\n腕力キャラLv×70",
-        "tags": "カウンタ, 腕力"
+        "effectsList": [
+            {
+                "status": "カウンタ",
+                "type": "percent",
+                "value": 3
+            },
+            {
+                "status": "腕力",
+                "type": "charLv",
+                "value": 70
+            }
+        ]
     }
 ]
