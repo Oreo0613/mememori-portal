@@ -270,13 +270,13 @@
     },
     {
         "id": "133",
-        "name": "フォルティナ（黄昏）",
+        "name": "フォルティナ [黄昏の約束]",
         "attr": "天",
         "type": "スナイパー",
         "rarity": "限定",
         "releaseDate": "2026-08-31",
         "iconUrl": "assets/images/chara-icon/133.webp",
-        "updatedAt": "2026/10/9 14:05:34",
+        "updatedAt": "2026/10/26 17:01:52",
         "status": {
             "str": "544839",
             "dex": "620702",
@@ -355,17 +355,18 @@
                 "michaelText": "バトル開始時、自身に2層の『多重バリア』を付与する（解除不可）。自身の最大HPの10％以上のダメージを受けると、バリアを1層消費してそのダメージを無効化する。",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "132",
-        "name": "フローレンス（黄昏）",
+        "name": "フローレンス [黄昏の誓い]",
         "attr": "翠",
         "type": "ウォーリアー",
         "rarity": "限定",
         "releaseDate": "2026-08-13",
         "iconUrl": "assets/images/chara-icon/132.webp",
-        "updatedAt": "2026/08/31 16:33:01",
+        "updatedAt": "2026/10/26 16:57:52",
         "status": {
             "str": "722362",
             "dex": "587804",
@@ -444,7 +445,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "131",
@@ -627,13 +629,13 @@
     },
     {
         "id": "129",
-        "name": "エレイン",
+        "name": "エレイン [霊魂の魔女]",
         "attr": "冥",
         "type": "スナイパー",
         "rarity": "限定",
         "releaseDate": "2026-06-30",
         "iconUrl": "assets/images/chara-icon/129.webp",
-        "updatedAt": "2026/10/9 14:08:18",
+        "updatedAt": "2026/10/26 17:08:04",
         "status": {
             "str": "546427",
             "dex": "629429",
@@ -712,7 +714,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "128",
@@ -1696,13 +1699,13 @@
     },
     {
         "id": "117",
-        "name": "リヴェリア",
+        "name": "リヴェリア [砂塵の魔女]",
         "attr": "天",
         "type": "スナイパー",
         "rarity": "限定",
         "releaseDate": "2025-12-25",
         "iconUrl": "assets/images/chara-icon/117.webp",
-        "updatedAt": "2026/06/09 9:50:42",
+        "updatedAt": "2026/10/26 17:02:14",
         "status": {
             "str": "661058",
             "dex": "756544",
@@ -1781,7 +1784,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "116",
@@ -2054,13 +2058,13 @@
     },
     {
         "id": "113",
-        "name": "ケルベロス(冥)",
+        "name": "ケルベロス [魔法のキャンディ]",
         "attr": "冥",
         "type": "ソーサラー",
         "rarity": "限定",
         "releaseDate": "2025-10-30",
         "iconUrl": "assets/images/chara-icon/113.webp",
-        "updatedAt": "2026/06/09 10:38:58",
+        "updatedAt": "2026/10/26 17:07:42",
         "status": {
             "str": "598214",
             "dex": "550629",
@@ -2139,17 +2143,18 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "112",
-        "name": "フェンリル(黄)",
+        "name": "フェンリル [二人だけの宝物]",
         "attr": "黄",
         "type": "ウォーリアー",
         "rarity": "限定",
         "releaseDate": "2025-10-16",
         "iconUrl": "assets/images/chara-icon/112.webp",
-        "updatedAt": "2026/06/05 11:36:42",
+        "updatedAt": "2026/10/26 16:59:33",
         "status": {
             "str": "654225",
             "dex": "567953",
@@ -2228,7 +2233,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "111",
@@ -2678,13 +2684,13 @@
     },
     {
         "id": "106",
-        "name": "ネブラ",
+        "name": "ネブラ [泡沫の魔女]",
         "attr": "冥",
         "type": "ソーサラー",
         "rarity": "限定",
         "releaseDate": "2025-07-15",
         "iconUrl": "assets/images/chara-icon/106.webp",
-        "updatedAt": "2026/07/21 13:03:32",
+        "updatedAt": "2026/10/26 17:07:18",
         "status": {
             "str": "581011",
             "dex": "581011",
@@ -2763,7 +2769,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "105",
@@ -3123,13 +3130,13 @@
     },
     {
         "id": "101",
-        "name": "A.A.(天)",
+        "name": "A.A. [錆鉄の空]",
         "attr": "天",
         "type": "ソーサラー",
         "rarity": "限定",
         "releaseDate": "2025-04-30",
         "iconUrl": "assets/images/chara-icon/101.webp",
-        "updatedAt": "2026/06/09 9:52:37",
+        "updatedAt": "2026/10/26 17:02:35",
         "status": {
             "str": "606750",
             "dex": "538576",
@@ -3208,7 +3215,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "100",
@@ -3568,13 +3576,13 @@
     },
     {
         "id": "96",
-        "name": "シズ(紅)",
+        "name": "シズ [雪花の誓い]",
         "attr": "紅",
         "type": "ウォーリアー",
         "rarity": "限定",
         "releaseDate": "2025-02-14",
         "iconUrl": "assets/images/chara-icon/96.webp",
-        "updatedAt": "2026/10/9 16:29:57",
+        "updatedAt": "2026/10/26 16:56:29",
         "status": {
             "str": "746886",
             "dex": "607760",
@@ -3653,7 +3661,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "95",
@@ -3924,13 +3933,13 @@
     },
     {
         "id": "92",
-        "name": "ルナリンド(聖夜)",
+        "name": "ルナリンド [聖夜の妖精]",
         "attr": "翠",
         "type": "スナイパー",
         "rarity": "限定",
         "releaseDate": "2024-12-13",
         "iconUrl": "assets/images/chara-icon/92.webp",
-        "updatedAt": "2026/10/9 16:42:33",
+        "updatedAt": "2026/10/26 16:58:27",
         "status": {
             "str": "628420",
             "dex": "713151",
@@ -4009,17 +4018,18 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "91",
-        "name": "ソルティーナ(聖夜)",
+        "name": "ソルティーナ [温かな記憶]",
         "attr": "紅",
         "type": "ウォーリアー",
         "rarity": "限定",
         "releaseDate": "2024-11-29",
         "iconUrl": "assets/images/chara-icon/91.webp",
-        "updatedAt": "2026/10/9 16:50:38",
+        "updatedAt": "2026/10/26 16:56:55",
         "status": {
             "str": "686952",
             "dex": "594886",
@@ -4098,7 +4108,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "90",
@@ -4191,13 +4202,13 @@
     },
     {
         "id": "89",
-        "name": "ナターシャ(冥)",
+        "name": "ナターシャ [花束の魔女]",
         "attr": "冥",
         "type": "スナイパー",
         "rarity": "限定",
         "releaseDate": "2024-10-31",
         "iconUrl": "assets/images/chara-icon/89.webp",
-        "updatedAt": "2026/10/9 14:32:55",
+        "updatedAt": "2026/10/26 17:07:04",
         "status": {
             "str": "620385",
             "dex": "709012",
@@ -4276,17 +4287,18 @@
                 "michaelText": "バトル開始時、自身に3層の『多重バリア』を付与する（解除不可）。ダメージを受けると、バリアを1層消費してそのダメージを無効化する。",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "88",
-        "name": "メリア",
+        "name": "メリア [災芽の魔女]",
         "attr": "天",
         "type": "ウォーリアー",
         "rarity": "限定",
         "releaseDate": "2024-10-18",
         "iconUrl": "assets/images/chara-icon/88.webp",
-        "updatedAt": "2026/06/09 9:54:03",
+        "updatedAt": "2026/10/26 17:03:02",
         "status": {
             "str": "731628",
             "dex": "596667",
@@ -4365,7 +4377,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "87",
@@ -4725,13 +4738,13 @@
     },
     {
         "id": "83",
-        "name": "アムレート(夏)",
+        "name": "アムレート [夏の日の夢]",
         "attr": "黄",
         "type": "ウォーリアー",
         "rarity": "限定",
         "releaseDate": "2024-07-31",
         "iconUrl": "assets/images/chara-icon/83.webp",
-        "updatedAt": "2026/10/9 14:37:15",
+        "updatedAt": "2026/10/26 16:59:58",
         "status": {
             "str": "738731",
             "dex": "596667",
@@ -4810,7 +4823,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "82",
@@ -4904,13 +4918,13 @@
     },
     {
         "id": "81",
-        "name": "カグヤ",
+        "name": "カグヤ [夢幻の魔女]",
         "attr": "冥",
         "type": "ソーサラー",
         "rarity": "限定",
         "releaseDate": "2024-06-28",
         "iconUrl": "assets/images/chara-icon/81.webp",
-        "updatedAt": "2026/06/12 10:58:45",
+        "updatedAt": "2026/10/26 17:06:47",
         "status": {
             "str": "589647",
             "dex": "548025",
@@ -4989,7 +5003,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "80",
@@ -5528,13 +5543,13 @@
     },
     {
         "id": "74",
-        "name": "パラデア",
+        "name": "パラデア [正義の魔女]",
         "attr": "冥",
         "type": "スナイパー",
         "rarity": "限定",
         "releaseDate": "2024-03-14",
         "iconUrl": "assets/images/chara-icon/74.webp",
-        "updatedAt": "2026/06/12 11:54:38",
+        "updatedAt": "2026/10/26 17:06:31",
         "status": {
             "str": "633595",
             "dex": "725115",
@@ -5613,7 +5628,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "73",
@@ -6062,13 +6078,13 @@
     },
     {
         "id": "68",
-        "name": "アイリス(黒鎧)",
+        "name": "アイリス [黒鎧の従者]",
         "attr": "黄",
         "type": "ウォーリアー",
         "rarity": "限定",
         "releaseDate": "2023-12-26",
         "iconUrl": "assets/images/chara-icon/68.webp",
-        "updatedAt": "2026/10/9 20:33:20",
+        "updatedAt": "2026/10/26 17:00:18",
         "status": {
             "str": "730524",
             "dex": "591376",
@@ -6147,7 +6163,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "67",
@@ -6241,13 +6258,13 @@
     },
     {
         "id": "66",
-        "name": "アモール [聖なる夜の贈り物]",
+        "name": "アモール [聖夜の贈り物]",
         "attr": "黄",
         "type": "スナイパー",
         "rarity": "限定",
         "releaseDate": "2023-11-30",
         "iconUrl": "assets/images/chara-icon/66.webp",
-        "updatedAt": "2026/10/9 21:51:37",
+        "updatedAt": "2026/10/26 17:00:35",
         "status": {
             "str": "605735",
             "dex": "713902",
@@ -6510,13 +6527,13 @@
     },
     {
         "id": "63",
-        "name": "エルフリンデ",
+        "name": "エルフリンデ [聖槍の魔女]",
         "attr": "天",
         "type": "ウォーリアー",
         "rarity": "限定",
         "releaseDate": "2023-10-18",
         "iconUrl": "assets/images/chara-icon/63.webp",
-        "updatedAt": "2026/06/21 15:52:53",
+        "updatedAt": "2026/10/26 17:03:32",
         "status": {
             "str": "732155",
             "dex": "598396",
@@ -6595,7 +6612,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "62",
@@ -6777,13 +6795,13 @@
     },
     {
         "id": "60",
-        "name": "アームストロング",
+        "name": "アームストロング [英霊の魔女]",
         "attr": "冥",
         "type": "スナイパー",
         "rarity": "限定",
         "releaseDate": "2023-08-31",
         "iconUrl": "assets/images/chara-icon/60.webp",
-        "updatedAt": "2026/06/21 16:05:28",
+        "updatedAt": "2026/10/26 17:06:09",
         "status": {
             "str": "640635",
             "dex": "732155",
@@ -6862,17 +6880,18 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "59",
-        "name": "コルティ(浴衣)",
+        "name": "コルティ [夏の残響]",
         "attr": "紅",
         "type": "スナイパー",
         "rarity": "限定",
         "releaseDate": "2023-08-14",
         "iconUrl": "assets/images/chara-icon/59.webp",
-        "updatedAt": "2026/07/15 9:54:06",
+        "updatedAt": "2026/10/26 16:57:23",
         "status": {
             "str": "611309",
             "dex": "720472",
@@ -6951,7 +6970,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "58",
@@ -7044,13 +7064,13 @@
     },
     {
         "id": "57",
-        "name": "モーザ(水着)",
+        "name": "モーザ [墓守の夏休み]",
         "attr": "黄",
         "type": "ソーサラー",
         "rarity": "限定",
         "releaseDate": "2023-07-13",
         "iconUrl": "assets/images/chara-icon/57.webp",
-        "updatedAt": "2026/10/9 14:44:36",
+        "updatedAt": "2026/10/26 17:00:55",
         "status": {
             "str": "605583",
             "dex": "534338",
@@ -7129,17 +7149,18 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "56",
-        "name": "サブリナ(水着)",
+        "name": "サブリナ [涼風の軍神]",
         "attr": "翠",
         "type": "ウォーリアー",
         "rarity": "限定",
         "releaseDate": "2023-06-30",
         "iconUrl": "assets/images/chara-icon/56.webp",
-        "updatedAt": "2026/10/9 14:45:11",
+        "updatedAt": "2026/10/26 16:58:54",
         "status": {
             "str": "641392",
             "dex": "558632",
@@ -7218,7 +7239,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "55",
@@ -7489,13 +7511,13 @@
     },
     {
         "id": "52",
-        "name": "ルサールカ",
+        "name": "ルサールカ [天泣の魔女]",
         "attr": "天",
         "type": "ソーサラー",
         "rarity": "限定",
         "releaseDate": "2023-04-28",
         "iconUrl": "assets/images/chara-icon/52.webp",
-        "updatedAt": "2026/10/10 8:56:25",
+        "updatedAt": "2026/10/26 17:03:50",
         "status": {
             "str": "591356",
             "dex": "605435",
@@ -7574,7 +7596,8 @@
                 "michaelText": "",
                 "metatronText": "バトル開始時1ターンの間自身のスピードが30%増加する。"
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "51",
@@ -7845,13 +7868,13 @@
     },
     {
         "id": "48",
-        "name": "オフィーリア",
+        "name": "オフィーリア [骸晶の魔女]",
         "attr": "冥",
         "type": "ウォーリアー",
         "rarity": "限定",
         "releaseDate": "2023-02-28",
         "iconUrl": "assets/images/chara-icon/48.webp",
-        "updatedAt": "2026/10/10 9:23:19",
+        "updatedAt": "2026/10/26 17:05:55",
         "status": {
             "str": "626163",
             "dex": "556589",
@@ -7930,17 +7953,18 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "47",
-        "name": "A.A.",
+        "name": "A.A. [錆鉄の魔女]",
         "attr": "冥",
         "type": "ソーサラー",
         "rarity": "限定",
         "releaseDate": "2023-02-15",
         "iconUrl": "assets/images/chara-icon/47.webp",
-        "updatedAt": "2026/10/9 14:49:01",
+        "updatedAt": "2026/10/26 17:05:17",
         "status": {
             "str": "631721",
             "dex": "554510",
@@ -8019,7 +8043,8 @@
                 "michaelText": "自身の命中率が40％増加する（解除不可）。",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "46",
@@ -8112,13 +8137,13 @@
     },
     {
         "id": "45",
-        "name": "ケルベロス",
+        "name": "ケルベロス [雷啼の魔女]",
         "attr": "天",
         "type": "ウォーリアー",
         "rarity": "限定",
         "releaseDate": "2023-01-17",
         "iconUrl": "assets/images/chara-icon/45.webp",
-        "updatedAt": "2026/06/07 15:31:50",
+        "updatedAt": "2026/10/26 17:04:10",
         "status": {
             "str": "701912",
             "dex": "582587",
@@ -8197,7 +8222,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "44",
@@ -8468,13 +8494,13 @@
     },
     {
         "id": "41",
-        "name": "ヴァルリーデ",
+        "name": "ヴァルリーデ [劫火の魔女]",
         "attr": "冥",
         "type": "ウォーリアー",
         "rarity": "限定",
         "releaseDate": "2022-11-15",
         "iconUrl": "assets/images/chara-icon/41.webp",
-        "updatedAt": "2026/10/10 10:08:45",
+        "updatedAt": "2026/10/26 17:04:58",
         "status": {
             "str": "699841",
             "dex": "601864",
@@ -8553,7 +8579,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "40",
@@ -8646,13 +8673,13 @@
     },
     {
         "id": "39",
-        "name": "フォルティナ",
+        "name": "フォルティナ [聖剣の魔女]",
         "attr": "天",
         "type": "ウォーリアー",
         "rarity": "限定",
         "releaseDate": "2022-10-21",
         "iconUrl": "assets/images/chara-icon/39.webp",
-        "updatedAt": "2026/10/10 10:35:45",
+        "updatedAt": "2026/10/26 17:04:25",
         "status": {
             "str": "661755",
             "dex": "605435",
@@ -8731,7 +8758,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "38",
@@ -9358,13 +9386,13 @@
     },
     {
         "id": "31",
-        "name": "ナターシャ",
+        "name": "ナターシャ [弔花の魔女]",
         "attr": "天",
         "type": "ウォーリアー",
         "rarity": "恒常",
         "releaseDate": "2022-10-18",
         "iconUrl": "assets/images/chara-icon/31.webp",
-        "updatedAt": "2026/10/10 20:24:13",
+        "updatedAt": "2026/10/26 17:01:32",
         "status": {
             "str": "701912",
             "dex": "582587",
@@ -9443,7 +9471,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "30",
@@ -10248,13 +10277,13 @@
     },
     {
         "id": "21",
-        "name": "ルナリンド",
+        "name": "ルナリンド [雪幻の魔女]",
         "attr": "冥",
         "type": "ソーサラー",
         "rarity": "恒常",
         "releaseDate": "2022-10-18",
         "iconUrl": "assets/images/chara-icon/21.webp",
-        "updatedAt": "2026/10/11 9:04:41",
+        "updatedAt": "2026/10/26 17:04:42",
         "status": {
             "str": "563196",
             "dex": "556156",
@@ -10333,7 +10362,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "20",
