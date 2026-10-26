@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メメモリ風 キャラアイコン テスト（修正版）</title>
+    <link rel="stylesheet" href="test-style.css">
+</head>
+
+<body>
+
+    <div class="test-container">
+        <h1>キャラアイコン表示テスト（仕様修正版）</h1>
+
+        <div class="demo-area">
+            <!-- メインのキャラカードコンポーネント -->
+            <div class="chara-card js-chara-card is-rarity-sr" data-character-id="c001">
+
+                <!-- ① キャラ本体画像 -->
+                <div class="chara-card__image-wrapper">
+                    <img src="assets/images/chara-icon/132.webp" alt="フローレンス" class="chara-card__img">
+                </div>
+
+                <!-- ② レアリティ枠線 -->
+                <div class="chara-card__border"></div>
+
+                <!-- ③ 【アップデート】専用のプラスバッジ画像配置エリア -->
+                <div class="chara-card__plus-badge js-chara-plus">
+                    <!-- JSからここに専用画像のパスが注入されます -->
+                    <img src="" alt="plus" class="chara-card__plus-img js-chara-plus-img">
+                </div>
+
+                <!-- ④ 星表示エリア -->
+                <div class="chara-card__stars js-chara-stars"></div>
+
+            </div>
+
+        </div>
+
+        <!-- 修正版セレクトボックス -->
+        <div class="controller">
+            <label for="rarity-select">レアリティ切り替えテスト:</label>
+            <select id="rarity-select">
+                <option value="SR">SR</option>
+                <option value="SR+">SR+</option>
+                <option value="SSR">SSR</option>
+                <option value="SSR+">SSR+</option>
+                <option value="UR">UR</option>
+                <option value="UR+">UR+</option>
+                <option value="LR">LR</option>
+                <option value="LR_1">LR1</option>
+                <option value="LR_2">LR2</option>
+                <option value="LR_3">LR3</option>
+                <option value="LR_4">LR4</option>
+                <option value="LR_5">LR5</option>
+                <option value="LR_6">LR6</option>
+                <option value="LR_7">LR7</option>
+                <option value="LR_8">LR8</option>
+                <option value="LR_9">LR9</option>
+                <option value="LR_10">LR10</option>
+            </select>
+        </div>
+    </div>
+
+    <script src="test-script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,192 @@
+@charset "UTF-8";
+
+body {
+    background-color: #111;
+    color: #fff;
+    font-family: sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.test-container {
+    text-align: center;
+}
+
+.demo-area {
+    margin: 40px auto;
+    display: flex;
+    justify-content: center;
+}
+
+.controller {
+    margin-top: 20px;
+    background: #222;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.controller select {
+    padding: 8px;
+    background: #333;
+    color: #fff;
+    border: 1px solid #555;
+    border-radius: 4px;
+}
+
+/* ==========================================================================
+   キャラアイコンコンポーネント (BEM: .chara-card)
+   ★完全レスポンシブ・固定値ゼロ対応版（コンテナクエリ仕様）
+   ========================================================================= */
+
+.chara-card {
+    position: relative;
+    /* 🌟横幅は親要素（グリッドや外枠）に合わせ、最大幅だけを制限 */
+    width: 100%;
+    max-width: 100px;
+    /* ここが最大幅のブレーキになります */
+
+    /* 🌟これだけで1対1の綺麗な正方形を絶対に維持します */
+    aspect-ratio: 1 / 1;
+
+    /* 🌟このカード自身の「横幅（100%）」を、内部パーツのサイズ基準（コンテナ）として登録します */
+    container-type: inline-size;
+
+    border-radius: 0.6cqw;
+
+    overflow: hidden;
+    box-shadow: 0 4.4cqw 11.1cqw rgba(0, 0, 0, 0.5);
+    user-select: none;
+}
+
+/* 画像ラッパーも1:1に追従 */
+.chara-card__image-wrapper {
+    width: 100%;
+    height: 100%;
+    background-color: #2a2a35;
+}
+
+.chara-card__img {
+    display: block;
+    /* 幽霊スキマ対策 */
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 枠線 */
+.chara-card__border {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 6.3cqw;
+    box-sizing: border-box;
+    pointer-events: none;
+    border: 4.4cqw solid transparent;
+    /* ★カード横幅の4.4%の太さ（4px/90px相当） */
+}
+
+/* 右下の「＋」バッジコンテナ */
+.chara-card__plus-badge {
+    position: absolute;
+    bottom: 2.2cqw;
+    /* 2px/90px相当 */
+    right: 2.2cqw;
+    /* 2px/90px相当 */
+    width: 26.6cqw;
+    /* 🌟画像が見やすいよう少しだけ拡大（24px相当） */
+    height: 26.6cqw;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    /* 🌟背景グラデーションや白枠を削除し、透過PNG画像がそのまま綺麗に重なるように調整 */
+}
+
+.chara-card__plus-badge.is-active {
+    display: flex;
+}
+
+/* 🌟【新規】バッジ内の画像専用スタイル。コンテナに対して100%で追従させます */
+.chara-card__plus-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* 画像の比率を崩さずに綺麗に収める */
+}
+
+
+.chara-card__plus-text {
+    font-size: 15.5cqw;
+    /* ★バッジやカードがどれだけ縮んでも、文字サイズが自動追従 */
+    font-weight: bold;
+    color: #111;
+    line-height: 1;
+}
+
+/* 星の配置コンテナ */
+.chara-card__stars {
+    position: absolute;
+    bottom: 4.4cqw;
+    /* 4px/90px相当 */
+    left: 6.6cqw;
+    /* 6px/90px相当 */
+    width: auto;
+    display: flex;
+    justify-content: flex-start;
+    gap: 1.1cqw;
+    /* 1px/90px相当 */
+    pointer-events: none;
+}
+
+.chara-card__star {
+    font-size: 11.1cqw;
+    /* ★カードのサイズに完全に比例して星が大きくなったり小さくなったりします */
+    line-height: 1;
+    text-shadow: 0 1.1cqw 2.2cqw rgba(0, 0, 0, 0.9);
+}
+
+/* ==========================================================================
+   レアリティごとの枠色
+   ========================================================================== */
+.chara-card.is-rarity-sr .chara-card__border,
+.chara-card.is-rarity-sr_plus .chara-card__border {
+    border-color: #d4af37;
+}
+
+.chara-card.is-rarity-ssr .chara-card__border,
+.chara-card.is-rarity-ssr_plus .chara-card__border {
+    border-color: #9d5bbb;
+}
+
+.chara-card.is-rarity-ur .chara-card__border,
+.chara-card.is-rarity-ur_plus .chara-card__border {
+    border-color: #c2454a;
+}
+
+.chara-card.is-rarity-lr .chara-card__border,
+.chara-card.is-rarity-lr_1 .chara-card__border,
+.chara-card.is-rarity-lr_2 .chara-card__border,
+.chara-card.is-rarity-lr_3 .chara-card__border,
+.chara-card.is-rarity-lr_4 .chara-card__border,
+.chara-card.is-rarity-lr_5 .chara-card__border,
+.chara-card.is-rarity-lr_6 .chara-card__border,
+.chara-card.is-rarity-lr_7 .chara-card__border,
+.chara-card.is-rarity-lr_8 .chara-card__border,
+.chara-card.is-rarity-lr_9 .chara-card__border,
+.chara-card.is-rarity-lr_10 .chara-card__border {
+    border-color: #2f2c2b;
+}
+
+.chara-card__star--purple {
+    color: #f7e7de;
+}
+
+.chara-card__star--blue {
+    color: #38bdf8;
+}
