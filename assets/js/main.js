@@ -199,6 +199,11 @@ async function loadWorldList(userId) {
         // ワールド切替時にポータルの入力数値をFirestoreから同期ロードする
         await loadPortalDashboardData(userId, worldId);
 
+        // 💡 ワールドが切り替わったことを他のページやスクリプトに通知するカスタムイベントを発火
+        window.dispatchEvent(
+          new CustomEvent("appWorldChanged", { detail: { worldId } }),
+        );
+
         const modalSelect = document.getElementById("js-world-modal");
         if (modalSelect) {
           modalSelect.classList.remove("is-open");

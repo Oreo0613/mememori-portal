@@ -52,6 +52,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     }
   }, 100);
+
+  // 💡 【追加】ヘッダーのワールドセレクターでワールドが切り替わったときのイベントを監視
+  window.addEventListener("appWorldChanged", async (e) => {
+    if (!currentUserId) return;
+    currentWorldId = e.detail.worldId;
+    console.log(
+      `🔄 [Arcana] ワールド切り替えを検知しました (WID: ${currentWorldId})。データを再読み込みします。`,
+    );
+
+    // 新しいワールドの進捗を再取得してテーブルを再描画
+    await fetchUserArcanaStatus();
+    renderArcanaTable();
+  });
 });
 
 /**
