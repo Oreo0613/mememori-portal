@@ -249,9 +249,14 @@ function renderArcanaTable() {
         row.classList.add("ar-done");
       }
 
+      // 💡 変更後：「未定」と「空欄」の判定を追加
       const makeSlotHtml = (idx) => {
         const cId = ar[`charId${idx}`];
         if (!cId) return '<div class="slot slot--hide">-</div>';
+
+        if (cId === "未定") {
+          return '<div class="slot" style="font-size: 10px; color: var(--text-sub); font-weight: bold; background: var(--input-bg-sub); border: 1px dashed var(--border-light);" title="未定">未定</div>';
+        }
 
         const foundChar = charMaster.find(
           (ch) => String(ch.id).trim() === String(cId).trim(),
@@ -280,7 +285,7 @@ function renderArcanaTable() {
             ${makeSlotHtml(4)}
           </div>
         </td>
-        <td class="p-arcana-table__td-effect">${ar.effect}</td>
+        <td class="p-arcana-table__td-effect">${formatEffectsText(ar.effectsList)}</td>
         <td class="p-arcana-table__td-priority">
           <select class="p-arcana-priority-select" data-arcana-id="${ar.id}" onchange="handlePrioritySelectChange(this)">
             ${selectOptionsHtml}
@@ -291,6 +296,30 @@ function renderArcanaTable() {
       tbody.appendChild(row);
     });
   });
+}
+
+function formatEffectsText(effectsList) {
+  if (!Array.isArray(effectsList) || effectsList.length === 0) {
+    return '<span style="color: var(--text-muted); font-style: italic;">効果なし</span>';
+  }
+
+  return effectsList
+    .map(function (eff) {
+      if (!eff.status || !eff.type) return "";
+      var valStr = "";
+      if (eff.type === "percent") {
+        valStr = eff.status + eff.value + "%";
+      } else if (eff.type === "fixed") {
+        var numVal = Number(eff.value);
+        valStr =
+          eff.status + (isNaN(numVal) ? eff.value : numVal.toLocaleString());
+      } else if (eff.type === "charLv") {
+        valStr = eff.status + "キャラLv×" + eff.value;
+      }
+      return valStr;
+    })
+    .filter(Boolean)
+    .join(", ");
 }
 
 /**

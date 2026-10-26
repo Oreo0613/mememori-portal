@@ -1948,7 +1948,7 @@
         "id": "100",
         "name": "リゲルの聖剣",
         "charId1": "135",
-        "charId2": "135",
+        "charId2": "未定",
         "charId3": "",
         "charId4": "",
         "effectsList": [
@@ -1969,7 +1969,7 @@
         "name": "ヴェネティキの回生",
         "charId1": "136",
         "charId2": "79",
-        "charId3": "",
+        "charId3": "未定",
         "charId4": "",
         "effectsList": [
             {
