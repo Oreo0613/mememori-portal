@@ -15,7 +15,7 @@ const PRIORITY_OPTIONS = [
   { value: "", label: "未設定" },
 ];
 
-// 💡 23種類の効果タグマスタ
+// 23種類の効果タグマスタ
 const EFFECT_TAGS_MASTER = [
   "HP",
   "攻撃力",
@@ -46,7 +46,7 @@ let arcanaMaster = [];
 let userArcanaStatusMap = {}; // { arcanaId: "LR解放済" 等 }
 let currentUserId = null;
 let currentWorldId = null;
-let selectedFilters = []; // 💡 選択中のフィルター配列
+let selectedFilters = []; // 選択中のフィルター配列
 
 /**
  * 🔮 アルカナページの初期化エントリーポイント
@@ -61,7 +61,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderFilterChips();
   initFilterClearEvent();
 
-  // 3. 認証情報の準備ができるのを待ってから処理を開始
+  // 3. 合算効果モーダルのHTML枠組みを挿入
+  injectArcanaTotalModal();
+
+  // 4. 認証情報の準備ができるのを待ってから処理を開始
   const checkAuthReady = setInterval(async () => {
     if (window.auth) {
       clearInterval(checkAuthReady);
@@ -77,12 +80,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         // 初回ロード＆描画の実行
         await initAndRenderArcana();
 
-        // 4. 「更新する」ボタンのクリックイベントを設定
+        // 5. 「更新する」ボタンのクリックイベントを設定
         initUpdateEvent();
       });
     }
   }, 100);
 
+  // ワールド切り替えイベントを監視
   window.addEventListener("appWorldChanged", async (e) => {
     if (!currentUserId) return;
     const newWorldId =
@@ -180,6 +184,9 @@ async function loadMasters() {
   }
 }
 
+/**
+ * 📥 Firestoreからユーザーのアルカナ進捗を取得
+ */
 async function fetchUserArcanaStatus() {
   if (!currentUserId || !currentWorldId || !window.db) return;
   try {
@@ -218,7 +225,7 @@ function renderArcanaTable() {
     return;
   }
 
-  // 💡 フィルタリングの適用（OR条件：選択されたタグのいずれかを含んでいれば表示）
+  // フィルタリングの適用（OR条件：選択されたタグのいずれかを含んでいれば表示）
   let targetList = arcanaMaster;
   if (selectedFilters.length > 0) {
     targetList = arcanaMaster.filter((ar) => {
@@ -267,16 +274,27 @@ function renderArcanaTable() {
       headerRow.classList.add("is-collapsed");
     }
 
+    // 「LR解放済」グループのときだけ「合計効果を見る」ボタンを添える
+    let extraButtonHtml = "";
+    if (opt.value === "LR解放済") {
+      extraButtonHtml = `<button type="button" class="p-arcana-total-btn js-open-total-modal">効果の合計を見る</button>`;
+    }
+
     headerRow.innerHTML = `
       <td colspan="4">
         <div class="p-arcana-group-header__content">
-          <span class="p-arcana-group-header__title">${group.label}</span>
-          <span class="p-arcana-group-header__badge">${group.list.length}件</span>
+        <span class="p-arcana-group-header__title">${group.label}</span>
+        <span class="p-arcana-group-header__badge">${group.list.length}件</span>
+        <span class="p-arcana-group-header__button">${extraButtonHtml}</span>
         </div>
       </td>
     `;
 
-    headerRow.onclick = () => {
+    headerRow.onclick = (e) => {
+      if (e.target.closest(".js-open-total-modal")) {
+        openTotalEffectsModal();
+        return;
+      }
       const isCurrentlyCollapsed = window.collapsedArcanaGroups[opt.value];
       window.collapsedArcanaGroups[opt.value] = !isCurrentlyCollapsed;
       renderArcanaTable();
@@ -298,6 +316,7 @@ function renderArcanaTable() {
         row.classList.add("ar-done");
       }
 
+      // 「未定」と「空欄」の判定を含むスロット描画
       const makeSlotHtml = (idx) => {
         const cId = ar[`charId${idx}`];
         if (!cId) return '<div class="slot slot--hide">-</div>';
@@ -346,6 +365,9 @@ function renderArcanaTable() {
   });
 }
 
+/**
+ * 📝 effectsList から効果テキストを動的生成
+ */
 function formatEffectsText(effectsList) {
   if (!Array.isArray(effectsList) || effectsList.length === 0) {
     return '<span style="color: var(--text-muted); font-style: italic;">効果なし</span>';
@@ -370,12 +392,128 @@ function formatEffectsText(effectsList) {
     .join(", ");
 }
 
+/**
+ * 📊 合算効果マトリクスモーダルのHTMLを動的挿入
+ */
+function injectArcanaTotalModal() {
+  if (document.getElementById("js-arcana-total-modal")) return;
+  const modalHtml = `
+    <div id="js-arcana-total-modal" class="c-modal c-arcana-modal" aria-hidden="true" inert>
+        <div class="c-modal__overlay js-arcana-total-modal-close"></div>
+        <div class="c-arcana-modal__container c-modal__container">
+            <header class="c-world-modal__header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <span style="font-weight:bold; font-size:1.5rem;">📊 LR解放済みアルカナ 合算効果一覧</span>
+                <button type="button" class="c-world-modal__close-btn js-arcana-total-modal-close" style="background:none; border:none; font-size:2rem; cursor:pointer;">&times;</button>
+            </header>
+            <div style="max-height: 380px; overflow-y: auto;">
+                <table class="p-arcana-matrix-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 35%;">ステータス</th>
+                            <th style="width: 21%;">％</th>
+                            <th style="width: 22%;">固定値</th>
+                            <th style="width: 22%;">キャラLv×</th>
+                        </tr>
+                    </thead>
+                    <tbody id="js-arcana-matrix-tbody">
+                        <!-- 動的挿入 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+  document.querySelectorAll(".js-arcana-total-modal-close").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const modal = document.getElementById("js-arcana-total-modal");
+      if (modal) {
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+        modal.setAttribute("inert", "");
+      }
+    });
+  });
+}
+
+/**
+ * 🧮 LR解放済みのアルカナ効果を合算してモーダルに表示する関数
+ */
+function openTotalEffectsModal() {
+  injectArcanaTotalModal();
+
+  const lrArcanaIds = Object.keys(userArcanaStatusMap).filter(
+    (id) => userArcanaStatusMap[id] === "LR解放済",
+  );
+
+  const totals = {};
+  EFFECT_TAGS_MASTER.forEach((tagName) => {
+    totals[tagName] = { percent: 0, fixed: 0, charLv: 0 };
+  });
+
+  lrArcanaIds.forEach((id) => {
+    const ar = arcanaMaster.find((item) => String(item.id) === String(id));
+    if (!ar || !Array.isArray(ar.effectsList)) return;
+
+    ar.effectsList.forEach((eff) => {
+      if (!eff.status || !eff.type || eff.value === undefined) return;
+      if (totals[eff.status]) {
+        totals[eff.status][eff.type] += Number(eff.value) || 0;
+      }
+    });
+  });
+
+  const tbody = document.getElementById("js-arcana-matrix-tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  let hasData = false;
+
+  EFFECT_TAGS_MASTER.forEach((tagName) => {
+    const p = totals[tagName].percent;
+    const f = totals[tagName].fixed;
+    const c = totals[tagName].charLv;
+
+    if (p === 0 && f === 0 && c === 0) return;
+
+    hasData = true;
+    const tr = document.createElement("tr");
+
+    const pStr = p > 0 ? `${p}%` : "-";
+    const fStr = f > 0 ? f.toLocaleString() : "-";
+    const cStr = c > 0 ? `キャラLv×${c}` : "-";
+
+    tr.innerHTML = `
+      <td>${tagName}</td>
+      <td>${pStr}</td>
+      <td>${fStr}</td>
+      <td>${cStr}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  if (!hasData) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--theme-text-muted); padding:20px;">LR解放済みに設定されたアルカナ効果がありません</td></tr>`;
+  }
+
+  const modal = document.getElementById("js-arcana-total-modal");
+  if (modal) {
+    modal.classList.add("is-open");
+    modal.removeAttribute("aria-hidden");
+    modal.removeAttribute("inert");
+  }
+}
+
 window.handlePrioritySelectChange = function (selectElement) {
   const arcanaId = selectElement.getAttribute("data-arcana-id");
   const newPriority = selectElement.value;
   userArcanaStatusMap[arcanaId] = newPriority;
 };
 
+/**
+ * 💾 「更新する」ボタンが押されたときの一括保存
+ */
 function initUpdateEvent() {
   const updateBtn = document.getElementById("js-arcana-btn-update");
   if (!updateBtn) return;

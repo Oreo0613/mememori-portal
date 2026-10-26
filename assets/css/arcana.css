@@ -301,6 +301,73 @@
 }
 
 /* ==========================================================================
+   📊 合計効果ボタン ＆ モーダル表スタイル
+   ========================================================================== */
+.p-arcana-total-btn {
+    background-color: var(--theme-interactive, #498b6d);
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    margin-left: 8px;
+    transition: transform 0.2s ease;
+}
+
+.p-arcana-total-btn:hover {
+    transform: scale(1.05);
+}
+
+.p-arcana-group-header__button {
+    margin-left: auto;
+}
+
+/* 合計効果モーダル用コンテナ */
+.c-arcana-modal {
+    z-index: 3000;
+}
+
+.c-arcana-modal__container {
+    width: 90%;
+    max-width: 600px;
+    background-color: var(--theme-bg-surface, #ffffff);
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* マトリクス表スタイル */
+.p-arcana-matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+.p-arcana-matrix-table th,
+.p-arcana-matrix-table td {
+    border: 1px solid var(--theme-border-main, #e2e8f0);
+    padding: 8px 12px;
+    text-align: center;
+}
+
+.p-arcana-matrix-table th {
+    background-color: var(--theme-bg-input, #f1f5f9);
+    font-weight: bold;
+    color: var(--theme-text-main, #1e293b);
+}
+
+.p-arcana-matrix-table td:first-child {
+    text-align: left;
+    font-weight: bold;
+    background-color: var(--theme-bg-input, #f1f5f9);
+}
+
+
+
+/* ==========================================================================
    📱 スマホ表示対応（画面幅 768px 以下）
    ========================================================================= */
 @media screen and (max-width: 768px) {
