@@ -26,6 +26,17 @@
             <div class="p-arcana-main">
                 <div class="p-arcana__content">
 
+                    <!-- 💡 追加：効果フィルターエリア -->
+                    <div class="c-filter">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-weight: bold; font-size: 1.3rem;">■ フィルター (OR)</span>
+                            <button type="button" id="js-clear-filters" class="c-btn"
+                                style="padding: 4px 10px; font-size: 11px; height: auto;">選択をクリア</button>
+                        </div>
+                        <div id="arcanaFilterChips" class="arcana-filter-chips-grid"></div>
+                    </div>
+
                     <div class="p-arcana-wrapper">
                         <table class="p-arcana-table">
                             <thead>

@@ -15,10 +15,38 @@ const PRIORITY_OPTIONS = [
   { value: "", label: "未設定" },
 ];
 
+// 💡 23種類の効果タグマスタ
+const EFFECT_TAGS_MASTER = [
+  "HP",
+  "攻撃力",
+  "クリダメ強化",
+  "物理クリダメ緩和",
+  "魔法クリダメ緩和",
+  "HPドレイン",
+  "カウンタ",
+  "物魔防御貫通",
+  "防御貫通",
+  "耐久力",
+  "クリティカル",
+  "クリティカル耐性",
+  "防御力",
+  "物理防御力",
+  "魔法防御力",
+  "腕力",
+  "技力",
+  "魔力",
+  "命中",
+  "回避",
+  "弱体効果命中",
+  "弱体効果耐性",
+  "パーティLv上限",
+];
+
 let arcanaMaster = [];
 let userArcanaStatusMap = {}; // { arcanaId: "LR解放済" 等 }
 let currentUserId = null;
 let currentWorldId = null;
+let selectedFilters = []; // 💡 選択中のフィルター配列
 
 /**
  * 🔮 アルカナページの初期化エントリーポイント
@@ -29,7 +57,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 1. まずマスタデータを読み込む
   await loadMasters();
 
-  // 2. 認証情報の準備ができるのを待ってから処理を開始
+  // 2. フィルターボタンの描画 ＆ クリアボタンのイベント設定
+  renderFilterChips();
+  initFilterClearEvent();
+
+  // 3. 認証情報の準備ができるのを待ってから処理を開始
   const checkAuthReady = setInterval(async () => {
     if (window.auth) {
       clearInterval(checkAuthReady);
@@ -45,47 +77,76 @@ document.addEventListener("DOMContentLoaded", async () => {
         // 初回ロード＆描画の実行
         await initAndRenderArcana();
 
-        // 3. 「更新する」ボタンのクリックイベントを設定
+        // 4. 「更新する」ボタンのクリックイベントを設定
         initUpdateEvent();
       });
     }
   }, 100);
 
-  // 💡【キャラクターページ方式】ワールド切り替えイベントを監視して、データを完全に再取得＆再描画する
   window.addEventListener("appWorldChanged", async (e) => {
     if (!currentUserId) return;
-
-    // イベントから渡された新しいワールドID、またはセッションから確実に対象を取得
     const newWorldId =
       e.detail?.worldId || sessionStorage.getItem("app_current_world_id");
-    console.log(
-      `🔄 [Arcana Bridge] ワールド変更を検知しました (新WID: ${newWorldId})。アルカナ一覧を再展開します。`,
-    );
-
     currentWorldId = newWorldId;
-
-    // 新しいワールドのデータで再ロード＆再レンダリングを実行
     await initAndRenderArcana();
   });
 });
 
 /**
+ * 🏷️ フィルターチップスを動的に生成・描画する関数
+ */
+function renderFilterChips() {
+  const container = document.getElementById("arcanaFilterChips");
+  if (!container) return;
+  container.innerHTML = "";
+
+  EFFECT_TAGS_MASTER.forEach((tagName) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "arcana-filter-chip";
+    btn.textContent = tagName;
+
+    if (selectedFilters.includes(tagName)) {
+      btn.classList.add("is-active");
+    }
+
+    btn.addEventListener("click", () => {
+      const idx = selectedFilters.indexOf(tagName);
+      if (idx !== -1) {
+        selectedFilters.splice(idx, 1);
+        btn.classList.remove("is-active");
+      } else {
+        selectedFilters.push(tagName);
+        btn.classList.add("is-active");
+      }
+      renderArcanaTable(); // 絞り込みを反映して再描画
+    });
+
+    container.appendChild(btn);
+  });
+}
+
+/**
+ * 🧹 「選択をクリア」ボタンのイベント設定
+ */
+function initFilterClearEvent() {
+  const clearBtn = document.getElementById("js-clear-filters");
+  if (!clearBtn) return;
+
+  clearBtn.addEventListener("click", () => {
+    selectedFilters = [];
+    renderFilterChips(); // チップスの見た目をリセット
+    renderArcanaTable(); // テーブルを全件表示に戻す
+  });
+}
+
+/**
  * 🌍 ワールドごとの進捗データをFirestoreから取得し、テーブルを構築・再描画する共通関数
  */
 async function initAndRenderArcana() {
-  // 1. 現在選択されているワールドIDをセッションから取得（なければ "w1"）
   currentWorldId = sessionStorage.getItem("app_current_world_id") || "w1";
-  console.log(
-    `📂 [Arcana] 対象ワールドID [${currentWorldId}] の進捗データを同期します...`,
-  );
-
-  // 2. 前のワールドのデータが残らないよう、マップを完全にリセット
   userArcanaStatusMap = {};
-
-  // 3. Firestoreから新しいワールドの進捗を取得
   await fetchUserArcanaStatus();
-
-  // 4. 最新のデータでテーブルを描画
   renderArcanaTable();
 }
 
@@ -108,14 +169,7 @@ async function loadMasters() {
     window.characterMaster = await charRes.json();
     arcanaMaster = await arcanaRes.json();
 
-    // ID順にソート
     arcanaMaster.sort((a, b) => Number(a.id) - Number(b.id));
-    console.log(
-      "✅ マスタデータのロード完了。キャラ件数:",
-      window.characterMaster.length,
-      "アルカナ件数:",
-      arcanaMaster.length,
-    );
   } catch (error) {
     console.error("🚨 マスタデータの読込エラー:", error);
     const tbody = document.getElementById("arcanaTableBody");
@@ -126,12 +180,8 @@ async function loadMasters() {
   }
 }
 
-/**
- * 📥 Firestoreからユーザーのアルカナ進捗を取得
- */
 async function fetchUserArcanaStatus() {
   if (!currentUserId || !currentWorldId || !window.db) return;
-
   try {
     const statusDocRef = doc(
       window.db,
@@ -143,18 +193,10 @@ async function fetchUserArcanaStatus() {
       "status",
     );
     const docSnap = await getDoc(statusDocRef);
-
     if (docSnap.exists()) {
-      const data = docSnap.data();
-      userArcanaStatusMap = data.statusMap || {};
-      console.log(
-        `📥 ワールド [${currentWorldId}] のアルカナ進捗データを正常に取得しました。`,
-      );
+      userArcanaStatusMap = docSnap.data().statusMap || {};
     } else {
       userArcanaStatusMap = {};
-      console.log(
-        `ℹ️ ワールド [${currentWorldId}] のアルカナ進捗データはまだありません（初期状態）。`,
-      );
     }
   } catch (error) {
     console.error("🚨 アルカナ進捗の取得に失敗しました:", error);
@@ -163,7 +205,7 @@ async function fetchUserArcanaStatus() {
 }
 
 /**
- * 📊 アルカナ一覧テーブルを動的に描画（1つのテーブル内グループ化・開閉版）
+ * 📊 アルカナ一覧テーブルを動的に描画（フィルター＆グループ化対応版）
  */
 function renderArcanaTable() {
   const tbody = document.getElementById("arcanaTableBody");
@@ -176,9 +218,23 @@ function renderArcanaTable() {
     return;
   }
 
+  // 💡 フィルタリングの適用（OR条件：選択されたタグのいずれかを含んでいれば表示）
+  let targetList = arcanaMaster;
+  if (selectedFilters.length > 0) {
+    targetList = arcanaMaster.filter((ar) => {
+      if (!Array.isArray(ar.effectsList)) return false;
+      return ar.effectsList.some((eff) => selectedFilters.includes(eff.status));
+    });
+  }
+
+  if (targetList.length === 0) {
+    tbody.innerHTML =
+      '<tr><td colspan="4" class="p-arcana-table__loading" style="text-align:center; padding:30px;">条件に一致するアルカナがありません</td></tr>';
+    return;
+  }
+
   const charMaster = window.characterMaster || [];
 
-  // ① 優先度グループの受け皿を初期化
   const groups = {};
   PRIORITY_OPTIONS.forEach((opt) => {
     groups[opt.value] = {
@@ -187,8 +243,8 @@ function renderArcanaTable() {
     };
   });
 
-  // ② 全アルカナを現在の優先度ごとに仕分ける
-  arcanaMaster.forEach((ar) => {
+  // 絞り込み後のリストを優先度グループに仕分ける
+  targetList.forEach((ar) => {
     const currentPriority = userArcanaStatusMap[ar.id] || "";
     if (groups[currentPriority]) {
       groups[currentPriority].list.push(ar);
@@ -197,19 +253,14 @@ function renderArcanaTable() {
     }
   });
 
-  // 💡【記憶保持】現在どのグループが閉じられている（collapsed）かの状態を維持するためのマップ
   if (!window.collapsedArcanaGroups) {
-    window.collapsedArcanaGroups = { "": true }; // デフォルトで「未設定」グループだけは閉じておく
+    window.collapsedArcanaGroups = { "": true };
   }
 
-  tbody.innerHTML = "";
-
-  // ③ 1つのtbodyの中に、グループ見出し行とデータ行を連続で追加していく
   PRIORITY_OPTIONS.forEach((opt) => {
     const group = groups[opt.value];
-    if (group.list.length === 0) return; // 0件のグループは表示しない
+    if (group.list.length === 0) return;
 
-    // 🌟 3-1. グループの「区切り見出し行」を生成
     const headerRow = document.createElement("tr");
     headerRow.className = "p-arcana-group-header";
     if (window.collapsedArcanaGroups[opt.value]) {
@@ -225,7 +276,6 @@ function renderArcanaTable() {
       </td>
     `;
 
-    // 🔘 見出し行をクリックした時の開閉切り替えイベントを仕込む
     headerRow.onclick = () => {
       const isCurrentlyCollapsed = window.collapsedArcanaGroups[opt.value];
       window.collapsedArcanaGroups[opt.value] = !isCurrentlyCollapsed;
@@ -234,7 +284,6 @@ function renderArcanaTable() {
 
     tbody.appendChild(headerRow);
 
-    // 🌟 3-2. グループに所属する「データ行」を生成して追加
     group.list.forEach((ar) => {
       const row = document.createElement("tr");
       row.id = `arcana-row-${ar.id}`;
@@ -249,7 +298,6 @@ function renderArcanaTable() {
         row.classList.add("ar-done");
       }
 
-      // 💡 変更後：「未定」と「空欄」の判定を追加
       const makeSlotHtml = (idx) => {
         const cId = ar[`charId${idx}`];
         if (!cId) return '<div class="slot slot--hide">-</div>';
@@ -322,18 +370,12 @@ function formatEffectsText(effectsList) {
     .join(", ");
 }
 
-/**
- * 🔄 セレクトボックス変更時：即時保存はせず、ローカルのメモリ（マップ）だけを更新する
- */
 window.handlePrioritySelectChange = function (selectElement) {
   const arcanaId = selectElement.getAttribute("data-arcana-id");
   const newPriority = selectElement.value;
   userArcanaStatusMap[arcanaId] = newPriority;
 };
 
-/**
- * 💾 「更新する」ボタンが押されたとき：現在の全セレクトボックスの状態をまとめてFirestoreに一括保存
- */
 function initUpdateEvent() {
   const updateBtn = document.getElementById("js-arcana-btn-update");
   if (!updateBtn) return;
@@ -344,7 +386,6 @@ function initUpdateEvent() {
       return;
     }
 
-    // 最新のセレクトボックスの状態をすべて回収してマップに反映
     document.querySelectorAll(".p-arcana-priority-select").forEach((sel) => {
       const arcanaId = sel.getAttribute("data-arcana-id");
       userArcanaStatusMap[arcanaId] = sel.value;
@@ -364,7 +405,6 @@ function initUpdateEvent() {
         "status",
       );
 
-      // Firestoreへ一括マージ保存
       await setDoc(
         statusDocRef,
         {
@@ -374,12 +414,7 @@ function initUpdateEvent() {
         { merge: true },
       );
 
-      console.log("✨ アルカナの優先度を一括保存しました！");
-
-      // 最新のマップデータに基づいてテーブルを再レンダリング
       renderArcanaTable();
-
-      // 成功演出（クラス切り替え）
       updateBtn.classList.add("is-success-flash");
 
       setTimeout(() => {
