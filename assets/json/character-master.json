@@ -537,13 +537,13 @@
     },
     {
         "id": "130",
-        "name": "プリマヴェーラ（夏）",
+        "name": "プリマヴェーラ [湖畔の歌姫]",
         "attr": "藍",
         "type": "スナイパー",
         "rarity": "限定",
         "releaseDate": "2026-07-15",
         "iconUrl": "assets/images/chara-icon/130.webp",
-        "updatedAt": "2026/07/25 9:11:45",
+        "updatedAt": "2026/10/26 14:46:40",
         "status": {
             "str": "617114",
             "dex": "699396",
@@ -622,7 +622,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "129",
@@ -1071,13 +1072,13 @@
     },
     {
         "id": "124",
-        "name": "フィアー(藍)",
+        "name": "フィアー [在りし日の面影]",
         "attr": "藍",
         "type": "ウォーリアー",
         "rarity": "限定",
         "releaseDate": "2026-04-15",
         "iconUrl": "assets/images/chara-icon/124.webp",
-        "updatedAt": "2026/09/28 16:23:45",
+        "updatedAt": "2026/10/26 14:47:18",
         "status": {
             "str": "668979",
             "dex": "510355",
@@ -1156,7 +1157,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "123",
@@ -1873,13 +1875,13 @@
     },
     {
         "id": "115",
-        "name": "マーリン(藍)",
+        "name": "マーリン [深き森の賢者]",
         "attr": "藍",
         "type": "ソーサラー",
         "rarity": "限定",
         "releaseDate": "2025-11-27",
         "iconUrl": "assets/images/chara-icon/115.webp",
-        "updatedAt": "2026/10/9 14:18:36",
+        "updatedAt": "2026/10/26 14:47:54",
         "status": {
             "str": "610258",
             "dex": "548546",
@@ -1958,7 +1960,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "114",
@@ -2585,13 +2588,13 @@
     },
     {
         "id": "107",
-        "name": "コルディ(団長)",
+        "name": "コルディ [サーカスの団長]",
         "attr": "藍",
         "type": "ウォーリアー",
         "rarity": "限定",
         "releaseDate": "2025-07-31",
         "iconUrl": "assets/images/chara-icon/107.webp",
-        "updatedAt": "2026/10/9 14:23:54",
+        "updatedAt": "2026/10/26 14:48:13",
         "status": {
             "str": "715829",
             "dex": "579481",
@@ -2670,7 +2673,8 @@
                 "michaelText": "バトル開始時、藍属性の味方全体に2層の『多重バリア』を付与する（解除不可）。自身の最大HP×10％以上のダメージを受けると、バリアを1層消費してそのダメージを無効化する。",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "106",
@@ -4810,13 +4814,13 @@
     },
     {
         "id": "82",
-        "name": "ニーナ(夏)",
+        "name": "ニーナ [小さな大冒険]",
         "attr": "藍",
         "type": "スナイパー",
         "rarity": "限定",
         "releaseDate": "2024-07-16",
         "iconUrl": "assets/images/chara-icon/82.webp",
-        "updatedAt": "2026/10/9 14:38:04",
+        "updatedAt": "2026/10/26 14:48:34",
         "status": {
             "str": "586219",
             "dex": "668979",
@@ -4895,7 +4899,8 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co"
     },
     {
         "id": "81",
