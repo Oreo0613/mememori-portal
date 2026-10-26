@@ -405,7 +405,7 @@ function injectArcanaTotalModal() {
                 <span style="font-weight:bold; font-size:1.5rem;">📊 LR解放済みアルカナ 合算効果一覧</span>
                 <button type="button" class="c-world-modal__close-btn js-arcana-total-modal-close" style="background:none; border:none; font-size:2rem; cursor:pointer;">&times;</button>
             </header>
-            <div style="max-height: 380px; overflow-y: auto;">
+            <div class="p-arcana-matrix-wrapper">
                 <table class="p-arcana-matrix-table">
                     <thead>
                         <tr>
@@ -425,13 +425,22 @@ function injectArcanaTotalModal() {
   `;
   document.body.insertAdjacentHTML("beforeend", modalHtml);
 
+  // 💡 修正：閉じるボタンをクリックしたときにフォーカスを外してから非表示にする
   document.querySelectorAll(".js-arcana-total-modal-close").forEach((btn) => {
     btn.addEventListener("click", () => {
+      // フォーカスがあたっている要素がモーダル内であれば強制的に外す（blur）
+      const activeEl = document.activeElement;
       const modal = document.getElementById("js-arcana-total-modal");
+      if (modal && modal.contains(activeEl)) {
+        activeEl.blur();
+      }
+
       if (modal) {
         modal.classList.remove("is-open");
         modal.setAttribute("aria-hidden", "true");
         modal.setAttribute("inert", "");
+
+        document.body.classList.remove("is-modal-open")
       }
     });
   });
@@ -502,6 +511,8 @@ function openTotalEffectsModal() {
     modal.classList.add("is-open");
     modal.removeAttribute("aria-hidden");
     modal.removeAttribute("inert");
+
+    document.body.classList.add("is-modal-open");
   }
 }
 
