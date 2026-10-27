@@ -47,6 +47,7 @@ const EFFECT_TAGS_MASTER = [
 let arcanaMaster = [];
 let userArcanaStatusMap = {}; // { arcanaId: "LR解放済" 等 }
 let userCharactersMap = {}; // { charId: { rarity: "SSR", ... } } の形で保持する
+let _getDoc = null; // マップ構造のピンポイント取得用関数
 let currentUserId = null;
 let currentWorldId = null;
 let selectedFilters = []; // 選択中のフィルター配列
@@ -165,30 +166,45 @@ async function initAndRenderArcana() {
 }
 
 /**
- * 📥 【追加】Firestoreからユーザーのキャラクター育成（レアリティ）進捗を取得
+ * 📥 【追加】Firestoreからユーザーのキャラクター育成（レアリティ）進捗を取得（マップ構造対応版）
  */
 async function fetchUserCharactersStatus() {
   if (!currentUserId || !currentWorldId || !window.db) return;
+
   try {
-    const charCollectionRef = collection(
+    userCharactersMap = {};
+
+    // 💡 ファイル最上部で公式にインポートされている getDoc をそのままダイレクトに使用
+    const charStatusDocRef = doc(
       window.db,
       "users",
       currentUserId,
       "worlds",
       currentWorldId,
-      "ownedCharacters",
+      "characterStatus",
+      "status",
     );
-    const querySnapshot = await getDocs(charCollectionRef);
+    const docSnap = await getDoc(charStatusDocRef);
 
-    querySnapshot.forEach((doc) => {
-      userCharactersMap[doc.id] = doc.data(); // doc.id は 'c001' など。中身は { rarity: "SSR" } など
-    });
+    if (docSnap.exists()) {
+      const dataMap = docSnap.data().ownedMap || {};
+
+      // テーブル描画（renderArcanaTable）の既存ロジックと互換性を保つため、同じ形状に展開
+      Object.keys(dataMap).forEach((charId) => {
+        userCharactersMap[charId] = {
+          rarity: dataMap[charId].rarity || "未所持",
+        };
+      });
+    }
     console.log(
-      "📥 [Arcana] キャラクターのレアリティマップを読み込みました",
+      "📥 [Arcana] 新しいマップ構造からキャラクターのレアリティを引き継ぎました",
       userCharactersMap,
     );
   } catch (error) {
-    console.error("🚨 キャラクター所持情報の取得に失敗しました:", error);
+    console.error(
+      "🚨 マップ構造からのキャラクター所持情報取得に失敗しました:",
+      error,
+    );
     userCharactersMap = {};
   }
 }

@@ -1185,7 +1185,7 @@ onAuthStateChanged(auth, async (user) => {
         await loadPortalDashboardData(user.uid, activeWorldId);
       }
 
-      // 🔥Firestoreの全ロードが完了したこの瞬間に、キャラクタータブの初期化を直接叩く！
+      // 🔥Firestoreの全ロードが完了したこの瞬間に、キャラクタータブの初期化を直接叩く！（マップ構造連携版）
       if (typeof window.initUserCharacterTab === "function") {
         console.log(
           "🚀 [Main Bridge] インフラの準備が整ったため、キャラ一覧を即時展開します。",
@@ -1201,6 +1201,7 @@ onAuthStateChanged(auth, async (user) => {
           doc,
           setDoc,
           serverTimestamp,
+          getDoc, // 💡 新設計のcharacter.jsに getDoc を受け渡すために追加
         );
       }
     } catch (error) {
