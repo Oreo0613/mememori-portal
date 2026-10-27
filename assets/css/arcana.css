@@ -426,8 +426,7 @@
 .slot__stars {
     position: absolute;
     bottom: 2px;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 5%;
     display: flex;
     pointer-events: none;
 }
