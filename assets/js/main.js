@@ -2065,6 +2065,33 @@ function updateCardAppearance(cardElement, rarity) {
   }
 }
 
+document.addEventListener("DOMContentLoaded", function () {
+  const topBtn = document.getElementById("scrollToTopBtn");
+  let lastScrollY = window.scrollY; // 前回のスクロール位置を記憶
+
+  window.addEventListener("scroll", function () {
+    const currentScrollY = window.scrollY;
+
+    // 条件1: 300px以上スクロールしているか
+    // 条件2: 今回のスクロール位置が、前回の位置より上か（＝上スクロールか）
+    if (currentScrollY > 300 && currentScrollY < lastScrollY) {
+      topBtn.classList.add("is-show");
+    } else {
+      topBtn.classList.remove("is-show");
+    }
+
+    // 現在のスクロール位置を記憶（次回判定用）
+    lastScrollY = currentScrollY;
+  });
+
+  // タップで一番上へ戻る処理（前回と同じです）
+  topBtn.addEventListener("click", function () {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  });
+});
 // グローバルへ公開
 window.createCharacterBadgeElement = createCharacterBadgeElement;
 window.updateCardAppearance = updateCardAppearance;

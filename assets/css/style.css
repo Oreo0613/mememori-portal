@@ -1385,3 +1385,53 @@ body.is-modal-open {
     border-color: var(--color-blue-400, #3e9ed6) !important;
     box-shadow: 0 0 10px var(--color-green-500-alpha15);
 } */
+
+
+/* 既存の保存ボタンの邪魔をしないよう、左下に固定するスタイル */
+.scroll-to-top-btn {
+    position: absolute;
+    bottom: 11.8vh;
+    /* スマホの誤操作を防ぐため、下から少し浮かせる */
+    left: 20px;
+    /* 左下に配置 */
+    width: 46px;
+    /* スマホで押しやすい最低限のサイズ */
+    height: 46px;
+    border-radius: 50%;
+    /* 丸型にして「保存ボタン」と形状に変化をつける */
+    background-color: var(--theme-bg-surface);
+    /* 主役の保存ボタンを邪魔しない薄いグレー */
+    color: #333333;
+    /* 矢印の色 */
+    border: 1px solid #cccccc;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    /* 押しやすそうな立体感 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* アニメーション用の設定 */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 9999;
+    /* 他の要素の下に隠れないように最前面へ */
+
+    pointer-events: auto;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+/* スクロールされた時にJavaScriptでこのクラスを付与して表示させる */
+.scroll-to-top-btn.is-show {
+    opacity: 0.9;
+    visibility: visible;
+}
+
+/* タップした瞬間のフィードバック（スマホ用） */
+.scroll-to-top-btn:active {
+    background-color: #e0e0e0;
+}
