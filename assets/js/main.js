@@ -572,6 +572,18 @@ function initWorldSelectorEvent() {
       if (!user) return;
 
       try {
+        // 🛑ワールド数上限（最大8個）のガード処理
+        // アクティブなワールドのボタン（.js-world-choice）が画面やモーダル内にいくつあるかをカウント
+        const currentActiveWorlds =
+          document.querySelectorAll(".js-world-choice");
+        if (currentActiveWorlds.length >= 8) {
+          alert(
+            "ワールドは1アカウントにつき最大8つまでしか作成できません。\n不要なワールドを詳細設定から「アーカイブ」にするか、管理してください。",
+          );
+          createWorldForm.reset();
+          return;
+        }
+
         console.log(`⏳ ユーザー「${user.uid}」の領域へデータを送信中...`);
 
         // 1. Firestoreへデータ保存（新しく追加されたドキュメントの参照を newWorldRef として受け取る）
