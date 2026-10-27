@@ -1843,12 +1843,8 @@ function movePartyOrder(index, direction, event) {
 }
 
 /**
- * 🔮 【新仕様・完全レスポンシブ対応】
+ * 🔮 【完全版・LRバッジ除外仕様】
  * キャラクターのコンテナクエリ枠・アイコン・星・プラスバッジを動的に組み立てる共通生成関数
- *
- * @param {Object} charData - マスタから取得した魔女オブジェクト
- * @param {string} rarity - レアリティ文字列（例: "SR+", "LR_7"）
- * @returns {HTMLElement} 構築された .c-chara-card 要素
  */
 function createCharacterBadgeElement(charData, rarity = "SR") {
   const card = document.createElement("div");
@@ -1858,7 +1854,6 @@ function createCharacterBadgeElement(charData, rarity = "SR") {
     card.dataset.charaId = charData.id;
   }
 
-  // 1. 各レアリティ専用のプラスバッジ画像パス設定（本番階層に合わせる）
   const plusImagePaths = {
     "SR+": "assets/images/chara-icon/sr-plus.png",
     "SSR+": "assets/images/chara-icon/ssr-plus.png",
@@ -1871,11 +1866,31 @@ function createCharacterBadgeElement(charData, rarity = "SR") {
       : "assets/images/chara-icon/1.webp";
   const charName = charData && charData.name ? charData.name : "魔女";
 
-  // 2. レアリティに応じたクラスのクレンジング付与
-  const classSuffix = rarity.toLowerCase().replace("+", "_plus");
-  card.classList.add(`is-rarity-${classSuffix}`);
+  // 大文字小文字・表記揺れをクレンジングしてCSSトークンを生成
+  const isLR = rarity.toUpperCase().startsWith("LR");
+  const cleanToken = rarity
+    .toLowerCase()
+    .replace("plus", "")
+    .replace("+", "")
+    .replace("_", "");
 
-  // 3. 基本HTMLストラクチャをインジェクト
+  // 🌟 LRシリーズ（LR1〜10）の場合は、文字列に「+」が含まれていても「_plus」のクラスは付けないガード
+  const hasPlus =
+    !isLR &&
+    (rarity.includes("+") ||
+      rarity.toLowerCase().includes("plus") ||
+      rarity.endsWith("_"));
+
+  // LRの場合は「lr_1」などの形式、SR+等の場合は「sr_plus」の形式でクラス名を決定
+  let cssClassToken = cleanToken;
+  if (isLR && rarity.includes("_")) {
+    cssClassToken = `lr_${rarity.split("_")[1]}`;
+  } else if (hasPlus) {
+    cssClassToken = `${cleanToken}_plus`;
+  }
+
+  card.classList.add(`is-rarity-${cssClassToken}`);
+
   card.innerHTML = `
     <div class="c-chara-card__image-wrapper">
         <img class="c-chara-card__img" src="${avatarSrc}" alt="${charName}" loading="lazy">
@@ -1887,50 +1902,169 @@ function createCharacterBadgeElement(charData, rarity = "SR") {
     <div class="c-chara-card__stars"></div>
   `;
 
-  // 4. プラスバッジ専用画像の切り替え制御
   const plusBadge = card.querySelector(".c-chara-card__plus-badge");
   const plusImg = card.querySelector(".c-chara-card__plus-img");
-  if (rarity.endsWith("+")) {
-    const imagePath =
-      plusImagePaths[rarity] || "assets/images/badge-default-plus.png";
-    plusImg.src = imagePath;
-    plusImg.alt = `${rarity}プラス`;
-    plusBadge.classList.add("is-active");
+
+  // 🌟 バッジ表示の対象を「SR+」「SSR+」「UR+」の辞書に登録があるものだけに厳密に限定
+  if (hasPlus && plusBadge && plusImg) {
+    const rawRarity = `${cleanToken.toUpperCase()}+`;
+    if (plusImagePaths[rawRarity]) {
+      plusImg.src = plusImagePaths[rawRarity];
+      plusImg.alt = `${rawRarity}プラス`;
+      plusBadge.classList.add("is-active");
+    }
   }
 
-  // 5. LR〜LR10 進化段階に応じた星（★）の精密な動的組み立て
+  // LR進化段階の星の組み立て
   const starContainer = card.querySelector(".c-chara-card__stars");
-  if (rarity.startsWith("LR")) {
+  if (isLR && starContainer) {
     let totalStars = 0;
     let blueStarCount = 0;
 
-    if (rarity === "LR") {
-      totalStars = 0; // 通常LRはメメモリ仕様に従い星0個
-    } else if (rarity.includes("_")) {
-      const lrLevel = parseInt(rarity.split("_")[1], 10);
-      if (lrLevel <= 5) {
-        totalStars = lrLevel; // LR1〜5：レベルの数だけ紫星
-        blueStarCount = 0;
-      } else {
-        totalStars = 5; // LR6〜10：星5個固定
-        blueStarCount = lrLevel - 5; // 左側から順次水色化
+    if (rarity.toUpperCase() === "LR") {
+      totalStars = 0;
+    } else {
+      const lrLevel = parseInt(
+        rarity.replace("LR", "").replace("_", "").replace("+", ""),
+        10,
+      );
+      if (!isNaN(lrLevel)) {
+        if (lrLevel <= 5) {
+          totalStars = lrLevel;
+          blueStarCount = 0;
+        } else {
+          totalStars = 5;
+          blueStarCount = lrLevel - 5;
+        }
       }
     }
 
-    // 確定した数だけ星の要素を作成して流し込む
     for (let i = 0; i < totalStars; i++) {
       const starSpan = document.createElement("span");
       starSpan.classList.add("c-chara-card__star");
       starSpan.textContent = "★";
-
-      if (i < blueStarCount) {
-        starSpan.classList.add("c-chara-card__star--blue");
-      } else {
-        starSpan.classList.add("c-chara-card__star--purple");
-      }
+      starSpan.classList.add(
+        i < blueStarCount
+          ? "c-chara-card__star--blue"
+          : "c-chara-card__star--purple",
+      );
       starContainer.appendChild(starSpan);
     }
   }
 
   return card;
 }
+
+/**
+ * 🎨 【完全版・LRバッジ除外仕様】
+ * 静的・既存要素のクラス大掃除・星・プラス画像をリアルタイムに上書き更新する関数
+ */
+function updateCardAppearance(cardElement, rarity) {
+  if (!cardElement) return;
+
+  const starContainer = cardElement.querySelector(".c-chara-card__stars");
+  const plusBadge = cardElement.querySelector(".c-chara-card__plus-badge");
+  const plusImg = cardElement.querySelector(".c-chara-card__plus-img");
+
+  const plusImagePaths = {
+    "SR+": "assets/images/chara-icon/sr-plus.png",
+    "SSR+": "assets/images/chara-icon/ssr-plus.png",
+    "UR+": "assets/images/chara-icon/ur-plus.png",
+  };
+
+  // 1️⃣ クラスの大掃除
+  const classes = Array.from(cardElement.classList);
+  classes.forEach((className) => {
+    if (className.startsWith("is-rarity-") || className === "is-not-owned") {
+      cardElement.classList.remove(className);
+    }
+  });
+
+  // 未所持の即時エスケープ
+  if (rarity === "未所持") {
+    cardElement.classList.add("is-not-owned");
+    if (plusBadge) plusBadge.classList.remove("is-active");
+    if (plusImg) plusImg.src = "";
+    if (starContainer) starContainer.innerHTML = "";
+    return;
+  }
+
+  // 2️⃣ クラス名の付与判定
+  const isLR = rarity.toUpperCase().startsWith("LR");
+  const cleanToken = rarity
+    .toLowerCase()
+    .replace("plus", "")
+    .replace("+", "")
+    .replace("_", "");
+  const hasPlus =
+    !isLR &&
+    (rarity.includes("+") ||
+      rarity.toLowerCase().includes("plus") ||
+      rarity.endsWith("_"));
+
+  let cssClassToken = cleanToken;
+  if (isLR && rarity.includes("_")) {
+    cssClassToken = `lr_${rarity.split("_")[1]}`;
+  } else if (hasPlus) {
+    cssClassToken = `${cleanToken}_plus`;
+  }
+
+  cardElement.classList.add(`is-rarity-${cssClassToken}`);
+
+  // 3️⃣ 🌟 プラスバッジ画像の切り替え制御（SR+/SSR+/UR+以外は強制非表示）
+  if (plusBadge && plusImg) {
+    const rawRarity = `${cleanToken.toUpperCase()}+`;
+    if (hasPlus && plusImagePaths[rawRarity]) {
+      plusImg.src = plusImagePaths[rawRarity];
+      plusImg.alt = `${rawRarity}プラス`;
+      plusBadge.classList.add("is-active");
+    } else {
+      plusBadge.classList.remove("is-active");
+      plusImg.src = "";
+    }
+  }
+
+  // 4️⃣ 星（★）の再生成ロジック
+  if (starContainer) {
+    starContainer.innerHTML = "";
+
+    if (isLR) {
+      let totalStars = 0;
+      let blueStarCount = 0;
+
+      if (rarity.toUpperCase() === "LR") {
+        totalStars = 0;
+      } else {
+        const lrLevel = parseInt(
+          rarity.replace("LR", "").replace("_", "").replace("+", ""),
+          10,
+        );
+        if (!isNaN(lrLevel)) {
+          if (lrLevel <= 5) {
+            totalStars = lrLevel;
+            blueStarCount = 0;
+          } else {
+            totalStars = 5;
+            blueStarCount = lrLevel - 5;
+          }
+        }
+      }
+
+      for (let i = 0; i < totalStars; i++) {
+        const starSpan = document.createElement("span");
+        starSpan.classList.add("c-chara-card__star");
+        starSpan.textContent = "★";
+        starSpan.classList.add(
+          i < blueStarCount
+            ? "c-chara-card__star--blue"
+            : "c-chara-card__star--purple",
+        );
+        starContainer.appendChild(starSpan);
+      }
+    }
+  }
+}
+
+// グローバルへ公開
+window.createCharacterBadgeElement = createCharacterBadgeElement;
+window.updateCardAppearance = updateCardAppearance;

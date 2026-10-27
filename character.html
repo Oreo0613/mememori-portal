@@ -136,8 +136,51 @@
                                 <div class="c-char-detail__side-col">
 
                                     <!-- アバターとレアリティセレクトを集約 -->
-                                    <div class="c-char-detail__profile-card">
+                                    <!-- <div class="c-char-detail__profile-card">
                                         <img src="" id="ucd-avatar" class="c-char-detail__avatar-large" alt="アバター">
+                                        <div class="c-char-detail__profile-meta">
+                                            <h3 id="ucd-name" class="c-char-detail__name">キャラクター名</h3>
+                                            <div class="c-char-detail__badge-row">
+                                                <span id="ucd-attr" class="c-world-modal__btn-name">属性</span>
+                                                <span id="ucd-type" class="c-world-modal__btn-name">タイプ</span>
+                                                <span id="ucd-rarity" class="c-world-modal__btn-name">限定</span>
+                                            </div>
+                                            <span id="ucd-tags-display" class="c-char-detail__tags"></span>
+                                        </div>
+
+                                        <div class="c-form__group m-modal-select-wrap">
+                                            <label class="c-form__label">所持レアリティ設定</label>
+                                            <div class="c-rarity-control">
+                                                <button type="button" id="js-modal-rarity-minus"
+                                                    class="c-rarity-control__btn m-minus" aria-label="レアリティを下げる">
+                                                    <i class="fa-solid fa-minus"></i>
+                                                </button>
+                                                <span id="js-modal-rarity-display"
+                                                    class="c-rarity-control__display">未所持</span>
+                                                <button type="button" id="js-modal-rarity-plus"
+                                                    class="c-rarity-control__btn m-plus" aria-label="レアリティを上げる">
+                                                    <i class="fa-solid fa-plus"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                    </div> -->
+                                    <!-- 📊 【修正後】アバターとレアリティセレクトを集約（新仕様コンポーネント内蔵） -->
+                                    <div class="c-char-detail__profile-card">
+
+                                        <!-- 単なる<img>タグを廃止し、星やプラスバッジが動的生成される共通箱へアップグレード -->
+                                        <div id="js-modal-chara-card-wrap" class="c-chara-card"
+                                            style="margin-bottom: 12px;">
+                                            <div class="c-chara-card__image-wrapper">
+                                                <img src="" id="ucd-avatar" class="c-chara-card__img" alt="アバター">
+                                            </div>
+                                            <div class="c-chara-card__border"></div>
+                                            <div class="c-chara-card__plus-badge">
+                                                <img src="" alt="plus" class="c-chara-card__plus-img">
+                                            </div>
+                                            <div class="c-chara-card__stars"></div>
+                                        </div>
+
                                         <div class="c-char-detail__profile-meta">
                                             <h3 id="ucd-name" class="c-char-detail__name">キャラクター名</h3>
                                             <div class="c-char-detail__badge-row">
@@ -166,6 +209,7 @@
                                         </div>
 
                                     </div>
+
 
                                     <!-- OFFENSE パラメータ -->
                                     <div class="c-char-detail__stat-box">

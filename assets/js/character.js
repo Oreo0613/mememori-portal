@@ -188,7 +188,7 @@ async function loadAndRenderCharacterGrid() {
 }
 
 /**
- * 3. キャラクターアイコン一覧グリッドの生成（B案：アイコンのみ・グレーアウト連動）
+ * 3. キャラクターアイコン一覧グリッドの生成（新仕様：c-chara-card完全同期版）
  */
 function renderCharacterGrid() {
   const gridEl = document.getElementById("userCharGrid");
@@ -219,26 +219,21 @@ function renderCharacterGrid() {
     wrapEl.setAttribute("data-char-id", char.id);
     wrapEl.id = `user-char-card-${char.id}`;
 
-    const iconEl = document.createElement("div");
-    iconEl.className = "user-char-icon";
+    // 🌟 表記揺れ（LR+1など）を main.js 仕様（LR_1）にノーマライズして安全ガード関数から生成
+    const displayRarity = isNotOwned ? "SR" : currentRarity.replace("+", "_");
+    const cardEl = getSafeCharacterBadgeElement(char, displayRarity);
 
-    const imgEl = document.createElement("img");
-    imgEl.src = char.iconUrl || "https://placehold.co";
-    imgEl.alt = char.name;
-    imgEl.loading = "lazy";
-    iconEl.appendChild(imgEl);
-
-    iconEl.addEventListener("click", () => {
+    cardEl.addEventListener("click", () => {
       openUserCharDetailModal(char);
     });
 
-    wrapEl.appendChild(iconEl);
+    wrapEl.appendChild(cardEl);
     gridEl.appendChild(wrapEl);
   });
 }
 
 /**
- * 4. ユーザー用性能確認モーダルの起動（モーダル内レアリティセレクトボックス内蔵版）
+ * 4. ユーザー用性能確認モーダルの起動（Wリアルタイム連動型アップデート版）
  */
 function openUserCharDetailModal(char) {
   currentModalCharData = char;
@@ -259,26 +254,31 @@ function openUserCharDetailModal(char) {
   document.getElementById("ucd-type").textContent = char.type;
   document.getElementById("ucd-rarity").textContent = char.rarity || "限定";
 
+  // 🌟【修正】モーダルを開いた瞬間も、未所持トークンをそのまま投げて初期同期
+  const initRarity = userOwnedData[char.id]?.rarity || "未所持";
+  const initCardWrap = document.getElementById("js-modal-chara-card-wrap");
+  if (initCardWrap) {
+    getSafeUpdateCardAppearance(initCardWrap, initRarity);
+  }
+
   // ⭕️ プラスマイナスボタンによるレアリティ変更の連動ロジック
   const minusBtn = document.getElementById("js-modal-rarity-minus");
   const plusBtn = document.getElementById("js-modal-rarity-plus");
   const displayEl = document.getElementById("js-modal-rarity-display");
 
   if (minusBtn && plusBtn && displayEl) {
-    // 現在のFirestore上のレアリティを取得し、RARITY_OPTIONSのどこにあるかインデックスを探す
+    // 現在のFirestore上のレアリティを取得し、インデックスを特定
     const savedRarity = userOwnedData[char.id]?.rarity || "未所持";
     let currentIndex = RARITY_OPTIONS.indexOf(savedRarity);
-    if (currentIndex === -1) currentIndex = 0; // 万が一見つからなければ「未所持(0)」にする安全ガード
+    if (currentIndex === -1) currentIndex = 0;
 
-    // --- openUserCharDetailModal 内の updateRarityControlUI を以下に差し替え ---
     const updateRarityControlUI = (index) => {
-      const targetRarity = RARITY_OPTIONS[index];
+      const targetRarity = RARITY_OPTIONS[index]; // 例: "未所持", "SR+", "LR+5"
       displayEl.textContent = targetRarity;
 
       minusBtn.disabled = index === 0;
       plusBtn.disabled = index === RARITY_OPTIONS.length - 1;
 
-      // 💡【追加】最初にFirestoreから読み込んだ時のオリジナルレアリティを取得（なければ未所持）
       const originalRarity = userOwnedData[char.id]?.originalRarity || "未所持";
 
       if (!userOwnedData[char.id]) {
@@ -286,17 +286,30 @@ function openUserCharDetailModal(char) {
       }
       userOwnedData[char.id].rarity = targetRarity;
 
-      // 💡【修正】画面上のレアリティと、読み込み時のレアリティが「異なる場合のみ」変更扱いにする！
       const isChanged = targetRarity !== originalRarity;
       userOwnedData[char.id].isDirty = isChanged;
 
-      // 一覧側の該当キャラクターカードのグレーアウトをリアルタイムに連動点灯
-      const listCard = document.getElementById(`user-char-card-${char.id}`);
-      if (listCard) {
+      // ---------------------------------------------------------------------
+      // 🌟【未所持ダイレクト完全同期仕様】
+      // ---------------------------------------------------------------------
+      // 1️⃣ 【モーダル内】のプレビューカードを更新（生データをそのまま main.js に丸投げ）
+      const modalCardWrap = document.getElementById("js-modal-chara-card-wrap");
+      if (modalCardWrap) {
+        getSafeUpdateCardAppearance(modalCardWrap, targetRarity);
+      }
+
+      // 2️⃣ 【裏の一覧画面】のグレーアウト＆トランスフォーム更新
+      const listWrapCard = document.getElementById(`user-char-card-${char.id}`);
+      if (listWrapCard) {
         if (targetRarity === "未所持") {
-          listCard.classList.add("is-not-owned");
+          listWrapCard.classList.add("is-not-owned");
         } else {
-          listCard.classList.remove("is-not-owned");
+          listWrapCard.classList.remove("is-not-owned");
+        }
+
+        const oldInnerCard = listWrapCard.querySelector(".c-chara-card");
+        if (oldInnerCard) {
+          getSafeUpdateCardAppearance(oldInnerCard, targetRarity);
         }
       }
     };
@@ -311,7 +324,7 @@ function openUserCharDetailModal(char) {
         currentIndex--;
         updateRarityControlUI(currentIndex);
         console.log(
-          `✨ [レアリティ減少変更] ${char.name} : ${RARITY_OPTIONS[currentIndex]}`,
+          `✨ [レアリティ連動減少] ${char.name} : ${RARITY_OPTIONS[currentIndex]}`,
         );
       }
     };
@@ -323,21 +336,21 @@ function openUserCharDetailModal(char) {
         currentIndex++;
         updateRarityControlUI(currentIndex);
         console.log(
-          `✨ [レアリティ増加変更] ${char.name} : ${RARITY_OPTIONS[currentIndex]}`,
+          `✨ [レアリティ連動増加] ${char.name} : ${RARITY_OPTIONS[currentIndex]}`,
         );
       }
     };
   }
 
-  // ⭕️ 管理者ページの計算エンジンと完全に同じ計算式で数値を流し込み
+  // 管理者ページの計算エンジンと完全に同じ計算式で数値を流し込み
   if (char.status) {
     runUserStatusCalculationEngine(char.status, char.type);
   }
 
-  // ⭕️ モーダルを開いたときは「ミカエル武器（mika）」の状態で初期描画
+  // モーダルを開いたときは「ミカエル武器（mika）」の状態で初期描画
   switchUserWeaponTrigger("mika");
 
-  // パーティ編集モーダルと100%共通の挙動で開く
+  // モーダルオープン処理
   const modalEl = document.getElementById("userCharDetailModal");
   if (modalEl) {
     modalEl.classList.add("is-open");
@@ -346,7 +359,6 @@ function openUserCharDetailModal(char) {
 
     document.body.classList.add("is-modal-open");
 
-    // モーダルを開いた瞬間に、外枠と内枠両方のスクロール位置を一番上にリセットする
     const modalContainer = modalEl.querySelector(
       ".p-character-modal__container",
     );
@@ -706,6 +718,29 @@ async function saveAllCharacterRarityData() {
       updateBtn.classList.remove("is-success-flash");
       updateBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> 更新する';
     }, 1500);
+  }
+}
+
+/**
+ * 🔒 モジュール間スコープエラー（ReferenceError）を完全に回避するための安全ガード関数
+ */
+function getSafeCharacterBadgeElement(char, rarity) {
+  if (typeof window.createCharacterBadgeElement === "function") {
+    return window.createCharacterBadgeElement(char, rarity);
+  }
+  const fallbackCard = document.createElement("div");
+  fallbackCard.className = "c-chara-card";
+  fallbackCard.innerHTML = `
+    <div class="c-chara-card__image-wrapper"><img class="c-chara-card__img" src="${char.iconUrl || ""}" alt="${char.name}"></div>
+    <div class="c-chara-card__border"></div>
+    <div class="c-chara-card__stars"></div>
+  `;
+  return fallbackCard;
+}
+
+function getSafeUpdateCardAppearance(element, rarity) {
+  if (typeof window.updateCardAppearance === "function") {
+    window.updateCardAppearance(element, rarity);
   }
 }
 

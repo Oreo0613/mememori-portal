@@ -1,10 +1,11 @@
 @charset "UTF-8";
 
 /* -------------------------------------------------------------------------
-   👥 一般ユーザー用キャラクター一覧グリッド
+   👥 一般ユーザー用キャラクター一覧グリッド（新コンポーネント完全同期版）
    ------------------------------------------------------------------------- */
 .user-char-grid {
     display: grid;
+    /* 🌟 グリッドサイズをコンポーネントに最適化（64px -> 72px等に微調整するとさらに見やすくなります） */
     grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
     gap: 14px;
     padding: 16px 0 24px;
@@ -23,33 +24,28 @@
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-.user-char-card-wrap.is-not-owned .user-char-icon img {
-    opacity: 0.45;
-}
-
-.user-char-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-    cursor: pointer;
-    background-color: var(--color-gray-800);
-    border: 1px solid var(--color-gray-200);
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease;
-}
-
-.user-char-icon:hover {
-    transform: scale(1.08);
-    border-color: var(--theme-interactive);
-}
-
-.user-char-icon img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+}
+
+/* 🌟 【重要】未所持（グレーアウト）時のメメモリ風ダーク演出 */
+.user-char-card-wrap.is-not-owned .c-chara-card,
+.c-chara-card.is-not-owned {
+    /* 白黒化フィルターをかけ、透明度を落とすことで「未進化・未所持」を美しく表現 */
+    filter: grayscale(0.85);
+    opacity: 0.45;
+    box-shadow: none;
+}
+
+
+
+/* 🌟 キャラクターグリッド内のカードにホバーした時のササッとした拡大エフェクト */
+.user-char-card-wrap .c-chara-card {
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.user-char-card-wrap .c-chara-card:hover {
+    transform: scale(1.08);
 }
 
 /* -------------------------------------------------------------------------
@@ -67,6 +63,13 @@
 
     overflow-y: scroll;
     position: relative;
+}
+
+/* モーダル内の大きなキャラクターカードのサイズ固定ブレーキ */
+#js-modal-chara-card-wrap {
+    width: 100px;
+    height: 100px;
+    flex-shrink: 0;
 }
 
 /* 武器切り替えタブバーのコンテナ */
@@ -223,7 +226,8 @@
     display: block;
     width: 100%;
     padding: 8px 12px;
-    font-size: 16px; /* 📱 スマホでの自動画面ズームとはみ出しを強制停止 */
+    font-size: 16px;
+    /* 📱 スマホでの自動画面ズームとはみ出しを強制停止 */
     font-weight: bold;
     background-color: var(--color-white);
     color: var(--theme-text-main);
@@ -231,7 +235,7 @@
     border-radius: 6px;
     text-align: center;
     cursor: pointer;
-    
+
     /* 💻 PCブラウザで展開した時にOS標準のスクロールバーを正しく発火させる */
     overflow-y: auto;
 }
@@ -404,7 +408,7 @@
 /* -------------------------------------------------------------------------
    ➕➖ レアリティ変更プラスマイナスボタンUI
    ------------------------------------------------------------------------- */
-   .c-rarity-control {
+.c-rarity-control {
     display: flex;
     align-items: center;
     justify-content: space-between;
