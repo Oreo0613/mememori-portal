@@ -234,6 +234,7 @@
     background-color: var(--color-gray-100);
     cursor: pointer;
     transition: all 0.2s;
+    width: 100%;
 }
 
 .p-portal-party__slot.has-character {
@@ -254,8 +255,7 @@
 }
 
 .p-portal-party__slot span {
-    font-size: 18px;
-    color: var(--color-gray-400);
+
     user-select: none;
 }
 
@@ -443,6 +443,12 @@
     /* ブラウザ標準の野暮ったい下矢印をリセット */
     -webkit-appearance: none;
     -moz-appearance: none;
+}
+
+.p-portal-select__input.js-portal-modal-rarity {
+    font-size: 1.1rem;
+    padding: 2px;
+    border-radius: 4px;
 }
 
 /* 下矢印をカスタムの疑似要素として右端に配置 */
@@ -647,7 +653,7 @@
 }
 
 /* 枠内に画像が表示されている（is-hiddenクラスが剥がれている）時、プラスの「+」文字を自動で消す */
-.p-portal-party__slot:has(img:not(.is-hidden)) span {
+.p-portal-party__slot:has(img:not(.is-hidden)) .p-portal-party__plus-mark {
     display: none !important;
 }
 

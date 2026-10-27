@@ -50,6 +50,12 @@
     --color-tower-green: #16a34a;
     --color-tower-yellow: #d97706;
 
+    /* キャラのレアリティの枠線用 */
+    --color-sr: #d4af37;
+    --color-ssr: #9d5bbb;
+    --color-ur: #c2454a;
+    --color-lr: #2f2c2b;
+
     /* ----------------------------------------------------------------------
        🎯 セマンティックテーマ役割の定義 (役割と色のシンクロ)
        ---------------------------------------------------------------------- */
@@ -301,7 +307,7 @@ body.is-modal-open {
     z-index: 10;
     top: 2vh;
     padding: 6px 12px;
-    
+
     border-radius: 16px;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -1154,3 +1160,228 @@ body.is-modal-open {
     background-color: var(--theme-accent-action-active);
     transform: translateY(2px);
 }
+
+/* ==========================================================================
+   キャラアイコンコンポーネント (BEM: .c-chara-card)
+   ★完全レスポンシブ・固定値ゼロ対応版（コンテナクエリ仕様・本番移植型）
+   ========================================================================= */
+.c-chara-card {
+    position: relative;
+    /* 親要素（パーティスロットなど）の横幅に100%同調 */
+    width: 100%;
+    max-width: 100px;
+    /* 最大サイズをブレーキ */
+    aspect-ratio: 1 / 1;
+    /* 1対1の綺麗な正方形を絶対維持 */
+    container-type: inline-size;
+    /* 横幅を内部パーツのサイズ基準(コンテナ)として登録 */
+    border-radius: 12%;
+    /* メメモリ風のほどよい角丸 */
+    overflow: hidden;
+    box-shadow: 0 4.4cqw 11.1cqw rgba(0, 0, 0, 0.5);
+    user-select: none;
+}
+
+/* 画像ラッパー */
+.c-chara-card__image-wrapper {
+    width: 100%;
+    height: 100%;
+    background-color: #2a2a35;
+}
+
+.c-chara-card__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* レアリティ外枠線 */
+.c-chara-card__border {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 12%;
+    box-sizing: border-box;
+    pointer-events: none;
+    border: 4.4cqw solid transparent;
+    /* カード横幅の4.4%の太さ（自動スケール） */
+}
+
+/* 右下の「＋」バッジコンテナ */
+.c-chara-card__plus-badge {
+    position: absolute;
+    bottom: 2.2cqw;
+    right: 2.2cqw;
+    width: 26.6cqw;
+    height: 26.6cqw;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+.c-chara-card__plus-badge.is-active {
+    display: flex;
+}
+
+.c-chara-card__plus-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* 星（★）の配置コンテナ */
+.c-chara-card__stars {
+    position: absolute;
+    bottom: 4.4cqw;
+    left: 6.6cqw;
+    width: auto;
+    display: flex;
+    justify-content: flex-start;
+    gap: 1.1cqw;
+    pointer-events: none;
+}
+
+.c-chara-card__star {
+    font-size: 11.1cqw;
+    /* カードのサイズに完全に比例して自動追従 */
+    line-height: 1;
+    text-shadow: 0 1.1cqw 2.2cqw rgba(0, 0, 0, 0.9);
+}
+
+
+/* ==========================================================================
+   ✨ レアリティ・モード別のスタイル切り替え
+   ========================================================================== */
+
+/* ==========================================================================
+   キャラアイコンコンポーネント (BEM: .c-chara-card)
+   ★完全レスポンシブ・固定値ゼロ対応版（コンテナクエリ仕様・本番移植型）
+   ========================================================================= */
+.c-chara-card {
+    position: relative;
+    /* 親要素（パーティスロットなど）の横幅に100%同調 */
+    width: 100%;
+    max-width: 100px;
+    /* 最大サイズをブレーキ */
+    aspect-ratio: 1 / 1;
+    /* 1対1の綺麗な正方形を絶対維持 */
+    container-type: inline-size;
+    /* 横幅を内部パーツのサイズ基準(コンテナ)として登録 */
+    border-radius: 12%;
+    /* メメモリ風のほどよい角丸 */
+    overflow: hidden;
+    box-shadow: 0 4.4cqw 11.1cqw rgba(0, 0, 0, 0.5);
+    user-select: none;
+}
+
+/* 画像ラッパー */
+.c-chara-card__image-wrapper {
+    width: 100%;
+    height: 100%;
+    background-color: #2a2a35;
+}
+
+.c-chara-card__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* レアリティ外枠線 */
+.c-chara-card__border {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 12%;
+    box-sizing: border-box;
+    pointer-events: none;
+    border: 5.4cqw solid transparent;
+    /* カード横幅の4.4%の太さ（自動スケール） */
+}
+
+/* 右下の「＋」バッジコンテナ */
+.c-chara-card__plus-badge {
+    position: absolute;
+    bottom: 2.2cqw;
+    right: 2.2cqw;
+    width: 26.6cqw;
+    height: 26.6cqw;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+.c-chara-card__plus-badge.is-active {
+    display: flex;
+}
+
+.c-chara-card__plus-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* 星（★）の配置コンテナ */
+.c-chara-card__stars {
+    position: absolute;
+    bottom: 4.4cqw;
+    left: 6.6cqw;
+    width: auto;
+    display: flex;
+    justify-content: flex-start;
+    gap: 1.1cqw;
+    pointer-events: none;
+}
+
+.c-chara-card__star {
+    font-size: 11.1cqw;
+    /* カードのサイズに完全に比例して自動追従 */
+    line-height: 1;
+    text-shadow: 0 1.1cqw 2.2cqw rgba(0, 0, 0, 0.9);
+}
+
+/* レアリティごとの枠色 */
+.c-chara-card.is-rarity-sr .c-chara-card__border,
+.c-chara-card.is-rarity-sr_plus .c-chara-card__border {
+    border-color: var(--color-sr);
+}
+
+.c-chara-card.is-rarity-ssr .c-chara-card__border,
+.c-chara-card.is-rarity-ssr_plus .c-chara-card__border {
+    border-color: var(--color-ssr);
+}
+
+.c-chara-card.is-rarity-ur .c-chara-card__border,
+.c-chara-card.is-rarity-ur_plus .c-chara-card__border {
+    border-color: var(--color-ur);
+}
+
+.c-chara-card.is-rarity-lr .c-chara-card__border,
+.c-chara-card[class*="is-rarity-lr_"] .c-chara-card__border {
+    border-color: var(--color-lr);
+}
+
+/* 星の色 */
+.c-chara-card__star--purple {
+    color: #f7e7de;
+}
+
+.c-chara-card__star--blue {
+    color: #38bdf8;
+}
+
+/* ✨ 希望モードなどの特別演出（アクセントカラーを活用） */
+/* .c-chara-badge.m-mode-wish .c-chara-badge__frame {
+    border-color: var(--color-blue-400, #3e9ed6) !important;
+    box-shadow: 0 0 10px var(--color-green-500-alpha15);
+} */

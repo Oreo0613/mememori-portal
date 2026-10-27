@@ -1516,15 +1516,22 @@ function initPartySystemEvents() {
       currentPartiesState[activeEditingPartyIndex].partyName =
         inputName || "名称未設定パーティ";
 
+      const newMembers = [];
       for (let i = 1; i <= 5; i++) {
-        const val =
+        const charaId =
           document.getElementById(`js-portal-modal-chara-${i}`).value || null;
-        currentPartiesState[activeEditingPartyIndex].members[i - 1] = val;
+        const rarity =
+          document.getElementById(`js-portal-modal-rarity-${i}`).value || "SR";
+
+        if (charaId) {
+          newMembers.push({ charaId, rarity });
+        } else {
+          newMembers.push(null);
+        }
       }
+      currentPartiesState[activeEditingPartyIndex].members = newMembers;
 
       renderPartyListUI();
-
-      // 💡 ボタンのフォーカスを先に外してからクローズ処理へ
       savePartyBtn.blur();
       closePartyModal();
     });
@@ -1575,7 +1582,6 @@ function renderPartyListUI() {
     card.type = "button";
     card.className = "p-portal-party-card";
 
-    // ── ① パーティ名 ＆ 並び替えボタンを包むヘッダーエリア ──
     const headerDiv = document.createElement("div");
     headerDiv.style.cssText =
       "display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 8px;";
@@ -1585,7 +1591,6 @@ function renderPartyListUI() {
     nameSpan.textContent = party.partyName;
     headerDiv.appendChild(nameSpan);
 
-    // ↕️ 上下並び替えボタンのコンテナ
     const orderBtnsDiv = document.createElement("div");
     orderBtnsDiv.style.cssText = "display: flex; gap: 4px;";
 
@@ -1609,16 +1614,19 @@ function renderPartyListUI() {
     orderBtnsDiv.appendChild(upBtn);
     orderBtnsDiv.appendChild(downBtn);
     headerDiv.appendChild(orderBtnsDiv);
-
     card.appendChild(headerDiv);
 
-    // ── ② キャラクターのスロット部分 ──
     const slotsDiv = document.createElement("div");
     slotsDiv.className = "p-portal-party__slots";
 
-    party.members.forEach((charaId, slotIdx) => {
+    party.members.forEach((member) => {
       const slotIcon = document.createElement("div");
       slotIcon.className = "p-portal-party__slot";
+
+      // 互換性考慮：文字列ID、またはオブジェクト形式 { charaId, rarity } に対応
+      const charaId = typeof member === "string" ? member : member?.charaId;
+      const rarity =
+        typeof member === "object" && member?.rarity ? member.rarity : "SR";
 
       if (charaId && Array.isArray(master) && master.length > 0) {
         const found = master.find(
@@ -1626,10 +1634,9 @@ function renderPartyListUI() {
         );
         if (found) {
           slotIcon.classList.add("has-character");
-          const img = document.createElement("img");
-          img.src = found.iconUrl || "assets/images/chara-icon/1.webp";
-          img.alt = found.name || "";
-          slotIcon.appendChild(img);
+          // 🌟 共通バッジ関数を使って枠と星付きで描画
+          const badge = createCharacterBadgeElement(found, rarity);
+          slotIcon.appendChild(badge);
         } else {
           slotIcon.innerHTML = "<span>+</span>";
         }
@@ -1640,7 +1647,6 @@ function renderPartyListUI() {
     });
 
     card.appendChild(slotsDiv);
-
     card.addEventListener("click", () => {
       openPartyEditModal(index);
     });
@@ -1656,25 +1662,73 @@ function openPartyEditModal(index) {
 
   document.getElementById("js-input-party-name").value = party.partyName;
 
-  party.members.forEach((charaId, i) => {
+  party.members.forEach((member, i) => {
     const idx = i + 1;
     const inputField = document.getElementById(`js-portal-modal-chara-${idx}`);
-    const imgField = document.getElementById(`js-portal-modal-img-${idx}`);
+    const rarityField = document.getElementById(
+      `js-portal-modal-rarity-${idx}`,
+    );
+    const slotBtn =
+      inputField?.closest(".js-open-character-picker") ||
+      inputField?.parentElement;
+
+    // member から charaId と rarity を安全に取得
+    const charaId = typeof member === "string" ? member : member?.charaId;
+    const rarity =
+      typeof member === "object" && member?.rarity ? member.rarity : "SR";
 
     if (inputField) inputField.value = charaId || "";
-    if (imgField) {
+    if (rarityField) rarityField.value = rarity;
+
+    // モーダル側のプレビュー更新
+    // （main.js の openPartyEditModal 関数内の、slotsBtn を処理している箇所を以下のように統合・補強します）
+    if (slotBtn) {
+      // 既存のimgや古いバッジをきれいに掃除
+      const existingBadge = slotBtn.querySelector(".c-chara-card");
+      if (existingBadge) existingBadge.remove();
+
+      const oldImg = slotBtn.querySelector("img");
+      const plusSpan = slotBtn.querySelector("span");
+
       if (charaId && Array.isArray(characterMaster)) {
         const found = characterMaster.find(
           (c) => String(c.id) === String(charaId),
         );
         if (found) {
-          imgField.src = found.iconUrl;
-          imgField.classList.remove("is-hidden");
+          if (oldImg) oldImg.classList.add("is-hidden");
+          if (plusSpan) plusSpan.style.display = "none";
+
+          // 🌟 新しく統合したコンテナクエリ対応のアイコンをモーダル内にも生成して挿入
+          const badge = createCharacterBadgeElement(found, rarity);
+          slotBtn.appendChild(badge);
+
+          // 🌟【新規追加】セレクトボックス（レアリティ）が変更されたら、この枠だけ即座に再描画するイベントを仕込む
+          if (rarityField && !rarityField.dataset.hasListener) {
+            rarityField.dataset.hasListener = "true"; // 二重登録防止ガード
+            rarityField.addEventListener("change", (e) => {
+              // モーダルが現在開いているインデックスに基づいて、最新のcharaIdを再取得
+              const currentCharaId = inputField.value;
+              if (currentCharaId) {
+                const currentFound = characterMaster.find(
+                  (c) => String(c.id) === String(currentCharaId),
+                );
+                const freshBadge = slotBtn.querySelector(".c-chara-card");
+                if (freshBadge) freshBadge.remove();
+
+                // 新しいレアリティで作り直して差し替え
+                const updatedBadge = createCharacterBadgeElement(
+                  currentFound,
+                  e.target.value,
+                );
+                slotBtn.appendChild(updatedBadge);
+              }
+            });
+          }
           return;
         }
       }
-      imgField.src = "";
-      imgField.classList.add("is-hidden");
+      if (oldImg) oldImg.classList.add("is-hidden");
+      if (plusSpan) plusSpan.style.display = "block";
     }
   });
 
@@ -1683,7 +1737,6 @@ function openPartyEditModal(index) {
     modalParty.classList.add("is-open");
     modalParty.removeAttribute("aria-hidden");
     modalParty.removeAttribute("inert");
-
     document.body.classList.add("is-modal-open");
   }
 }
@@ -1787,4 +1840,97 @@ function movePartyOrder(index, direction, event) {
 
   // 画面を再描画して新しい並び順を反映
   renderPartyListUI();
+}
+
+/**
+ * 🔮 【新仕様・完全レスポンシブ対応】
+ * キャラクターのコンテナクエリ枠・アイコン・星・プラスバッジを動的に組み立てる共通生成関数
+ *
+ * @param {Object} charData - マスタから取得した魔女オブジェクト
+ * @param {string} rarity - レアリティ文字列（例: "SR+", "LR_7"）
+ * @returns {HTMLElement} 構築された .c-chara-card 要素
+ */
+function createCharacterBadgeElement(charData, rarity = "SR") {
+  const card = document.createElement("div");
+  card.className = "c-chara-card";
+
+  if (charData && charData.id) {
+    card.dataset.charaId = charData.id;
+  }
+
+  // 1. 各レアリティ専用のプラスバッジ画像パス設定（本番階層に合わせる）
+  const plusImagePaths = {
+    "SR+": "assets/images/chara-icon/sr-plus.png",
+    "SSR+": "assets/images/chara-icon/ssr-plus.png",
+    "UR+": "assets/images/chara-icon/ur-plus.png",
+  };
+
+  const avatarSrc =
+    charData && charData.iconUrl
+      ? charData.iconUrl
+      : "assets/images/chara-icon/1.webp";
+  const charName = charData && charData.name ? charData.name : "魔女";
+
+  // 2. レアリティに応じたクラスのクレンジング付与
+  const classSuffix = rarity.toLowerCase().replace("+", "_plus");
+  card.classList.add(`is-rarity-${classSuffix}`);
+
+  // 3. 基本HTMLストラクチャをインジェクト
+  card.innerHTML = `
+    <div class="c-chara-card__image-wrapper">
+        <img class="c-chara-card__img" src="${avatarSrc}" alt="${charName}" loading="lazy">
+    </div>
+    <div class="c-chara-card__border"></div>
+    <div class="c-chara-card__plus-badge">
+        <img src="" alt="plus" class="c-chara-card__plus-img">
+    </div>
+    <div class="c-chara-card__stars"></div>
+  `;
+
+  // 4. プラスバッジ専用画像の切り替え制御
+  const plusBadge = card.querySelector(".c-chara-card__plus-badge");
+  const plusImg = card.querySelector(".c-chara-card__plus-img");
+  if (rarity.endsWith("+")) {
+    const imagePath =
+      plusImagePaths[rarity] || "assets/images/badge-default-plus.png";
+    plusImg.src = imagePath;
+    plusImg.alt = `${rarity}プラス`;
+    plusBadge.classList.add("is-active");
+  }
+
+  // 5. LR〜LR10 進化段階に応じた星（★）の精密な動的組み立て
+  const starContainer = card.querySelector(".c-chara-card__stars");
+  if (rarity.startsWith("LR")) {
+    let totalStars = 0;
+    let blueStarCount = 0;
+
+    if (rarity === "LR") {
+      totalStars = 0; // 通常LRはメメモリ仕様に従い星0個
+    } else if (rarity.includes("_")) {
+      const lrLevel = parseInt(rarity.split("_")[1], 10);
+      if (lrLevel <= 5) {
+        totalStars = lrLevel; // LR1〜5：レベルの数だけ紫星
+        blueStarCount = 0;
+      } else {
+        totalStars = 5; // LR6〜10：星5個固定
+        blueStarCount = lrLevel - 5; // 左側から順次水色化
+      }
+    }
+
+    // 確定した数だけ星の要素を作成して流し込む
+    for (let i = 0; i < totalStars; i++) {
+      const starSpan = document.createElement("span");
+      starSpan.classList.add("c-chara-card__star");
+      starSpan.textContent = "★";
+
+      if (i < blueStarCount) {
+        starSpan.classList.add("c-chara-card__star--blue");
+      } else {
+        starSpan.classList.add("c-chara-card__star--purple");
+      }
+      starContainer.appendChild(starSpan);
+    }
+  }
+
+  return card;
 }

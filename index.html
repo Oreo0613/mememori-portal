@@ -190,7 +190,7 @@
 
                         <div class="p-portal-party__edit-zone">
                             <label class="c-form__label">編成メンバー</label>
-                            <div class="p-portal-party__slots js-party-modal-slots">
+                            <!-- <div class="p-portal-party__slots js-party-modal-slots">
                                 <button type="button" class="p-portal-party__slot js-open-character-picker"
                                     data-target-input="js-portal-modal-chara-1"
                                     data-target-preview="js-portal-modal-img-1">
@@ -226,6 +226,167 @@
                                     <span>+</span>
                                     <input type="hidden" id="js-portal-modal-chara-5" value="">
                                 </button>
+                            </div> -->
+                            <div class="p-portal-party__slots js-party-modal-slots">
+                                <!-- スロット1 -->
+                                <div class="p-portal-party__slot-col"
+                                    style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
+                                    <button type="button" class="p-portal-party__slot js-open-character-picker"
+                                        data-target-input="js-portal-modal-chara-1"
+                                        data-target-preview="js-portal-modal-img-1">
+                                        <img id="js-portal-modal-img-1" src="" class="is-hidden" alt="枠1">
+                                        <span class="p-portal-party__plus-mark">+</span>
+                                        <input type="hidden" id="js-portal-modal-chara-1" value="">
+                                    </button>
+                                    <select id="js-portal-modal-rarity-1"
+                                        class="p-portal-select__input js-portal-modal-rarity">
+                                        <option value="SR">SR</option>
+                                        <option value="SR+">SR+</option>
+                                        <option value="SSR">SSR</option>
+                                        <option value="SSR+">SSR+</option>
+                                        <option value="UR">UR</option>
+                                        <option value="UR+">UR+</option>
+                                        <option value="LR" selected>LR</option>
+                                        <option value="LR_1">LR1</option>
+                                        <option value="LR_2">LR2</option>
+                                        <option value="LR_3">LR3</option>
+                                        <option value="LR_4">LR4</option>
+                                        <option value="LR_5">LR5</option>
+                                        <option value="LR_6">LR6</option>
+                                        <option value="LR_7">LR7</option>
+                                        <option value="LR_8">LR8</option>
+                                        <option value="LR_9">LR9</option>
+                                        <option value="LR_10">LR10</option>
+                                    </select>
+                                </div>
+
+                                <!-- スロット2 -->
+                                <div class="p-portal-party__slot-col"
+                                    style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
+                                    <button type="button" class="p-portal-party__slot js-open-character-picker"
+                                        data-target-input="js-portal-modal-chara-2"
+                                        data-target-preview="js-portal-modal-img-2">
+                                        <img id="js-portal-modal-img-2" src="" class="is-hidden" alt="枠2">
+                                        <span class="p-portal-party__plus-mark">+</span>
+                                        <input type="hidden" id="js-portal-modal-chara-2" value="">
+                                    </button>
+                                    <select id="js-portal-modal-rarity-2"
+                                        class="p-portal-select__input js-portal-modal-rarity">
+                                        <option value="SR">SR</option>
+                                        <option value="SR+">SR+</option>
+                                        <option value="SSR">SSR</option>
+                                        <option value="SSR+">SSR+</option>
+                                        <option value="UR">UR</option>
+                                        <option value="UR+">UR+</option>
+                                        <option value="LR" selected>LR</option>
+                                        <option value="LR_1">LR1</option>
+                                        <option value="LR_2">LR2</option>
+                                        <option value="LR_3">LR3</option>
+                                        <option value="LR_4">LR4</option>
+                                        <option value="LR_5">LR5</option>
+                                        <option value="LR_6">LR6</option>
+                                        <option value="LR_7">LR7</option>
+                                        <option value="LR_8">LR8</option>
+                                        <option value="LR_9">LR9</option>
+                                        <option value="LR_10">LR10</option>
+                                    </select>
+                                </div>
+
+                                <!-- スロット3 -->
+                                <div class="p-portal-party__slot-col"
+                                    style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
+                                    <button type="button" class="p-portal-party__slot js-open-character-picker"
+                                        data-target-input="js-portal-modal-chara-3"
+                                        data-target-preview="js-portal-modal-img-3">
+                                        <img id="js-portal-modal-img-3" src="" class="is-hidden" alt="枠3">
+                                        <span class="p-portal-party__plus-mark">+</span>
+                                        <input type="hidden" id="js-portal-modal-chara-3" value="">
+                                    </button>
+                                    <select id="js-portal-modal-rarity-3"
+                                        class="p-portal-select__input js-portal-modal-rarity">
+                                        <option value="SR">SR</option>
+                                        <option value="SR+">SR+</option>
+                                        <option value="SSR">SSR</option>
+                                        <option value="SSR+">SSR+</option>
+                                        <option value="UR">UR</option>
+                                        <option value="UR+">UR+</option>
+                                        <option value="LR" selected>LR</option>
+                                        <option value="LR_1">LR1</option>
+                                        <option value="LR_2">LR2</option>
+                                        <option value="LR_3">LR3</option>
+                                        <option value="LR_4">LR4</option>
+                                        <option value="LR_5">LR5</option>
+                                        <option value="LR_6">LR6</option>
+                                        <option value="LR_7">LR7</option>
+                                        <option value="LR_8">LR8</option>
+                                        <option value="LR_9">LR9</option>
+                                        <option value="LR_10">LR10</option>
+                                    </select>
+                                </div>
+
+                                <!-- スロット4 -->
+                                <div class="p-portal-party__slot-col"
+                                    style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
+                                    <button type="button" class="p-portal-party__slot js-open-character-picker"
+                                        data-target-input="js-portal-modal-chara-4"
+                                        data-target-preview="js-portal-modal-img-4">
+                                        <img id="js-portal-modal-img-4" src="" class="is-hidden" alt="枠4">
+                                        <span class="p-portal-party__plus-mark">+</span>
+                                        <input type="hidden" id="js-portal-modal-chara-4" value="">
+                                    </button>
+                                    <select id="js-portal-modal-rarity-4"
+                                        class="p-portal-select__input js-portal-modal-rarity">
+                                        <option value="SR">SR</option>
+                                        <option value="SR+">SR+</option>
+                                        <option value="SSR">SSR</option>
+                                        <option value="SSR+">SSR+</option>
+                                        <option value="UR">UR</option>
+                                        <option value="UR+">UR+</option>
+                                        <option value="LR" selected>LR</option>
+                                        <option value="LR_1">LR1</option>
+                                        <option value="LR_2">LR2</option>
+                                        <option value="LR_3">LR3</option>
+                                        <option value="LR_4">LR4</option>
+                                        <option value="LR_5">LR5</option>
+                                        <option value="LR_6">LR6</option>
+                                        <option value="LR_7">LR7</option>
+                                        <option value="LR_8">LR8</option>
+                                        <option value="LR_9">LR9</option>
+                                        <option value="LR_10">LR10</option>
+                                    </select>
+                                </div>
+
+                                <!-- スロット5 -->
+                                <div class="p-portal-party__slot-col"
+                                    style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
+                                    <button type="button" class="p-portal-party__slot js-open-character-picker"
+                                        data-target-input="js-portal-modal-chara-5"
+                                        data-target-preview="js-portal-modal-img-5">
+                                        <img id="js-portal-modal-img-5" src="" class="is-hidden" alt="枠5">
+                                        <span class="p-portal-party__plus-mark">+</span>
+                                        <input type="hidden" id="js-portal-modal-chara-5" value="">
+                                    </button>
+                                    <select id="js-portal-modal-rarity-5"
+                                        class="p-portal-select__input js-portal-modal-rarity">
+                                        <option value="SR">SR</option>
+                                        <option value="SR+">SR+</option>
+                                        <option value="SSR">SSR</option>
+                                        <option value="SSR+">SSR+</option>
+                                        <option value="UR">UR</option>
+                                        <option value="UR+">UR+</option>
+                                        <option value="LR" selected>LR</option>
+                                        <option value="LR_1">LR1</option>
+                                        <option value="LR_2">LR2</option>
+                                        <option value="LR_3">LR3</option>
+                                        <option value="LR_4">LR4</option>
+                                        <option value="LR_5">LR5</option>
+                                        <option value="LR_6">LR6</option>
+                                        <option value="LR_7">LR7</option>
+                                        <option value="LR_8">LR8</option>
+                                        <option value="LR_9">LR9</option>
+                                        <option value="LR_10">LR10</option>
+                                    </select>
+                                </div>
                             </div>
                             <p class="c-world-form__help u-mt-8">※ドラッグ＆ドロップして並び替え出来ます。</p>
                         </div>
