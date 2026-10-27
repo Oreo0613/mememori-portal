@@ -32,7 +32,7 @@
 
 .p-arcana-table th,
 .p-arcana-table td {
-    padding: 14px 16px;
+    padding: 12px 16px;
     vertical-align: middle;
 }
 
@@ -71,8 +71,8 @@
 }
 
 .p-arcana-table .slot {
-    width: 38px;
-    height: 38px;
+    width: 50px;
+    height: 50px;
     border-radius: 6px;
     background-color: var(--bg-slot, #f1f5f9);
     border: 1px solid var(--border-color, #cbd5e1);
@@ -80,6 +80,8 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
+
+    position: relative;
 }
 
 .p-arcana-table .slot img {
@@ -368,6 +370,74 @@
 .p-arcana-matrix-wrapper {
     max-height: 70vh;
     overflow-y: auto;
+}
+
+
+.slot {
+    container-type: inline-size;
+}
+
+.slot.is-not-owned {
+    filter: grayscale(0.55);
+    opacity: 0.85;
+    box-shadow: none;
+}
+
+.slot__plus {
+    width: 25cqw;
+}
+
+.slot__border {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 2px solid #ccc;
+    /* デフォルト枠線 */
+    border-radius: 6px;
+    box-sizing: border-box;
+    pointer-events: none;
+    /* 下の要素のホバーやクリックを阻害しない */
+}
+
+/* 💡 レアリティごとに枠線の色を変える設定例 */
+.slot.rarity--sr .slot__border,
+.slot.rarity--sr-plus .slot__border {
+    border-color: var(--color-sr);
+}
+
+.slot.rarity--ssr .slot__border,
+.slot.rarity--ssr-plus .slot__border {
+    border-color: var(--color-ssr);
+}
+
+.slot.rarity--ur .slot__border,
+.slot.rarity--ur-plus .slot__border {
+    border-color: var(--color-ur);
+}
+
+.slot[class*="rarity--lr"] .slot__border {
+    border-color: var(--color-lr);
+}
+
+
+/* ☆マーク（必要に応じて背景画像等で個数を制御） */
+.slot__stars {
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    pointer-events: none;
+}
+
+/* ＋画像（進化画面や在庫表示用バッジなど） */
+.slot__plus {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    pointer-events: none;
 }
 
 

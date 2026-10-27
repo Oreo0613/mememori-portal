@@ -2,6 +2,8 @@ import {
   doc,
   getDoc,
   setDoc,
+  collection,
+  getDocs,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 // 優先度の選択肢定義
@@ -44,6 +46,7 @@ const EFFECT_TAGS_MASTER = [
 
 let arcanaMaster = [];
 let userArcanaStatusMap = {}; // { arcanaId: "LR解放済" 等 }
+let userCharactersMap = {}; // { charId: { rarity: "SSR", ... } } の形で保持する
 let currentUserId = null;
 let currentWorldId = null;
 let selectedFilters = []; // 選択中のフィルター配列
@@ -150,8 +153,44 @@ function initFilterClearEvent() {
 async function initAndRenderArcana() {
   currentWorldId = sessionStorage.getItem("app_current_world_id") || "w1";
   userArcanaStatusMap = {};
-  await fetchUserArcanaStatus();
+  userCharactersMap = {}; // 💡 追加：初期化
+
+  // 💡 変更：アルカナステータスとキャラクターのレアリティ双方を取得する
+  await Promise.all([
+    fetchUserArcanaStatus(),
+    fetchUserCharactersStatus(), // 💡 追加：キャラクターデータを取得する関数を並列で走らせる
+  ]);
+
   renderArcanaTable();
+}
+
+/**
+ * 📥 【追加】Firestoreからユーザーのキャラクター育成（レアリティ）進捗を取得
+ */
+async function fetchUserCharactersStatus() {
+  if (!currentUserId || !currentWorldId || !window.db) return;
+  try {
+    const charCollectionRef = collection(
+      window.db,
+      "users",
+      currentUserId,
+      "worlds",
+      currentWorldId,
+      "ownedCharacters",
+    );
+    const querySnapshot = await getDocs(charCollectionRef);
+
+    querySnapshot.forEach((doc) => {
+      userCharactersMap[doc.id] = doc.data(); // doc.id は 'c001' など。中身は { rarity: "SSR" } など
+    });
+    console.log(
+      "📥 [Arcana] キャラクターのレアリティマップを読み込みました",
+      userCharactersMap,
+    );
+  } catch (error) {
+    console.error("🚨 キャラクター所持情報の取得に失敗しました:", error);
+    userCharactersMap = {};
+  }
 }
 
 /**
@@ -328,9 +367,70 @@ function renderArcanaTable() {
         const foundChar = charMaster.find(
           (ch) => String(ch.id).trim() === String(cId).trim(),
         );
-        return foundChar
-          ? `<div class="slot"><img src="${foundChar.iconUrl}" alt="${foundChar.name}" title="${foundChar.name}"></div>`
-          : `<div class="slot slot__id-fallback">${cId}</div>`;
+
+        if (!foundChar) {
+          return `<div class="slot slot__id-fallback">${cId}</div>`;
+        }
+
+        // 💡 データベース（Firestore）からこのキャラクターの現在のレアリティを取得
+        const userCharData = userCharactersMap[foundChar.id];
+        const currentRarity = userCharData ? userCharData.rarity : "未所持"; // デフォルトを未所持に変更
+
+        // 💡 所持状況・レアリティに応じたクラス名の動的分離
+        let rarityClassName = "";
+        if (currentRarity === "未所持") {
+          // 🌟【新仕様】未所持の場合は開発ルールに準拠した状態クラスを付与
+          rarityClassName = "is-not-owned";
+        } else {
+          // 所持している場合はセーフクラスに変換（例: "SSR+" -> "rarity--ssr-plus"）
+          const safeRarityClass = String(currentRarity)
+            .toLowerCase()
+            .replace("+", "-plus");
+          rarityClassName = `rarity--${safeRarityClass}`;
+        }
+
+        // 🌟【main.jsの共通関数を利用】
+        let starsHtml = "";
+        let plusHtml = "";
+
+        // 所持している場合のみ星やプラスバッジを抽出（未所持なら空のまま）
+        if (
+          currentRarity !== "未所持" &&
+          typeof window.createCharacterBadgeElement === "function"
+        ) {
+          const badgeEl = window.createCharacterBadgeElement(
+            foundChar,
+            currentRarity,
+          );
+          const starsEl = badgeEl.querySelector(".c-chara-card__stars");
+          const plusImgEl = badgeEl.querySelector(".c-chara-card__plus-badge");
+
+          if (starsEl) starsHtml = starsEl.innerHTML;
+          if (plusImgEl && plusImgEl.classList.contains("is-active")) {
+            plusHtml = plusImgEl.innerHTML;
+          }
+        }
+
+        // .slotの直下にimgと装飾パーツをすべて同階層で並べる構造
+        return `
+          <div class="slot ${rarityClassName}" data-rarity="${currentRarity}" title="${foundChar.name} (${currentRarity})">
+            <!-- 1. キャラクターの顔グラフィック -->
+            <img src="${foundChar.iconUrl}" alt="${foundChar.name}">
+            
+            <!-- 2. 枠線（同じ階層） -->
+            <div class="slot__border"></div>
+            
+            <!-- 3. ☆マーク（同じ階層） -->
+            <div class="slot__stars">
+              ${starsHtml}
+            </div>
+            
+            <!-- 4. ＋画像（同じ階層） -->
+            <div class="slot__plus">
+              ${plusHtml}
+            </div>
+          </div>
+        `;
       };
 
       let selectOptionsHtml = "";
