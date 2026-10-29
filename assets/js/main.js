@@ -232,22 +232,30 @@ async function loadWorldList(userId) {
   }
 }
 
-// 📄 ページ読み込み時のエントリーポイント（ピッカー起動対応版）
+// 📄 ページ読み込み時のエントリーポイント（モバイル・再読み込み完全同期対策版）
 document.addEventListener("DOMContentLoaded", async () => {
-  // 🔥 最優先で魔女マスタデータをロードしてメモリにキャッシュする
-  await fetchCharacterMaster();
+  console.log("⏳ [Init] ページコンテンツの初期化を開始します...");
 
+  // 1. まずHTMLの骨組み（フッター・セレクター）を確実に挿入してDOM要素を出現させる
   await insertFooter();
-  setActiveNavigation();
   await insertWorldSelector();
 
+  // 2. ナビゲーションのクラス付与
+  setActiveNavigation();
+
+  // 3. 最優先で魔女マスタデータをロードし、メモリへの格納完了を絶対に「待つ」
+  await fetchCharacterMaster();
+
+  // 4. キャラクターピッカー等のUIコンポーネントを準備
   injectAndInitCharacterPicker();
 
+  // 5. 各種イベントのバインド
   initWorldSelectorEvent();
   initPortalDashboardEvents();
-
   initPartySystemEvents();
   initPartyDragAndDrop();
+
+  console.log("✅ [Init] すべてのフロントエンドインフラの準備が整いました。");
 });
 
 // 📁 共通フッター挿入
@@ -880,7 +888,7 @@ async function loadPortalDashboardData(userId, worldId) {
         doc,
         setDoc,
         serverTimestamp,
-        getDoc
+        getDoc,
       );
     }
 
