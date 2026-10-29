@@ -880,6 +880,7 @@ async function loadPortalDashboardData(userId, worldId) {
         doc,
         setDoc,
         serverTimestamp,
+        getDoc
       );
     }
 
