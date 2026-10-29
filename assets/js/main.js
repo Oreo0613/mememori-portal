@@ -871,27 +871,6 @@ async function loadPortalDashboardData(userId, worldId) {
     // 🟢すべてのマッピングが終わったこのタイミングで、左上ヘッダーセレクターへ値を同期する！
     syncHeaderWorldSelector(data.worldNumber, data.worldName, data.characterId);
 
-    // ✨ワールド切り替え時に、キャラクター一覧側のグリッドも最新データで再描画させる
-
-    if (typeof window.initUserCharacterTab === "function") {
-      console.log(
-        "🔄 [World Switch Bridge] ワールド変更を検知したため、キャラクター一覧を再展開します。",
-      );
-      window.initUserCharacterTab(
-        characterMaster,
-        db,
-        auth,
-        userId,
-        worldId,
-        collection,
-        getDocs,
-        doc,
-        setDoc,
-        serverTimestamp,
-        getDoc,
-      );
-    }
-
     console.log("✅ ダッシュボードデータのUIマッピングが完了しました");
   } catch (error) {
     console.error("🚨 ダッシュボードロードエラー:", error);
@@ -1193,26 +1172,6 @@ onAuthStateChanged(auth, async (user) => {
       if (activeWorldId) {
         await loadPortalDashboardData(user.uid, activeWorldId);
       }
-
-      // 🔥Firestoreの全ロードが完了したこの瞬間に、キャラクタータブの初期化を直接叩く！（マップ構造連携版）
-      if (typeof window.initUserCharacterTab === "function") {
-        console.log(
-          "🚀 [Main Bridge] インフラの準備が整ったため、キャラ一覧を即時展開します。",
-        );
-        window.initUserCharacterTab(
-          characterMaster,
-          db,
-          auth,
-          user.uid,
-          activeWorldId,
-          collection,
-          getDocs,
-          doc,
-          setDoc,
-          serverTimestamp,
-          getDoc, // 💡 新設計のcharacter.jsに getDoc を受け渡すために追加
-        );
-      }
     } catch (error) {
       console.error("🚨 アカウント情報の自動ロードに失敗しました:", error);
     }
@@ -1223,6 +1182,35 @@ onAuthStateChanged(auth, async (user) => {
       "🔒 未ログイン状態を検知しました。認証ページへ強制移動します。",
     );
     window.location.href = "login.html";
+  }
+
+  const currentPath = window.location.pathname.toLowerCase();
+
+  // 💡 いま開いている画面のURLが「character.html」の時だけ、3回目の通信（魔女マップ）を起動する！
+  if (
+    currentPath.includes("character.html") &&
+    typeof window.initUserCharacterTab === "function"
+  ) {
+    console.log(
+      "🚀 [Main Bridge] キャラクターページへのアクセスを確認。専用マップをロードします。",
+    );
+
+    // 💡【バグ修正】エラーの原因だった activeWorldId を、呼び出しの直前でセッションから安全に回収
+    const activeWorldId = sessionStorage.getItem("app_current_world_id");
+
+    window.initUserCharacterTab(
+      characterMaster,
+      db,
+      auth,
+      user.uid, // ➔ ログより、user はすでに存在しているので安全です
+      activeWorldId, // ➔ これで undefined エラーが完全に解消されます
+      collection,
+      getDocs,
+      doc,
+      setDoc,
+      serverTimestamp,
+      getDoc,
+    );
   }
 });
 
