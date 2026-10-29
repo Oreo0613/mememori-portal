@@ -1754,67 +1754,82 @@ function openPartyEditModal(index) {
   }
 }
 
-// ⚔️ モーダル編集枠専用のドラッグ＆ドロップ入れ替え（スワップ）機能
-// 🟢 バグを修正した正しいイベント処理
+// ⚔️ モーダル編集枠専用のドラッグ＆ドロップ入れ替え（スワップ）機能【完全修正版】
 function initPartyDragAndDrop() {
+  // 💡 対象を button ではなく、親の列要素（.p-portal-party__slot-col）に変更
   const slots = document.querySelectorAll(
-    ".js-party-modal-slots .p-portal-party__slot",
+    ".js-party-modal-slots .p-portal-party__slot-col",
   );
   let draggedSlot = null;
 
   slots.forEach((slot) => {
     slot.setAttribute("draggable", "true");
 
-    // ① ドラッグ開始：動かしている本人に付与
+    // ① ドラッグ開始
     slot.addEventListener("dragstart", (e) => {
       draggedSlot = slot;
       slot.classList.add("is-dragging");
       e.dataTransfer.effectAllowed = "move";
-      e.dataTransfer.setData("text/plain", slot.dataset.targetInput);
     });
 
-    // ② ドラッグ終了：成否に関わらず、動かしていた本人のクラスを絶対に外す
+    // ② ドラッグ終了
     slot.addEventListener("dragend", () => {
       slot.classList.remove("is-dragging");
-      slots.forEach((s) => s.classList.remove("is-drag-over")); // 全枠の重なりクラスも掃除
+      slots.forEach((s) => s.classList.remove("is-drag-over"));
       draggedSlot = null;
     });
 
-    // ③ 他の枠の上に重なったとき：重なられた側の枠に「is-drag-over」を付与
+    // ③ 他の枠の上に重なったとき
     slot.addEventListener("dragover", (e) => {
       e.preventDefault();
       if (draggedSlot && slot !== draggedSlot) {
-        slot.classList.add("is-drag-over"); // 👈 is-drag-over に修正
+        slot.classList.add("is-drag-over");
       }
     });
 
-    // ④ 重なりから外れたとき：重なられていた枠から「is-drag-over」を外す
+    // ④ 重なりから外れたとき
     slot.addEventListener("dragleave", () => {
       slot.classList.remove("is-drag-over");
     });
 
-    // ⑤ ドロップされたとき
+    // ⑤ ドロップされたとき（データ及びUIの完全スワップ）
     slot.addEventListener("drop", (e) => {
       e.preventDefault();
       slot.classList.remove("is-drag-over");
       if (!draggedSlot || draggedSlot === slot) return;
 
-      const srcInputId = draggedSlot.dataset.targetInput;
-      const srcImgId = draggedSlot.dataset.targetPreview;
-      const destInputId = slot.dataset.targetInput;
-      const destImgId = slot.dataset.targetPreview;
+      // 💡 お互いの列の内部要素を正確にキャッチ
+      const srcBtn = draggedSlot.querySelector(".p-portal-party__slot");
+      const destBtn = slot.querySelector(".p-portal-party__slot");
+      const srcSelect = draggedSlot.querySelector(".js-portal-modal-rarity");
+      const destSelect = slot.querySelector(".js-portal-modal-rarity");
 
-      const srcInput = document.getElementById(srcInputId);
-      const srcImg = document.getElementById(srcImgId);
-      const destInput = document.getElementById(destInputId);
-      const destImg = document.getElementById(destImgId);
+      if (!srcBtn || !destBtn || !srcSelect || !destSelect) return;
 
-      if (!srcInput || !destInput) return;
+      const srcInput = document.getElementById(srcBtn.dataset.targetInput);
+      const srcImg = document.getElementById(srcBtn.dataset.targetPreview);
+      const destInput = document.getElementById(destBtn.dataset.targetInput);
+      const destImg = document.getElementById(destBtn.dataset.targetPreview);
 
+      if (!srcInput || !destInput || !srcImg || !destImg) return;
+
+      // 1. キャラクターID（hidden input）の入れ替え
       const tempValue = srcInput.value;
       srcInput.value = destInput.value;
       destInput.value = tempValue;
 
+      // 2. レアリティ（select）の入れ替え
+      const tempRarity = srcSelect.value;
+      srcSelect.value = destSelect.value;
+      destSelect.value = tempRarity;
+
+      // 3. 既存の動的バッジ（c-chara-card）やプラスマーク等の表示状態を丸ごと入れ替える
+      const srcBadge = srcBtn.querySelector(".c-chara-card");
+      const destBadge = destBtn.querySelector(".c-chara-card");
+      const srcPlus = srcBtn.querySelector(".p-portal-party__plus-mark");
+      const destPlus = destBtn.querySelector(".p-portal-party__plus-mark");
+
+      // プレビュー画像のsrcと隠しクラスのスワップ
       const tempImgSrc = srcImg.src;
       const tempImgHidden = srcImg.classList.contains("is-hidden");
 
@@ -1832,8 +1847,24 @@ function initPartyDragAndDrop() {
       }
       destImg.src = tempImgSrc;
 
+      // プラスマーク（＋）の表示・非表示の同期
+      if (srcPlus && destPlus) {
+        const tempPlusDisplay = srcPlus.style.display;
+        srcPlus.style.display = destPlus.style.display;
+        destPlus.style.display = tempPlusDisplay;
+      }
+
+      // 動的バッジ要素（星や枠線など）が存在すれば要素ごとスワップ
+      if (srcBadge) srcBadge.remove();
+      if (destBadge) destBadge.remove();
+      if (srcBadge) destBtn.appendChild(srcBadge);
+      if (destBadge) srcBtn.appendChild(destBadge);
+
+      // 4. 変更をシステムにリアルタイム通知
       srcInput.dispatchEvent(new Event("change", { bubbles: true }));
       destInput.dispatchEvent(new Event("change", { bubbles: true }));
+      srcSelect.dispatchEvent(new Event("change", { bubbles: true }));
+      destSelect.dispatchEvent(new Event("change", { bubbles: true }));
     });
   });
 }
