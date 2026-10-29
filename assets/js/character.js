@@ -104,6 +104,7 @@ window.initUserCharacterTab = async function (
           fbDoc,
           fbSetDoc,
           fbServerTimestamp,
+          fbGetDoc,
         ),
       100,
     );
