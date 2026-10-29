@@ -1668,15 +1668,71 @@ function bindCharacterPickerEvents() {
           const targetInput = document.getElementById(activeInputTargetId);
           if (targetInput) {
             targetInput.value = chara.id;
-
-            // 💡【重要】値が書き換わったことをブラウザにリアルタイム通知するイベントを発火
             targetInput.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+
+          // 🔮【バグ修正】新規パーティでもキャラ選択の瞬間にHTML構造をバッジ化し、セレクトイベントを紐付ける
+          // 選択されたスロットがパーティ編集モーダル内のもの（js-portal-modal-chara-X）か判定
+          if (activeInputTargetId.startsWith("js-portal-modal-chara-")) {
+            const slotIdx = activeInputTargetId.replace(
+              "js-portal-modal-chara-",
+              "",
+            );
+            const slotBtn =
+              targetInput.closest(".js-open-character-picker") ||
+              targetInput.parentElement;
+            const rarityField = document.getElementById(
+              `js-portal-modal-rarity-${slotIdx}`,
+            );
+
+            if (slotBtn && rarityField) {
+              // 1. 古いプレビュー用imgや既存のバッジをきれいに大掃除
+              const existingBadge = slotBtn.querySelector(".c-chara-card");
+              if (existingBadge) existingBadge.remove();
+              const oldImg = slotBtn.querySelector("img");
+              if (oldImg) oldImg.classList.add("is-hidden");
+              const plusSpan = slotBtn.querySelector("span");
+              if (plusSpan) plusSpan.style.display = "none";
+
+              // 2. 現在のセレクトボックスのレアリティ値を使って、即座にコンテナクエリ対応のバッジHTMLを動的挿入
+              const currentRarity = rarityField.value || "SR";
+              const badge = createCharacterBadgeElement(chara, currentRarity);
+              slotBtn.appendChild(badge);
+
+              // 3. セレクトボックスの変更イベントをその場で確実に紐付け（多重登録防止ガード付き）
+              if (!rarityField.dataset.hasListener) {
+                rarityField.dataset.hasListener = "true";
+                rarityField.addEventListener("change", (e) => {
+                  // レアリティ変更時、hidden inputから最新のキャラIDを引っ張って再描画
+                  const latestCharId = targetInput.value;
+                  if (latestCharId && window.characterMaster) {
+                    const foundChar = window.characterMaster.find(
+                      (c) => String(c.id) === String(latestCharId),
+                    );
+                    if (foundChar) {
+                      const freshBadge = slotBtn.querySelector(".c-chara-card");
+                      if (freshBadge) freshBadge.remove();
+
+                      const updatedBadge = createCharacterBadgeElement(
+                        foundChar,
+                        e.target.value,
+                      );
+                      slotBtn.appendChild(updatedBadge);
+                    }
+                  }
+                });
+              }
+            }
           }
         }
 
         if (activePreviewTargetId) {
           const targetPreview = document.getElementById(activePreviewTargetId);
-          if (targetPreview) {
+          // パーティ編集枠以外（詳細設定など）のフォールバック動作
+          if (
+            targetPreview &&
+            !activeInputTargetId.startsWith("js-portal-modal-chara-")
+          ) {
             targetPreview.src =
               chara.iconUrl || "assets/images/chara-icon/1.webp";
             targetPreview.classList.remove("is-hidden");
