@@ -62,6 +62,7 @@ import {
   query,
   orderBy,
   where,
+  deleteDoc,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 import {
@@ -739,6 +740,37 @@ function initWorldSelectorEvent() {
   }
 
   // --------------------------------------------------------------------------
+  // 🔄 【新規追加】キャッシュを強制破棄してFirestoreから最新のワールド一覧を取り直す
+  // --------------------------------------------------------------------------
+  const syncBtn = document.getElementById("js-world-cache-sync");
+  if (syncBtn) {
+    syncBtn.addEventListener("click", async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      try {
+        syncBtn.disabled = true;
+        syncBtn.innerHTML =
+          '<i class="fa-solid fa-spinner fa-spin"></i> ワールド読込中...';
+
+        // 💡 セレクター用のキャッシュをピンポイントで削除！
+        sessionStorage.removeItem("mememori_world_list");
+
+        // 💡 [Cache Miss] を発生させて Firestore から強制的に最新の型抜き一覧を再取得
+        await loadWorldList(user.uid);
+
+        alert("ワールド一覧をクラウドの最新状態と同期しました！");
+      } catch (error) {
+        console.error("🚨 手動同期エラー:", error);
+        alert("同期に失敗しました。通信環境を確認してください。");
+      } finally {
+        syncBtn.disabled = false;
+        syncBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> ワールド再読込';
+      }
+    });
+  }
+
+  // --------------------------------------------------------------------------
   // 📝 フォーム送信：②カスタムアカウント名変更・UIロックのリアルタイム解除
   // --------------------------------------------------------------------------
   if (accountNameForm) {
@@ -1222,6 +1254,82 @@ function initPortalDashboardEvents() {
             updateBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> 更新する';
           }, 1500); // 1.5秒間フラッシュと完了文字を維持
         }
+      }
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // 🗑️ 【新規追加】「このワールドを完全に削除する」ボタンの物理削除＆キャッシュ自動お掃除
+  // --------------------------------------------------------------------------
+  const deleteWorldBtn = document.getElementById("js-portal-btn-delete-world");
+  if (deleteWorldBtn) {
+    deleteWorldBtn.addEventListener("click", async () => {
+      const user = auth.currentUser;
+      const currentWorldId = sessionStorage.getItem("app_current_world_id");
+
+      if (!user || !currentWorldId) {
+        alert(
+          "削除対象のワールドが選択されていないか、セッションが切れています。",
+        );
+        return;
+      }
+
+      // 🛑 ユーザー誤爆防止用の2連厳重確認ロック
+      const confirm1 = confirm(
+        "⚠️【重要】本当にこのワールドを完全に削除しますか？\n登録したクエスト、塔、パーティ、メモ等のデータがすべてクラウドから永久に消失します。",
+      );
+      if (!confirm1) return;
+
+      const confirm2 = confirm(
+        "【最終確認】本当に削除してよろしいですか？\nこの操作は取り消せません。",
+      );
+      if (!confirm2) return;
+
+      try {
+        deleteWorldBtn.disabled = true;
+        deleteWorldBtn.innerHTML =
+          '<i class="fa-solid fa-spinner fa-spin"></i> 削除中...';
+
+        // 1. Firestore からワールドドキュメントを物理削除
+        const worldDocRef = doc(
+          db,
+          "users",
+          user.uid,
+          "worlds",
+          currentWorldId,
+        );
+        await deleteDoc(worldDocRef);
+
+        // 2. キャッシュ（セッションストレージ）からも該当のワールドを取り除いて整合性を保つ
+        const cacheKey = "mememori_world_list";
+        const cachedData = sessionStorage.getItem(cacheKey);
+        if (cachedData) {
+          let worldsArray = JSON.parse(cachedData);
+          const targetIndex = worldsArray.findIndex(
+            (w) => String(w.id) === String(currentWorldId),
+          );
+          if (targetIndex !== -1) {
+            worldsArray.splice(targetIndex, 1); // 一軍のキャッシュリストから該当の1件を削除
+            sessionStorage.setItem(cacheKey, JSON.stringify(worldsArray));
+          }
+        }
+
+        // 3. セッション上の「現在選択中のワールドID」もクリア
+        sessionStorage.removeItem("app_current_world_id");
+
+        alert("ワールドデータをクラウドから完全に削除しました。");
+
+        // 選択ワールドが消失したため、ヘッダー表示を初期化して安全にリロードをかける
+        syncHeaderWorldSelector(null, "");
+        window.location.reload();
+      } catch (error) {
+        console.error("🚨 ワールド物理削除エラー:", error);
+        alert(
+          "ワールドの削除に失敗しました。権限や通信環境を確認してください。",
+        );
+        deleteWorldBtn.disabled = false;
+        deleteWorldBtn.innerHTML =
+          '<i class="fa-solid fa-trash-can"></i> このワールドを完全に削除する';
       }
     });
   }
