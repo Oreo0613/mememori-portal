@@ -1359,20 +1359,31 @@ document.addEventListener("click", async (e) => {
   }
 });
 
-// 💡 2. メイン画面側の状態監視 ＆ ログイン必須の防犯ロック
+let isMainAppLoading = false;
+
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     console.log(`👤 ログイン監視中... (UID: ${user.uid})`);
 
-    const modalHeaderName = document.getElementById("js-modal-user-text");
-    const modalUidText = document.getElementById("js-modal-uid-text");
-
-    if (modalUidText) {
-      modalUidText.textContent = `ID: ${user.uid.substring(0, 8)}...`;
+    // 【超重要】すでに初期化の通信が走っている場合は、連打（多重発火）による大渋滞を防ぐためにブロック
+    if (isMainAppLoading) {
+      console.warn(
+        "⏳ [Main] すでに初期化通信が実行中のため、重複処理をブロックします。",
+      );
+      return;
     }
 
     try {
-      console.log("⏳ Firestoreからアカウント情報を自動ロード中...");
+      isMainAppLoading = true; // 🚧 通信ロック開始（防波堤を立てる）
+
+      const modalHeaderName = document.getElementById("js-modal-user-text");
+      const modalUidText = document.getElementById("js-modal-uid-text");
+
+      if (modalUidText) {
+        modalUidText.textContent = `ID: ${user.uid.substring(0, 8)}...`;
+      }
+
+      console.log("⏳ [Main: Step 1] アカウント情報をロード中...");
       const accountData = await loadAccountData(user.uid);
 
       if (accountData && accountData.accountName) {
@@ -1384,53 +1395,60 @@ onAuthStateChanged(auth, async (user) => {
         if (modalHeaderName) modalHeaderName.textContent = "未設定";
       }
 
-      // 登録されたワールド一覧をロードしてモーダルにセットする
+      console.log("⏳ [Main: Step 2] ワールド一覧をロード中...");
+      // ➔ 完了するまできちんと待つ（await）
       await loadWorldList(user.uid);
 
-      // 💡 セッションに「選択中ワールド」が残っていれば自動でデータをダッシュボードに復元ロードする
+      // セッションに「選択中ワールド」が残っていれば自動でデータをダッシュボードに復元ロードする
       const activeWorldId = sessionStorage.getItem("app_current_world_id");
       if (activeWorldId) {
+        console.log(
+          `⏳ [Main: Step 3] 選択中ワールド[${activeWorldId}]のデータをロード中...`,
+        );
+        // ➔ 完了するまできちんと待つ（await）
         await loadPortalDashboardData(user.uid, activeWorldId);
       }
+
+      // アカウント登録状況チェック
+      checkAccountRegistrationStatus();
+
+      // 💡 【バグ修正】キャラクターページの初期化処理を、確実にuserが確定した「ここ（ifの中）」に移動
+      const currentPath = window.location.pathname.toLowerCase();
+      if (
+        currentPath.includes("character.html") &&
+        typeof window.initUserCharacterTab === "function"
+      ) {
+        console.log(
+          "🚀 [Main Bridge] キャラクターページへのアクセスを確認。専用マップを安全に一列に並べてロードします。",
+        );
+
+        // ➔ 完了するまできちんと待つ（await）
+        await window.initUserCharacterTab(
+          characterMaster,
+          db,
+          auth,
+          user.uid,
+          activeWorldId,
+          collection,
+          getDocs,
+          doc,
+          setDoc,
+          serverTimestamp,
+          getDoc,
+        );
+      }
+
+      console.log("✅ [Main] すべての一本道ロードが正常に完了しました！");
     } catch (error) {
       console.error("🚨 アカウント情報の自動ロードに失敗しました:", error);
+    } finally {
+      isMainAppLoading = false; // 🔓 すべての処理が終わったらロックを解除
     }
-
-    checkAccountRegistrationStatus();
   } else {
     console.log(
       "🔒 未ログイン状態を検知しました。認証ページへ強制移動します。",
     );
     window.location.href = "login.html";
-  }
-
-  const currentPath = window.location.pathname.toLowerCase();
-
-  // 💡 いま開いている画面のURLが「character.html」の時だけ、3回目の通信（魔女マップ）を起動する！
-  if (
-    currentPath.includes("character.html") &&
-    typeof window.initUserCharacterTab === "function"
-  ) {
-    console.log(
-      "🚀 [Main Bridge] キャラクターページへのアクセスを確認。専用マップをロードします。",
-    );
-
-    // 💡【バグ修正】エラーの原因だった activeWorldId を、呼び出しの直前でセッションから安全に回収
-    const activeWorldId = sessionStorage.getItem("app_current_world_id");
-
-    window.initUserCharacterTab(
-      characterMaster,
-      db,
-      auth,
-      user.uid, // ➔ ログより、user はすでに存在しているので安全です
-      activeWorldId, // ➔ これで undefined エラーが完全に解消されます
-      collection,
-      getDocs,
-      doc,
-      setDoc,
-      serverTimestamp,
-      getDoc,
-    );
   }
 });
 

@@ -676,36 +676,4 @@ function getSafeUpdateCardAppearance(element, rarity) {
     window.updateCardAppearance(element, rarity);
 }
 
-// ==========================================================================
-// 🔮 [On-Demand] キャラクターページ自身が、開かれた瞬間に主導権を持って初期化する
-// ==========================================================================
-// main.js のログイン監視完了（auth.currentUser が取れる状態）を安全に待ってから起動
-window.auth?.onAuthStateChanged(async (user) => {
-  if (user) {
-    const activeWorldId = sessionStorage.getItem("app_current_world_id");
-
-    console.log(
-      "🔮 [Character Page] 自立起動します。このページで必要な魔女マップだけをロードします。",
-    );
-
-    // 自分自身の初期化関数を、必要なFirebaseインフラ参照を添えて実行
-    // ※インフラ関数はグローバル(window)またはmain.jsから共有されているものを安全に回収します
-    if (typeof window.initUserCharacterTab === "function") {
-      window.initUserCharacterTab(
-        window.characterMaster || [], // main.jsでロード済みのマスタ
-        window.db || _db,
-        window.auth,
-        user.uid,
-        activeWorldId,
-        window.collection || _collection,
-        window.getDocs,
-        window.doc || _doc,
-        window.setDoc || _setDoc,
-        window.serverTimestamp || _serverTimestamp,
-        window.getDoc || _getDoc,
-      );
-    }
-  }
-});
-
 window.switchUserWeaponTrigger = switchUserWeaponTrigger;
