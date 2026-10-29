@@ -204,6 +204,33 @@ async function loadWorldList(userId) {
           new CustomEvent("appWorldChanged", { detail: { worldId } }),
         );
 
+        // ==========================================================================
+        // 🔮 【追記】キャラクターページでのリアルタイムワールド切り替え連動ガード
+        // ==========================================================================
+        const currentPath = window.location.pathname.toLowerCase();
+        if (
+          currentPath.includes("character.html") &&
+          typeof window.initUserCharacterTab === "function"
+        ) {
+          console.log(
+            "🔄 [World Switch] キャラクターページ内でのワールド変更を検知。最新のキャラ一覧を再展開します。",
+          );
+
+          window.initUserCharacterTab(
+            characterMaster, // main.jsでロード済みのマスタ
+            db,
+            auth,
+            userId, // ➔ 決定ボタンが保持している現在のユーザーID
+            worldId, // ➔ いま新しくクリックして選択したワールドID
+            collection,
+            getDocs,
+            doc,
+            setDoc,
+            serverTimestamp,
+            getDoc,
+          );
+        }
+
         const modalSelect = document.getElementById("js-world-modal");
         if (modalSelect) {
           modalSelect.classList.remove("is-open");
