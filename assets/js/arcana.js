@@ -53,49 +53,77 @@ let currentWorldId = null;
 let selectedFilters = []; // 選択中のフィルター配列
 
 /**
- * 🔮 アルカナページの初期化エントリーポイント
+ * 🔮 アルカナページの初期化エントリーポイント（非同期ズレ完全修正版）
  */
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("⏳ [Arcana] アルカナページの初期化を開始します...");
 
-  // 1. まずマスタデータを読み込む
+  // 1. まずローカルのJSONマスタデータを確実に読み込んで完了を「待つ」
   await loadMasters();
 
-  // 2. フィルターボタンの描画 ＆ クリアボタンのイベント設定
+  // 2. フィルターボタンやモーダルの枠組みをUIに準備
   renderFilterChips();
   initFilterClearEvent();
-
-  // 3. 合算効果モーダルのHTML枠組みを挿入
   injectArcanaTotalModal();
 
-  // 4. 認証情報の準備ができるのを待ってから処理を開始
-  const checkAuthReady = setInterval(async () => {
-    if (window.auth) {
-      clearInterval(checkAuthReady);
+  // 3. main.js が Firebase(window.auth) を初期化するのを安全に待つための関数
+  function waitForAuth() {
+    return new Promise((resolve) => {
+      // すでに存在すれば即終了
+      if (window.auth) return resolve(window.auth);
 
-      window.auth.onAuthStateChanged(async (user) => {
-        if (!user) {
-          console.warn("⚠️ ログインしていません。ログインページに移動します。");
-          window.location.href = "login.html";
-          return;
+      // まだ無ければ、main.jsがwindow.authを生やすのを10ms刻みで静かに待つ（通信は発生しない）
+      const timer = setInterval(() => {
+        if (window.auth) {
+          clearInterval(timer);
+          resolve(window.auth);
         }
-        currentUserId = user.uid;
+      }, 10);
+    });
+  }
 
-        // 初回ロード＆描画の実行
-        await initAndRenderArcana();
+  // インフラの準備を待つ
+  const authInstance = await waitForAuth();
 
-        // 5. 「更新する」ボタンのクリックイベントを設定
-        initUpdateEvent();
-      });
+  // 4. Firebase Authのログイン状態を監視（ここでの多重発火を防ぐ）
+  let isFirstLoad = true; // 初回トリガーを1回だけに縛るための防波堤フラグ
+
+  authInstance.onAuthStateChanged(async (user) => {
+    if (!user) {
+      console.warn("⚠️ ログインしていません。ログインページに移動します。");
+      window.location.href = "login.html";
+      return;
     }
-  }, 100);
 
-  // ワールド切り替えイベントを監視
+    // すでに1度ロード済みの場合は、Auth経由の重複発火を無視する
+    if (!isFirstLoad) return;
+    isFirstLoad = false;
+
+    currentUserId = user.uid;
+    console.log("👤 [Arcana] ログイン確認完了。データを順番にロードします。");
+
+    // 初回ロード＆描画の実行（await をつけて確実に取得を待つ）
+    await initAndRenderArcana();
+
+    // 5. 画面が完全に構築された後に「更新する」ボタンのイベントを設定
+    initUpdateEvent();
+  });
+
+  // 6. ワールド切り替えイベントを監視（main.jsのセッション書き込みが完了した後に1度だけ走る）
   window.addEventListener("appWorldChanged", async (e) => {
     if (!currentUserId) return;
+
+    // イベントから渡された新しいワールドID、またはセッションから最新値を取得
     const newWorldId =
       e.detail?.worldId || sessionStorage.getItem("app_current_world_id");
+    if (currentWorldId === newWorldId) return; // すでに同じワールドが選択されていれば通信をスキップ
+
+    console.log(
+      `🔄 [Arcana] ワールド切り替えを検知しました (新: ${newWorldId})`,
+    );
     currentWorldId = newWorldId;
+
+    // 確実にawaitして再描画
     await initAndRenderArcana();
   });
 });
@@ -148,21 +176,41 @@ function initFilterClearEvent() {
   });
 }
 
+let isArcanaLoading = false; // 👈 ファイル上部の変数定義エリアに追加してください
+
 /**
  * 🌍 ワールドごとの進捗データをFirestoreから取得し、テーブルを構築・再描画する共通関数
  */
 async function initAndRenderArcana() {
-  currentWorldId = sessionStorage.getItem("app_current_world_id") || "w1";
-  userArcanaStatusMap = {};
-  userCharactersMap = {}; // 💡 追加：初期化
+  // すでに通信が走っている場合は、重複してFirestoreを叩かせない
+  if (isArcanaLoading) {
+    console.warn("⏳ [Arcana] 現在データ取得中のため、処理をスキップします。");
+    return;
+  }
 
-  // 💡 変更：アルカナステータスとキャラクターのレアリティ双方を取得する
-  await Promise.all([
-    fetchUserArcanaStatus(),
-    fetchUserCharactersStatus(), // 💡 追加：キャラクターデータを取得する関数を並列で走らせる
-  ]);
+  try {
+    isArcanaLoading = true; // ロックをかける
 
-  renderArcanaTable();
+    currentWorldId = sessionStorage.getItem("app_current_world_id") || "w1";
+    userArcanaStatusMap = {};
+    userCharactersMap = {};
+
+    console.log(
+      `📡 [Arcana] Firestoreから通信データを並列取得します... (${currentWorldId})`,
+    );
+
+    // アルカナステータスとキャラクターのレアリティ双方を取得する（完全に終わるまで待つ）
+    await Promise.all([fetchUserArcanaStatus(), fetchUserCharactersStatus()]);
+
+    console.log(
+      "📊 [Arcana] データの取得が完了しました。テーブルを描画します。",
+    );
+    renderArcanaTable();
+  } catch (error) {
+    console.error("🚨 画面初期化中にエラーが発生しました:", error);
+  } finally {
+    isArcanaLoading = false; // 処理が終わったら必ずロックを解除
+  }
 }
 
 /**
