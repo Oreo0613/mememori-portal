@@ -640,12 +640,12 @@ function initWorldSelectorEvent() {
       if (!user) return;
 
       try {
-        // 🛑ワールド数上限（最大20個）のガード処理
+        // 🛑ワールド数上限（最大8個）のガード処理
         const currentActiveWorlds =
           document.querySelectorAll(".js-world-choice");
-        if (currentActiveWorlds.length >= 20) {
+        if (currentActiveWorlds.length >= 8) {
           alert(
-            "ワールドは1アカウントにつき最大20までしか作成できません。\n不要なワールドを詳細設定から「アーカイブ」にするか、管理してください。",
+            "ワールドは1アカウントにつき最大8までしか作成できません。\n不要なワールドを詳細設定から「アーカイブ」にするか、管理してください。",
           );
           createWorldForm.reset();
           return;
@@ -1737,8 +1737,8 @@ function initPartySystemEvents() {
   // ➕ 新規パーティ追加処理
   if (addPartyBtn) {
     addPartyBtn.addEventListener("click", () => {
-      if (currentPartiesState.length >= 8) {
-        alert("パーティは最大8つまでしか作成できません。");
+      if (currentPartiesState.length >= 20) {
+        alert("パーティは最大20までしか作成できません。");
         return;
       }
 
