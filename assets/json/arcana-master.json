@@ -1969,7 +1969,7 @@
         "name": "ヴェネティキの回生",
         "charId1": "136",
         "charId2": "79",
-        "charId3": "未定",
+        "charId3": "137",
         "charId4": "",
         "effectsList": [
             {
@@ -1981,6 +1981,26 @@
                 "status": "腕力",
                 "type": "charLv",
                 "value": 70
+            }
+        ]
+    },
+    {
+        "id": "102",
+        "name": "ボーテスの贖罪",
+        "charId1": "137",
+        "charId2": "63",
+        "charId3": "未定",
+        "charId4": "",
+        "effectsList": [
+            {
+                "status": "弱体効果耐性",
+                "type": "percent",
+                "value": 1.5
+            },
+            {
+                "status": "攻撃力",
+                "type": "percent",
+                "value": 2
             }
         ]
     }
