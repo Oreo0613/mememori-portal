@@ -213,7 +213,7 @@ async function loadWorldList(userId) {
           typeof window.initUserCharacterTab === "function"
         ) {
           console.log(
-            "🔄 [World Switch] キャラクターページ内でのワールド変更を検知。最新のキャラ一覧を再展開します。",
+            "🔄 [World Switch] キャラクターページ内でのワールド変更を検知。最新の再展開します。",
           );
 
           window.initUserCharacterTab(
