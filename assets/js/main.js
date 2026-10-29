@@ -109,41 +109,72 @@ async function loadAccountData(userId) {
   }
 }
 
-// 🌐 ワールド情報のロード・モーダルリスト生成処理
+// 🌐 ワールド情報のロード・モーダルリスト生成処理（修正版）
 async function loadWorldList(userId) {
   const worldListContainer = document.querySelector(".js-world-list");
   if (!worldListContainer) return;
 
   try {
-    console.log("⏳ Firestoreからワールド一覧をロード中...");
+    console.log("⏳ ワールド一覧をロード中...");
 
-    const worldsRef = collection(db, "users", userId, "worlds");
-    const q = query(worldsRef, orderBy("worldNumber", "asc"));
-    const querySnapshot = await getDocs(q);
+    // ----------- 💡 キャッシュ戦略） -----------
+    const cacheKey = "mememori_world_list";
+    const cachedData = sessionStorage.getItem(cacheKey);
+    let worldsArray = [];
+
+    if (cachedData) {
+      console.log(
+        "👑 [Cache Hit] セッションストレージからワールドリストを復元（Firestore通信 0回）",
+      );
+      worldsArray = JSON.parse(cachedData);
+    } else {
+      console.log(
+        "📡 [Cache Miss] Firestoreから最新のワールド一覧を取得します（通信発生）",
+      );
+      const worldsRef = collection(db, "users", userId, "worlds");
+      const q = query(worldsRef, orderBy("worldNumber", "asc"));
+      const querySnapshot = await getDocs(q);
+
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        worldsArray.push({
+          id: docSnap.id,
+          worldNumber: data.worldNumber,
+          worldName: data.worldName,
+          characterId: data.characterId || null,
+          isActive: data.isActive !== false,
+        });
+      });
+
+      // 取得したデータをセッションストレージに保存
+      sessionStorage.setItem(cacheKey, JSON.stringify(worldsArray));
+    }
+    // -----------------------------------------------------------
 
     worldListContainer.innerHTML = "";
 
-    if (querySnapshot.empty) {
+    if (worldsArray.length === 0) {
       worldListContainer.innerHTML =
         '<li class="c-world-modal__item" style="text-align:center; padding: 15px; color:#888;">登録されたワールドがありません</li>';
       return;
     }
 
     let activeCount = 0;
-    // 💡 現在セッションに保存されている選択中ワールドIDを取得
     const cachedWorldId = sessionStorage.getItem("app_current_world_id");
 
-    querySnapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      const worldId = docSnap.id;
+    // 💡 querySnapshot.forEach から worldsArray.forEach に変更して、以降のUI生成ロジックはそのまま流用
+    worldsArray.forEach((worldDoc) => {
+      const data = worldDoc; // データをそのまま利用
+      const worldId = worldDoc.id;
 
-      // isActive が明示的に false の場合は一軍セレクターから除外（アーカイブ隠蔽化）
       if (data.isActive === false) return;
 
       activeCount++;
       const worldNumber = data.worldNumber;
       const worldName = data.worldName || "";
       const charId = data.characterId || null;
+
+      // ---（以下、既存のボタン生成、クリックイベント、モーダルを閉じる処理がそのまま続きます）---
 
       const iconSrc = getWorldIconSrc(charId);
 
@@ -587,13 +618,14 @@ function initWorldSelectorEvent() {
     overlayAccount.addEventListener("click", closeAccountModal);
 
   // --------------------------------------------------------------------------
-  // 📝 フォーム送信：①ワールド新規追加（Firestoreデータ保存 ＆ 即時ロード連動）
+  // 📝 フォーム送信：①ワールド新規追加（Firestoreデータ保存 ＆ キャッシュ上書き連動）
   // --------------------------------------------------------------------------
   const createWorldForm = document.getElementById("js-create-world-form");
   if (createWorldForm) {
     createWorldForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
+      // 💡 【修正】抜けていた入力値の取得ロジックを復活
       const inputNumber = document
         .getElementById("js-input-world-number")
         ?.value.trim();
@@ -608,7 +640,6 @@ function initWorldSelectorEvent() {
 
       try {
         // 🛑ワールド数上限（最大8個）のガード処理
-        // アクティブなワールドのボタン（.js-world-choice）が画面やモーダル内にいくつあるかをカウント
         const currentActiveWorlds =
           document.querySelectorAll(".js-world-choice");
         if (currentActiveWorlds.length >= 8) {
@@ -621,13 +652,18 @@ function initWorldSelectorEvent() {
 
         console.log(`⏳ ユーザー「${user.uid}」の領域へデータを送信中...`);
 
-        // 1. Firestoreへデータ保存（新しく追加されたドキュメントの参照を newWorldRef として受け取る）
+        // 1. 新しいレコードのオブジェクトを手元で作る
+        const newWorldData = {
+          worldNumber: Number(inputNumber),
+          worldName: inputName || "名称未設定",
+          isActive: true,
+        };
+
+        // 2. Firestoreへ保存
         const newWorldRef = await addDoc(
           collection(db, "users", user.uid, "worlds"),
           {
-            worldNumber: Number(inputNumber),
-            worldName: inputName || null,
-            isActive: true,
+            ...newWorldData,
             createdAt: serverTimestamp(),
           },
         );
@@ -636,10 +672,28 @@ function initWorldSelectorEvent() {
           `✅ 正常に書き込みが完了しました！ドキュメントID: ${newWorldRef.id}`,
         );
 
-        // 💡 【ここが重要！】新規登録したワールドを「現在選択中のワールド」としてセッションに登録する
+        // ★★★【通信削減】キャッシュを消さずに、手元で合体させて上書き保存する
+        const cacheKey = "mememori_world_list";
+        const cachedData = sessionStorage.getItem(cacheKey);
+        let worldsArray = cachedData ? JSON.parse(cachedData) : [];
+
+        // 必要な項目だけを厳選してキャッシュに混ぜる
+        worldsArray.push({
+          id: newWorldRef.id,
+          worldNumber: newWorldData.worldNumber,
+          worldName: newWorldData.worldName,
+          characterId: null, // 新規時はまだ未設定
+          isActive: true,
+        });
+
+        // 数値（サーバー番号）順に綺麗に並び替えてセッションに再格納
+        worldsArray.sort((a, b) => a.worldNumber - b.worldNumber);
+        sessionStorage.setItem(cacheKey, JSON.stringify(worldsArray));
+
+        // セッションに現在選択IDをセット
         sessionStorage.setItem("app_current_world_id", newWorldRef.id);
 
-        // 1. 先にフォームをリセットし、送信ボタンのフォーカスを安全に外す
+        // フォームリセット
         createWorldForm.reset();
 
         const statusSelect = document.getElementById(
@@ -650,11 +704,9 @@ function initWorldSelectorEvent() {
         const activeSubmitBtn = document.getElementById(
           "js-create-world-submit",
         );
-        if (activeSubmitBtn) {
-          activeSubmitBtn.blur();
-        }
+        if (activeSubmitBtn) activeSubmitBtn.blur();
 
-        // 2. 警告対策：ダッシュボードデータを読み込む前に、確実にモーダルを完全に閉じて眠らせる
+        // 💡 【修正】存在しない関数を廃止し、確実にモーダルを閉じるUI処理へ変更
         const modalAdd = document.getElementById("js-create-modal");
         if (modalAdd) {
           modalAdd.classList.remove("is-open");
@@ -662,11 +714,10 @@ function initWorldSelectorEvent() {
           modalAdd.setAttribute("inert", "");
         }
 
-        // 3. モーダル内のワールド一覧リストを最新状態に再読み込み
+        // 3. 【通信0回】アップデートされたキャッシュを使ってUIリストを即座に再描画
         await loadWorldList(user.uid);
 
-        // 4. 新規登録したワールドの情報をダッシュボードに反映・同期する
-        // (この中でフォーカスが移動しても、すでにモーダルは閉じているので警告は出ません)
+        // 4. 新規登録したワールドのダッシュボード初期表示をロード
         await loadPortalDashboardData(user.uid, newWorldRef.id);
 
         // ワールド選択モーダルも一緒にクローズ
@@ -676,6 +727,8 @@ function initWorldSelectorEvent() {
           modalSelect.setAttribute("aria-hidden", "true");
           modalSelect.setAttribute("inert", "");
         }
+
+        document.body.classList.remove("is-modal-open");
       } catch (error) {
         console.error("❌ 本番階層への保存に失敗しました。原因:", error);
         alert(
@@ -1068,29 +1121,59 @@ function initPortalDashboardEvents() {
           currentWorldId,
         );
 
-        // Firestoreへマージ保存
-        await setDoc(
-          worldDocRef,
-          {
-            questProgress: questProgressStr,
-            towerMuguu: towerMuguu ? Number(towerMuguu) : null,
-            towerBlue: towerBlue ? Number(towerBlue) : null,
-            towerRed: towerRed ? Number(towerRed) : null,
-            towerGreen: towerGreen ? Number(towerGreen) : null,
-            towerYellow: towerYellow ? Number(towerYellow) : null,
-            worldMemo: worldMemo || null,
-            worldName: worldName || "名称未設定",
-            startDate: startDate || null,
-            externalLink: externalLink || null,
-            characterId: characterId || null,
-            parties: currentPartiesState, // キャッシュされているパーティ配列
-            isActive: isActive,
-            updatedAt: serverTimestamp(),
-          },
-          { merge: true },
-        );
+        // Firestoreへマージ保存するデータオブジェクト
+        const updateData = {
+          questProgress: questProgressStr,
+          towerMuguu: towerMuguu ? Number(towerMuguu) : null,
+          towerBlue: towerBlue ? Number(towerBlue) : null,
+          towerRed: towerRed ? Number(towerRed) : null,
+          towerGreen: towerGreen ? Number(towerGreen) : null,
+          towerYellow: towerYellow ? Number(towerYellow) : null,
+          worldMemo: worldMemo || null,
+          worldName: worldName || "名称未設定",
+          startDate: startDate || null,
+          externalLink: externalLink || null,
+          characterId: characterId || null,
+          parties: currentPartiesState, // キャッシュされているパーティ配列
+          isActive: isActive,
+          updatedAt: serverTimestamp(),
+        };
 
-        // 💡 リストや表示の再同期
+        // 1. Firestoreへマージ保存
+        await setDoc(worldDocRef, updateData, { merge: true });
+
+        // 2. ★★★【通信削減】手元のセッションストレージ（キャッシュ）を部分書き換え★★★
+        const cacheKey = "mememori_world_list";
+        const cachedData = sessionStorage.getItem(cacheKey);
+
+        if (cachedData) {
+          let worldsArray = JSON.parse(cachedData);
+
+          // 現在編集していたワールドを配列内から探し出す
+          const targetIndex = worldsArray.findIndex(
+            (w) => String(w.id) === String(currentWorldId),
+          );
+
+          if (targetIndex !== -1) {
+            if (!isActive) {
+              // 💡 もし「アーカイブ（非アクティブ）」に修正された場合は、一軍リストのキャッシュから削除
+              worldsArray.splice(targetIndex, 1);
+            } else {
+              // 💡 通常の修正（名前やメインキャラの変更）なら、一覧表示に必要な項目だけを部分上書き
+              worldsArray[targetIndex] = {
+                ...worldsArray[targetIndex], // 既存のドキュメントIDやcreatedAt等の他データを維持
+                worldName: updateData.worldName,
+                characterId: updateData.characterId,
+                isActive: true,
+              };
+            }
+
+            // 書き換えた最新の配列をキャッシュに上書き保存（これ以降の loadWorldList での通信が 0回 に！）
+            sessionStorage.setItem(cacheKey, JSON.stringify(worldsArray));
+          }
+        }
+
+        // 3. 【通信0回】キャッシュが更新されたので、Firestoreを叩かずにUIリストを一瞬で再描画
         await loadWorldList(user.uid);
 
         // 💡 もし詳細設定で非アクティブ化（アーカイブ化）された場合のUI制御
@@ -1113,7 +1196,7 @@ function initPortalDashboardEvents() {
           return; // アーカイブ時はリロードが入るためここで処理を抜ける
         }
 
-        // 通常の更新成功時：最新データを再描画
+        // 通常の更新成功時：最新データをダッシュボードに反映・同期
         await loadPortalDashboardData(user.uid, currentWorldId);
 
         // ✨【アニメーション演出】成功フラッシュクラスを付与し、文言を切り替える
@@ -1154,9 +1237,11 @@ document.addEventListener("click", async (e) => {
     if (confirm("ログアウトしますか？")) {
       try {
         console.log("⏳ Googleからサインアウト中...");
-        // ログアウト時はセッションストレージも綺麗にクリアする
-        sessionStorage.removeItem("app_custom_username");
-        sessionStorage.removeItem("app_current_world_id");
+
+        // ----------- 💡 ここを変更（一括クリア） -----------
+        sessionStorage.clear(); // すべてのキャッシュ（カスタム名、アクティブID、ワールドリスト）を完全消去
+        // -------------------------------------------------
+
         await signOut(auth);
         console.log("👋 ログアウトが成功しました。");
       } catch (error) {
