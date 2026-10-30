@@ -807,7 +807,6 @@ function injectCharacterArcanaModalSkeleton() {
           <button type="button" class="c-world-modal__close-btn js-char-arcana-modal-close">&times;</button>
         </header>
         <div class="p-char-modal-content">
-          <p class="p-char-modal-section-title">📜 関与しているアルカナ効果一覧</p>
           <div class="p-char-modal-list" id="js-char-modal-arcana-list"></div>
         </div>
       </div>

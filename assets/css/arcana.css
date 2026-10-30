@@ -597,13 +597,6 @@ button.slot.js-char-anchor:active {
     padding-right: 6px;
 }
 
-.p-char-modal-section-title {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: var(--theme-text-main);
-    margin-bottom: 12px;
-}
-
 .p-char-modal-list {
     display: flex;
     flex-direction: column;
