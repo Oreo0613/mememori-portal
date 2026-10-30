@@ -564,8 +564,8 @@ button.slot.js-char-anchor:active {
 }
 
 .p-char-modal-avatar {
-    width: 52px;
-    height: 52px;
+    width: 72px;
+    height: 72px;
     flex-shrink: 0;
 }
 
@@ -573,6 +573,8 @@ button.slot.js-char-anchor:active {
     width: 100% !important;
     height: 100% !important;
     box-shadow: none !important;
+
+    position: relative;
 }
 
 .p-char-modal-name {
