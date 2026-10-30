@@ -2459,41 +2459,49 @@ function updateCardAppearance(cardElement, rarity) {
   }
 }
 
-document.querySelector('.js-share-button').addEventListener('click', async () => {
-  const targetElement = document.querySelector('#js-portal-party-list');
-  if (!targetElement) return;
+// 💡 要素が存在する場合のみイベントを登録する安全ガードを追加
+const shareBtn = document.querySelector(".js-share-button");
+if (shareBtn) {
+  shareBtn.addEventListener("click", async () => {
+    const targetElement = document.querySelector("#js-portal-party-list");
+    if (!targetElement) return;
 
-  try {
-    // 1. パーティ編成エリアをカシャッと画像（Blobデータ）に変換
-    const canvas = await html2canvas(targetElement, { useCORS: true });
-    
-    canvas.toBlob(async (blob) => {
-      if (!blob) return;
+    try {
+      // 1. パーティ編成エリアをカシャッと画像（Blobデータ）に変換
+      const canvas = await html2canvas(targetElement, { useCORS: true });
 
-      const file = new File([blob], 'mememori-party.png', { type: 'image/png' });
-      const shareData = {
-        files: [file],
-        title: 'メメモリPORTAL',
-        text: 'マイパーティを共有！ #メメモリ'
-      };
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
 
-      // 2. パターンA: スマホの標準シェア（LINE/Discord/X対応）が使えるかチェック
-      if (navigator.canShare && navigator.canShare(shareData)) {
-        await navigator.share(shareData);
-      } else {
-        // 3. パターンB: 弾かれた場合はクリップボードに画像を強制コピー
-        const item = new ClipboardItem({ "image/png": blob });
-        await navigator.clipboard.write([item]);
-        alert("画像をクリップボードにコピーしました！\nLINEやXを開いて「貼り付け」で共有してね！");
-      }
-    }, 'image/png');
+        const file = new File([blob], "mememori-party.png", {
+          type: "image/png",
+        });
+        const shareData = {
+          files: [file],
+          title: "メメモリPORTAL",
+          text: "マイパーティを共有！ #メメモリ",
+        };
 
-  } catch (error) {
-    console.error("共有に失敗しました:", error);
-    alert("画像の生成に失敗しました。");
-  }
-});
-
+        // 2. パターンA: スマホの標準シェア（LINE/Discord/X対応）が使えるかチェック
+        if (navigator.canShare && navigator.canShare(shareData)) {
+          await navigator.share(shareData);
+        } else {
+          // 3. パターンB: 弾かれた場合はクリップボードに画像を強制コピー
+          const item = new ClipboardItem({ "image/png": blob });
+          await navigator.clipboard.write([item]);
+          alert(
+            "画像をクリップボードにコピーしました！\nLINEやXを開いて「貼り付け」で共有してね！",
+          );
+        }
+      }, "image/png");
+    } catch (error) {
+      console.error("共有に失敗しました:", error);
+      alert(
+        "画像をクリップボードにコピーしました！\nLINEやXを開いて「貼り付け」で共有してね！",
+      );
+    }
+  });
+}
 
 // グローバルへ公開
 window.createCharacterBadgeElement = createCharacterBadgeElement;
