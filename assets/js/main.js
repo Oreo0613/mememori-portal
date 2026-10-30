@@ -1622,16 +1622,37 @@ function bindCharacterPickerEvents() {
             targetInput.value = ""; // IDを空にする
             targetInput.dispatchEvent(new Event("change", { bubbles: true }));
           }
+
+          // 💡【即時反映修正】開くトリガーとなった親のボタン要素（スロット）の見た目をその場で初期化
+          if (activeTriggerBtn) {
+            // 1. 挿入されていた動的バッジ（星や枠）を即座に削除
+            const existingBadge =
+              activeTriggerBtn.querySelector(".c-chara-card");
+            if (existingBadge) existingBadge.remove();
+
+            // 2. 隠されていた既存の「img」や「+」テキストを可視化
+            const oldImg = activeTriggerBtn.querySelector("img");
+            if (oldImg) oldImg.classList.add("is-hidden"); // 画像は隠す
+
+            const plusSpan = activeTriggerBtn.querySelector("span");
+            if (plusSpan) plusSpan.style.display = "block"; // 「+」文字を表示
+
+            const plusMark = activeTriggerBtn.querySelector(
+              ".p-portal-party__plus-mark",
+            );
+            if (plusMark) plusMark.style.display = "block"; // プラスマークを表示
+          }
         }
         if (activePreviewTargetId) {
           const targetPreview = document.getElementById(activePreviewTargetId);
           if (targetPreview) {
             targetPreview.src = "";
-            targetPreview.classList.add("is-hidden"); // 画像を隠して、HTML側の「+」を復活させる
+            targetPreview.classList.add("is-hidden");
           }
         }
         closeCharaModal();
       });
+
       gridContainer.appendChild(removeButton);
     }
 
