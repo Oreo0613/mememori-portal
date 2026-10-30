@@ -700,3 +700,22 @@
     background-color: #dc2626; /* 少し暗い赤 */
   }
   
+  .p-portal-party-container__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+  
+  /* ボタン同士の間にほどよい隙間を作る（もし隣り合う場合） */
+  .js-share-button {
+    margin-left: auto;
+    margin-right: 16px;
+
+    color: #1d3557;
+    border: 1px solid #bae6fd;
+    background: #e0f2fe; 
+    font-size: 1.1rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
