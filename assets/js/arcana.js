@@ -65,6 +65,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderFilterChips();
   initFilterClearEvent();
   injectArcanaTotalModal();
+  injectCharacterArcanaModalSkeleton();
 
   // 3. main.js が Firebase(window.auth) を初期化するのを安全に待つための関数
   function waitForAuth() {
@@ -509,20 +510,21 @@ function renderArcanaTable() {
           <strong class="p-arcana-table__name-text">${ar.name}</strong>
         </td>
         <td class="p-arcana-table__td-chars">
-          <div class="slots">
-            ${makeSlotHtml(1)}
-            ${makeSlotHtml(2)}
-            ${makeSlotHtml(3)}
-            ${makeSlotHtml(4)}
-          </div>
+          <div class="slots js-slots-placeholder"></div>
         </td>
         <td class="p-arcana-table__td-effect">${formatEffectsText(ar.effectsList)}</td>
         <td class="p-arcana-table__td-priority">
           <select class="p-arcana-priority-select" data-arcana-id="${ar.id}" onchange="handlePrioritySelectChange(this)">
-            ${selectOptionsHtml}
+            ${PRIORITY_OPTIONS.map((item) => `<option value="${item.value}" ${opt.value === item.value ? "selected" : ""}>${item.label}</option>`).join("")}
           </select>
         </td>
       `;
+
+      // 💡 プレースホルダーを捕まえ、安全にDOMオブジェクトを追加してイベントを仕込む
+      const slotsWrap = row.querySelector(".js-slots-placeholder");
+      for (let i = 1; i <= 4; i++) {
+        slotsWrap.appendChild(createSlotElement(ar, i, charMaster, true));
+      }
 
       tbody.appendChild(row);
     });
@@ -778,3 +780,238 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
+
+/* ==========================================================================
+   👥 【新規追加】単一キャラクター所属アルカナ専用モーダルシステム（修正・機能拡張版）
+   ========================================================================== */
+
+/**
+ * 骨組みの静的流し込み
+ */
+function injectCharacterArcanaModalSkeleton() {
+  const container = document.getElementById("js-char-arcana-modal-container");
+  if (!container || document.getElementById("js-char-arcana-modal")) return;
+
+  container.innerHTML = `
+    <div id="js-char-arcana-modal" class="c-modal c-arcana-modal" aria-hidden="true" inert>
+      <div class="c-modal__overlay js-char-arcana-modal-close"></div>
+      <div class="c-arcana-modal__container c-modal__container p-char-modal-container">
+        <header class="c-world-modal__header p-char-modal-header">
+          <div class="p-char-modal-title-area">
+            <div id="js-char-modal-avatar-slot" class="p-char-modal-avatar"></div>
+            <div>
+              <h3 id="js-char-modal-name" class="p-char-modal-name">キャラクター名</h3>
+              <p id="js-char-modal-rarity" class="p-char-modal-rarity-text">レアリティ</p>
+            </div>
+          </div>
+          <button type="button" class="c-world-modal__close-btn js-char-arcana-modal-close">&times;</button>
+        </header>
+        <div class="p-char-modal-content">
+          <p class="p-char-modal-section-title">📜 関与しているアルカナ効果一覧</p>
+          <div class="p-char-modal-list" id="js-char-modal-arcana-list"></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.querySelectorAll(".js-char-arcana-modal-close").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const modal = document.getElementById("js-char-arcana-modal");
+      if (!modal) return;
+
+      // 💡 【エラー解決】モーダル内の要素からフォーカスを確実に外してから閉じる
+      const activeEl = document.activeElement;
+      if (activeEl && modal.contains(activeEl)) {
+        activeEl.blur();
+      }
+
+      modal.classList.remove("is-open");
+      modal.setAttribute("aria-hidden", "true");
+      modal.setAttribute("inert", "");
+      document.body.classList.remove("is-modal-open");
+    });
+  });
+}
+
+/**
+ * 🛠️ キャラクタースロットHTML要素（コンポーネント）を作成する内部ヘルパー
+ */
+function createSlotElement(ar, idx, charMaster, isClickable = true) {
+  const cId = ar[`charId${idx}`];
+  if (!cId) {
+    const emptySlot = document.createElement("div");
+    emptySlot.className = "slot slot--hide";
+    emptySlot.textContent = "-";
+    return emptySlot;
+  }
+
+  if (cId === "未定") {
+    const TBDChara = document.createElement("div");
+    TBDChara.className = "slot";
+    TBDChara.style.cssText =
+      "font-size: 10px; color: var(--text-sub); font-weight: bold; background: var(--input-bg-sub); border: 1px dashed var(--border-light);";
+    TBDChara.title = "未定";
+    TBDChara.textContent = "未定";
+    return TBDChara;
+  }
+
+  const foundChar = charMaster.find(
+    (ch) => String(ch.id).trim() === String(cId).trim(),
+  );
+  if (!foundChar) {
+    const fallbackSlot = document.createElement("div");
+    fallbackSlot.className = "slot slot__id-fallback";
+    fallbackSlot.textContent = cId;
+    return fallbackSlot;
+  }
+
+  const userCharData = userCharactersMap[foundChar.id];
+  const currentRarity = userCharData ? userCharData.rarity : "未所持";
+
+  let rarityClassName =
+    currentRarity === "未所持"
+      ? "is-not-owned"
+      : `rarity--${String(currentRarity).toLowerCase().replace("+", "-plus")}`;
+
+  const slotOuter = document.createElement(isClickable ? "button" : "div");
+  if (isClickable) slotOuter.type = "button";
+  slotOuter.className = `slot ${rarityClassName} ${isClickable ? "js-char-anchor" : ""}`;
+  slotOuter.setAttribute("data-rarity", currentRarity);
+  slotOuter.title = `${foundChar.name} (${currentRarity})`;
+
+  let starsHtml = "";
+  let plusHtml = "";
+
+  if (
+    currentRarity !== "未所持" &&
+    typeof window.createCharacterBadgeElement === "function"
+  ) {
+    const badgeEl = window.createCharacterBadgeElement(
+      foundChar,
+      currentRarity,
+    );
+    const starsEl = badgeEl.querySelector(".c-chara-card__stars");
+    const plusImgEl = badgeEl.querySelector(".c-chara-card__plus-badge");
+
+    if (starsEl) starsHtml = starsEl.innerHTML;
+    if (plusImgEl && plusImgEl.classList.contains("is-active")) {
+      plusHtml = plusImgEl.innerHTML;
+    }
+  }
+
+  slotOuter.innerHTML = `
+    <img src="${foundChar.iconUrl}" alt="${foundChar.name}">
+    <div class="slot__border"></div>
+    <div class="slot__stars">${starsHtml}</div>
+    <div class="slot__plus">${plusHtml}</div>
+  `;
+
+  if (isClickable) {
+    slotOuter.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openCharacterArcanaModal(foundChar.id);
+    });
+  }
+
+  return slotOuter;
+}
+
+/**
+ * 🔓 モーダルを開いて、特定のキャラクターに絞り込んだアルカナリストをリアルタイム生成
+ */
+function openCharacterArcanaModal(characterId) {
+  const charMaster = window.characterMaster || [];
+  const foundChar = charMaster.find(
+    (ch) => String(ch.id) === String(characterId),
+  );
+  if (!foundChar) return;
+
+  const userCharData = userCharactersMap[foundChar.id];
+  const currentRarity = userCharData ? userCharData.rarity : "未所持";
+
+  document.getElementById("js-char-modal-name").textContent = foundChar.name;
+  document.getElementById("js-char-modal-rarity").textContent =
+    `現在の育成：${currentRarity}`;
+
+  const avatarSlot = document.getElementById("js-char-modal-avatar-slot");
+  avatarSlot.innerHTML = "";
+  avatarSlot.appendChild(
+    createSlotElement({ charId1: foundChar.id }, 1, charMaster, false),
+  );
+
+  const relatedArcana = arcanaMaster.filter((ar) =>
+    [ar.charId1, ar.charId2, ar.charId3, ar.charId4]
+      .map(String)
+      .includes(String(characterId)),
+  );
+
+  const listContainer = document.getElementById("js-char-modal-arcana-list");
+  listContainer.innerHTML = "";
+
+  if (relatedArcana.length === 0) {
+    listContainer.innerHTML =
+      '<p style="text-align:center; padding:20px; color:var(--theme-text-muted);">所属しているアルカナはありません</p>';
+  } else {
+    relatedArcana.forEach((ar) => {
+      const item = document.createElement("div");
+      item.className = "p-char-modal-item";
+
+      const currentPriority = userArcanaStatusMap[ar.id] || "";
+
+      // 💡 【機能拡張】モーダル内にも一覧テーブルと100%同じロジックのセレクトボックスを設置
+      // 一覧側の対応する行のselectともデータマップ（userArcanaStatusMap）を介して安全にリアルタイム同期します
+      item.innerHTML = `
+        <div class="p-char-modal-item__meta">
+          <span class="p-arcana-table__id-badge">${ar.id}</span>
+          <strong class="p-char-modal-item__title">${ar.name}</strong>
+          <div class="p-char-modal-item__prio-select-wrap">
+            <select class="p-arcana-priority-select p-char-modal-priority-select" data-arcana-id="${ar.id}">
+              ${PRIORITY_OPTIONS.map((opt) => `<option value="${opt.value}" ${currentPriority === opt.value ? "selected" : ""}>${opt.label}</option>`).join("")}
+            </select>
+          </div>
+        </div>
+        <div class="p-char-modal-item__body">
+          <div class="slots js-modal-slots-placeholder"></div>
+          <div class="p-char-modal-item__effect">${formatEffectsText(ar.effectsList)}</div>
+        </div>
+      `;
+
+      // モーダル内のセレクトボックスが変更された時の処理（即時通信せず、メモリ上を書き換え）
+      const modalSelect = item.querySelector(".p-char-modal-priority-select");
+      modalSelect.addEventListener("change", (e) => {
+        const arcanaId = e.target.getAttribute("data-arcana-id");
+        const val = e.target.value;
+
+        // 1. メモリ上のステータスマップを書き換え
+        userArcanaStatusMap[arcanaId] = val;
+
+        // 2. もし裏側のメインテーブルに同じアルカナのセレクトボックスがあれば同期させる
+        const mainTableSelect = document.querySelector(
+          `#arcanaTableBody select[data-arcana-id="${arcanaId}"]`,
+        );
+        if (mainTableSelect) {
+          mainTableSelect.value = val;
+        }
+      });
+
+      const slotsPlaceholder = item.querySelector(
+        ".js-modal-slots-placeholder",
+      );
+      for (let i = 1; i <= 4; i++) {
+        slotsPlaceholder.appendChild(
+          createSlotElement(ar, i, charMaster, true),
+        );
+      }
+
+      listContainer.appendChild(item);
+    });
+  }
+
+  const modal = document.getElementById("js-char-arcana-modal");
+  if (modal) {
+    modal.classList.add("is-open");
+    modal.removeAttribute("aria-hidden");
+    modal.removeAttribute("inert");
+    document.body.classList.add("is-modal-open");
+  }
+}

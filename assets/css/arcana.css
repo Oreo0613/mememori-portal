@@ -482,19 +482,25 @@
         font-size: 15px;
     }
 
-    /* ③ キャラ編成スロット */
+    /* ③ キャラ編成スロット（スマホでも縮まないよう横並びをキープ） */
     .p-arcana-table td.p-arcana-table__td-chars {
         padding: 4px 0 8px 0;
+        overflow-x: auto;
     }
 
     .p-arcana-table .slots {
+        display: flex;
         justify-content: flex-start;
+        gap: 4px;
+        width: max-content;
     }
 
     .p-arcana-table .slot {
         width: 44px;
         height: 44px;
+        flex-shrink: 0;
     }
+
 
     /* ④ 効果文言 */
     .p-arcana-table td.p-arcana-table__td-effect {
@@ -508,4 +514,203 @@
         padding: 10px;
     }
 
+}
+
+/* ==========================================================================
+   👥 【新規追加】キャラクター単体所属アルカナモーダル用拡張スタイル
+   ========================================================================= */
+
+/* クリック可能なキャラスロットボタンをリセットして手応えを付与 */
+button.slot.js-char-anchor {
+    border: 1px solid var(--border-color, #cbd5e1);
+    cursor: pointer;
+    transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.15s;
+}
+
+button.slot.js-char-anchor:hover {
+    transform: scale(1.08) translateY(-1px);
+    z-index: 5;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    border-color: var(--color-blue-400, #3e9ed6);
+}
+
+button.slot.js-char-anchor:active {
+    transform: scale(0.96);
+}
+
+/* モーダルコンテナサイズ */
+.p-char-modal-container {
+    width: 92%;
+    max-width: 540px;
+    background-color: var(--theme-bg-surface, #ffffff);
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+}
+
+/* ヘッダー周りのリッチデザイン */
+.p-char-modal-header {
+    border-bottom: 1px solid var(--theme-border-main) !important;
+    padding-bottom: 16px !important;
+    margin-bottom: 16px !important;
+}
+
+.p-char-modal-title-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.p-char-modal-avatar {
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+}
+
+.p-char-modal-avatar .slot {
+    width: 100% !important;
+    height: 100% !important;
+    box-shadow: none !important;
+}
+
+.p-char-modal-name {
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: var(--theme-text-main, #1e293b);
+    margin-bottom: 2px;
+}
+
+.p-char-modal-rarity-text {
+    font-size: 1.1rem;
+    color: var(--color-gray-700, #58665f);
+    font-weight: 500;
+}
+
+/* モーダル内コンテンツスクロール領域 */
+.p-char-modal-content {
+    max-height: 55vh;
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+.p-char-modal-section-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--theme-text-main);
+    margin-bottom: 12px;
+}
+
+.p-char-modal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* アルカナアイテムカード */
+.p-char-modal-item {
+    background-color: var(--theme-bg-main);
+    border: 1px solid var(--theme-border-main);
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.p-char-modal-item__meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.p-char-modal-item__title {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: var(--theme-text-main);
+}
+
+.p-char-modal-item__prio-badge {
+    margin-left: auto;
+    font-size: 1.0rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    background-color: var(--color-gray-200);
+    color: var(--color-gray-600);
+    border-radius: 4px;
+}
+
+.p-char-modal-item__prio-badge.m-done {
+    background-color: var(--theme-interactive, #498b6d);
+    color: #ffffff;
+}
+
+.p-char-modal-item__body {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.p-char-modal-item__body .slots {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.p-char-modal-item__body .slot {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.p-char-modal-item__effect {
+    font-size: 1.2rem;
+    line-height: 1.4;
+    color: var(--theme-text-main);
+    flex-grow: 1;
+}
+
+/* モーダル内セレクトボックスの横幅調整と位置引き締め */
+.p-char-modal-item__prio-select-wrap {
+    margin-left: auto;
+    width: 120px;
+    position: relative;
+}
+
+.p-char-modal-item__prio-select-wrap::after {
+    content: "▼";
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%) scale(0.85);
+    font-size: 10px;
+    color: var(--text-sub, #94a3b8);
+    pointer-events: none;
+}
+
+.p-char-modal-priority-select {
+    padding: 6px 24px 6px 10px !important;
+    font-size: 12px !important;
+}
+
+
+/* スマホ最適化（モーダルカード内を縦並びに変形） */
+@media screen and (max-width: 480px) {
+    .p-char-modal-item__body {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .p-char-modal-item__body .slots {
+        width: 100%;
+    }
+
+    .p-char-modal-item__meta {
+        flex-wrap: wrap;
+    }
 }
