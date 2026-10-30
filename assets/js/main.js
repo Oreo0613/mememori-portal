@@ -1944,6 +1944,7 @@ function renderPartyListUI() {
     const slotsDiv = document.createElement("div");
     slotsDiv.className = "p-portal-party__slots";
 
+    // 💡 【完全修正版】未所持キャラクターであってもスキップせず、is-not-owned で描画するロジック
     party.members.forEach((member) => {
       const slotIcon = document.createElement("div");
       slotIcon.className = "p-portal-party__slot";
@@ -1953,13 +1954,17 @@ function renderPartyListUI() {
       const rarity =
         typeof member === "object" && member?.rarity ? member.rarity : "SR";
 
+      // 💡 charaId さえ存在していれば、レアリティが「未所持」であっても描画ルートへ進ませます
       if (charaId && Array.isArray(master) && master.length > 0) {
         const found = master.find(
           (c) => String(c.id).trim() === String(charaId).trim(),
         );
         if (found) {
           slotIcon.classList.add("has-character");
-          // 🌟 共通バッジ関数を使って枠と星付きで描画
+
+          // 💡 共通関数（createCharacterBadgeElement）をそのまま呼び出します。
+          // この共通関数は、rarity === "未所持" のときに自動で is-not-owned クラスを付け、
+          // 星やプラスバッジを除外した「すっぴんグレーアウト画像」を返すように既に仕上がっています！
           const badge = createCharacterBadgeElement(found, rarity);
           slotIcon.appendChild(badge);
         } else {
@@ -2003,7 +2008,31 @@ function openPartyEditModal(index) {
       typeof member === "object" && member?.rarity ? member.rarity : "SR";
 
     if (inputField) inputField.value = charaId || "";
-    if (rarityField) rarityField.value = rarity;
+    if (rarityField) {
+      // モーダルが展開されるたびに、「未所持」が先頭に確実に存在する選択肢リストへ動的に組み替えます
+      rarityField.innerHTML = `
+          <option value="未所持">未所持</option>
+          <option value="SR">SR</option>
+          <option value="SR+">SR+</option>
+          <option value="SSR">SSR</option>
+          <option value="SSR+">SSR+</option>
+          <option value="UR">UR</option>
+          <option value="UR+">UR+</option>
+          <option value="LR">LR</option>
+          <option value="LR_1">LR1</option>
+          <option value="LR_2">LR2</option>
+          <option value="LR_3">LR3</option>
+          <option value="LR_4">LR4</option>
+          <option value="LR_5">LR5</option>
+          <option value="LR_6">LR6</option>
+          <option value="LR_7">LR7</option>
+          <option value="LR_8">LR8</option>
+          <option value="LR_9">LR9</option>
+          <option value="LR_10">LR10</option>
+        `;
+      // リストが確定したあとに、安全に現在の値を引き継ぎ（無ければデフォルトで未所持に）
+      rarityField.value = rarity || "未所持";
+    }
 
     // モーダル側のプレビュー更新
     // （main.js の openPartyEditModal 関数内の、slotsBtn を処理している箇所を以下のように統合・補強します）
@@ -2199,8 +2228,7 @@ function movePartyOrder(index, direction, event) {
 }
 
 /**
- * 🔮 【完全版・LRバッジ除外仕様】
- * キャラクターのコンテナクエリ枠・アイコン・星・プラスバッジを動的に組み立てる共通生成関数
+ * 🔮 【完全バグ修正版】キャラクターのコンテナクエリ枠・アイコン・星・プラスバッジを動的に組み立てる共通生成関数
  */
 function createCharacterBadgeElement(charData, rarity = "SR") {
   const card = document.createElement("div");
@@ -2210,17 +2238,31 @@ function createCharacterBadgeElement(charData, rarity = "SR") {
     card.dataset.charaId = charData.id;
   }
 
-  const plusImagePaths = {
-    "SR+": "assets/images/chara-icon/sr-plus.png",
-    "SSR+": "assets/images/chara-icon/ssr-plus.png",
-    "UR+": "assets/images/chara-icon/ur-plus.png",
-  };
-
   const avatarSrc =
     charData && charData.iconUrl
       ? charData.iconUrl
       : "assets/images/chara-icon/1.webp";
   const charName = charData && charData.name ? charData.name : "魔女";
+
+  // 💡 【ここを追加】未所持の場合は余計なクラスや中身を作らず、すっぴんのまま即座に返す
+  if (rarity === "未所持" || !rarity) {
+    card.classList.add("is-not-owned");
+    card.innerHTML = `
+      <div class="c-chara-card__image-wrapper">
+          <img class="c-chara-card__img" src="${avatarSrc}" alt="${charName}" loading="lazy">
+      </div>
+      <div class="c-chara-card__border"></div>
+      <div class="c-chara-card__plus-badge"><img src="" alt="plus" class="c-chara-card__plus-img"></div>
+      <div class="c-chara-card__stars"></div>
+    `;
+    return card; // 🛑 ここで終了
+  }
+
+  const plusImagePaths = {
+    "SR+": "assets/images/chara-icon/sr-plus.png",
+    "SSR+": "assets/images/chara-icon/ssr-plus.png",
+    "UR+": "assets/images/chara-icon/ur-plus.png",
+  };
 
   // 大文字小文字・表記揺れをクレンジングしてCSSトークンを生成
   const isLR = rarity.toUpperCase().startsWith("LR");
@@ -2230,14 +2272,12 @@ function createCharacterBadgeElement(charData, rarity = "SR") {
     .replace("+", "")
     .replace("_", "");
 
-  // 🌟 LRシリーズ（LR1〜10）の場合は、文字列に「+」が含まれていても「_plus」のクラスは付けないガード
   const hasPlus =
     !isLR &&
     (rarity.includes("+") ||
       rarity.toLowerCase().includes("plus") ||
       rarity.endsWith("_"));
 
-  // LRの場合は「lr_1」などの形式、SR+等の場合は「sr_plus」の形式でクラス名を決定
   let cssClassToken = cleanToken;
   if (isLR && rarity.includes("_")) {
     cssClassToken = `lr_${rarity.split("_")[1]}`;
@@ -2261,7 +2301,6 @@ function createCharacterBadgeElement(charData, rarity = "SR") {
   const plusBadge = card.querySelector(".c-chara-card__plus-badge");
   const plusImg = card.querySelector(".c-chara-card__plus-img");
 
-  // 🌟 バッジ表示の対象を「SR+」「SSR+」「UR+」の辞書に登録があるものだけに厳密に限定
   if (hasPlus && plusBadge && plusImg) {
     const rawRarity = `${cleanToken.toUpperCase()}+`;
     if (plusImagePaths[rawRarity]) {
@@ -2271,7 +2310,6 @@ function createCharacterBadgeElement(charData, rarity = "SR") {
     }
   }
 
-  // LR進化段階の星の組み立て
   const starContainer = card.querySelector(".c-chara-card__stars");
   if (isLR && starContainer) {
     let totalStars = 0;

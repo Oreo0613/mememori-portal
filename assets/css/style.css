@@ -1181,6 +1181,12 @@ body.is-modal-open {
     user-select: none;
 }
 
+.c-chara-card.is-not-owned {
+    filter: grayscale(0.55);
+    opacity: 0.85;
+    box-shadow: none;
+}
+
 /* 画像ラッパー */
 .c-chara-card__image-wrapper {
     width: 100%;
