@@ -1,5 +1,5 @@
 // 🌐 外部リンクのドメインからファビコン画像URLを生成する共通関数
-const FAVICON_API_BASE = "http://www.google.com/s2/favicons?domain=";
+const FAVICON_API_BASE = "https://www.google.com/s2/favicons?domain=";
 
 // 🔮 魔女マスタデータのキャッシュ用変数（配列に変更）
 let characterMaster = [];
