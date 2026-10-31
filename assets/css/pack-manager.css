@@ -1,0 +1,174 @@
+@charset "UTF-8";
+
+/**
+ * pack-manager.css
+ * BEM規則 (p-pack-) に基づくパック管理画面専用スタイル
+ */
+
+/* メインコンテナ */
+.p-pack-manager {
+  padding: 16px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.p-pack-manager__section {
+  margin-bottom: 24px;
+}
+.p-pack-manager__section--archive {
+  margin-top: 32px;
+}
+
+/* タイトル定義 */
+.p-pack-manager__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 16px;
+}
+
+/* ギャラリーレイアウト（Notion風グリッド） */
+.p-pack-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+/* パックカードの基本スタイル */
+.p-pack-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+}
+.p-pack-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+/* カテゴリタグ定義（Modifierによる色分け） */
+.p-pack-card__tag {
+  align-self: flex-start;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-bottom: 14px;
+  background-color: #f1f5f9;
+  color: #475569;
+}
+.p-pack-card__tag--rank   { background-color: #fee2e2; color: #991b1b; }
+.p-pack-card__tag--quest  { background-color: #fef3c7; color: #92400e; }
+.p-pack-card__tag--tower  { background-color: #dbeafe; color: #1e40af; }
+
+.p-pack-card__target {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+.p-pack-card__reward {
+  font-size: 0.9rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+.p-pack-card__footer {
+  margin-top: auto;
+}
+
+/* アクションボタン */
+.p-pack-card__btn {
+  width: 100%;
+  background-color: #3b82f6;
+  color: #ffffff;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-align: center;
+  transition: background-color 0.2s;
+}
+.p-pack-card__btn:hover {
+  background-color: #2563eb;
+}
+
+/* ❌ 状態：回収済み (is-checked) のスタイル変更 */
+.p-pack-card.is-checked {
+  opacity: 0.55;
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+  box-shadow: none;
+}
+.p-pack-card.is-checked:hover {
+  transform: none;
+}
+.p-pack-card.is-checked .p-pack-card__btn {
+  background-color: #64748b;
+}
+
+/* アコーディオンヘッダー */
+.p-pack-accordion-trigger {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #334155;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  transition: background-color 0.2s;
+}
+.p-pack-accordion-trigger:hover {
+  background-color: #f8fafc;
+}
+.p-pack-accordion-trigger i {
+  margin-right: 8px;
+  color: #64748b;
+}
+
+/* アコーディオン開閉連動 */
+.p-pack-accordion-trigger[aria-expanded="true"] {
+  border-radius: 12px 12px 0 0;
+  background-color: #f8fafc;
+}
+.p-pack-accordion-trigger[aria-expanded="true"] + .p-pack-accordion-content {
+  display: block;
+}
+
+/* アコーディオン中身 */
+.p-pack-accordion-content {
+  display: none;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-top: none;
+  padding: 24px;
+  border-radius: 0 0 12px 12px;
+}
+
+/* アーカイブ内のカテゴリグループ */
+.p-pack-group {
+  margin-bottom: 28px;
+}
+.p-pack-group:last-child {
+  margin-bottom: 0;
+}
+.p-pack-group__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #475569;
+  border-left: 4px solid #3b82f6;
+  padding-left: 10px;
+  margin-bottom: 14px;
+}

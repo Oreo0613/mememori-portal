@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ウルトラセール｜メメモリ</title>
+
+
+  <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/destyle.css@4.0.0/destyle.min.css" />
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/pack-manager.css">
+  <script src="https://kit.fontawesome.com/d36bec305b.js" crossorigin="anonymous"></script>
+
+
+  <script src="assets/js/main.js" type="module"></script>
+</head>
+
+<body>
+  <div class="l-container">
+    <header class="l-header c-floating-header">
+      <div id="js-world-selector-container" class="c-main__header js-header-container"></div>
+    </header>
+    <main class="l-main">
+      <!-- 達成パック（ウルトラセール）管理メインエリア -->
+      <div class="p-pack-manager">
+
+        <!-- 🌟 Notion風：直近到達予定の3つ（メインギャラリービュー） -->
+        <section class="p-pack-manager__section">
+          <h2 class="p-pack-manager__title">
+            <span class="p-pack-manager__title-icon">🎯</span>直近の到達予定パック（次の目標）
+          </h2>
+          <div class="p-pack-gallery js-pack-urgent-gallery">
+            <!-- JavaScriptによって直近の未獲得パックが最大3つ自動生成されます -->
+          </div>
+        </section>
+
+        <!-- 📂 Notion風：それ以外のグループ（アコーディオン） -->
+        <section class="p-pack-manager__section p-pack-manager__section--archive">
+          <button class="p-pack-accordion-trigger js-archive-toggle" aria-expanded="false">
+            <span class="p-pack-accordion-trigger__text">
+              <i class="fa-solid fa-box-open"></i>その他のすべてのパック（カテゴリ別一覧）
+            </span>
+            <span class="p-pack-accordion-trigger__icon js-archive-icon">▼</span>
+          </button>
+
+          <div class="p-pack-accordion-content js-archive-content">
+            <!-- JavaScriptによって全カテゴリのグループとパックカードが自動生成されます -->
+          </div>
+        </section>
+
+      </div>
+
+    </main>
+  </div>
+
+  <div class="l-sidebar"></div>
+
+  <!-- 外部から読み込むフッターの受け皿 -->
+  <footer id="js-footer-container" class="l-footer js-footer-container"></footer>
+
+  <script src="assets/js/pack-manager.js"></script>
+</body>
+
+</html>

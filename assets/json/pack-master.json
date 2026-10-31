@@ -1,0 +1,82 @@
+  [
+    {
+      "id": "p1",
+      "category": "rank",
+      "categoryName": "ランク",
+      "target": "ランク 120",
+      "reward": "💎 29,900",
+      "order": 1
+    },
+    {
+      "id": "p2",
+      "category": "rank",
+      "categoryName": "ランク",
+      "target": "ランク 130",
+      "reward": "💎 29,900",
+      "order": 2
+    },
+    {
+      "id": "p3",
+      "category": "quest",
+      "categoryName": "クエスト",
+      "target": "クエスト 12-4",
+      "reward": "💎 15,000",
+      "order": 1
+    },
+    {
+      "id": "p4",
+      "category": "quest",
+      "categoryName": "クエスト",
+      "target": "クエスト 13-4",
+      "reward": "💎 15,000",
+      "order": 2
+    },
+    {
+      "id": "p5",
+      "category": "tower_all",
+      "categoryName": "無窮の塔",
+      "target": "無窮の塔 200階",
+      "reward": "💎 10,000",
+      "order": 1
+    },
+    {
+      "id": "p6",
+      "category": "tower_all",
+      "categoryName": "無窮の塔",
+      "target": "無窮の塔 250階",
+      "reward": "💎 10,000",
+      "order": 2
+    },
+    {
+      "id": "p7",
+      "category": "tower_blue",
+      "categoryName": "属性塔(藍)",
+      "target": "藍の塔 50階",
+      "reward": "💎 8,000",
+      "order": 1
+    },
+    {
+      "id": "p8",
+      "category": "tower_red",
+      "categoryName": "属性塔(紅)",
+      "target": "紅の塔 50階",
+      "reward": "💎 8,000",
+      "order": 1
+    },
+    {
+      "id": "p9",
+      "category": "tower_green",
+      "categoryName": "属性塔(翠)",
+      "target": "翠の塔 50階",
+      "reward": "💎 8,000",
+      "order": 1
+    },
+    {
+      "id": "p10",
+      "category": "tower_yellow",
+      "categoryName": "属性塔(黄)",
+      "target": "黄の塔 50階",
+      "reward": "💎 8,000",
+      "order": 1
+    }
+  ]
