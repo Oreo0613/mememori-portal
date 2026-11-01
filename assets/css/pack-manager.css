@@ -2,119 +2,42 @@
 
 /**
  * pack-manager.css
- * BEM規則 (p-pack-) に基づくパック管理画面専用スタイル
+ * 見出し共通化・カード内ボタン排除ミニマル版
  */
 
 /* メインコンテナ */
 .p-pack-manager {
   padding: 16px;
-  max-width: 1040px;
+  max-width: 100%;
   margin: 0 auto;
 }
 
+/* 各セクションの間隔 */
 .p-pack-manager__section {
-  margin-bottom: 24px;
-}
-.p-pack-manager__section--archive {
-  margin-top: 32px;
+  margin-bottom: 28px;
 }
 
-/* タイトル定義 */
+/* 🌟 セクション見出しの共通化（1.4rem） */
 .p-pack-manager__title {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 1.15rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: #1e293b;
   margin-bottom: 16px;
 }
 
-/* ギャラリーレイアウト（Notion風グリッド） */
-.p-pack-gallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
-}
-
-/* パックカードの基本スタイル */
-.p-pack-card {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 18px;
+/* 🧱 横並びボード */
+.p-pack-board {
   display: flex;
-  flex-direction: column;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
-}
-.p-pack-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+  gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 16px;
+  white-space: nowrap;
 }
 
-/* カテゴリタグ定義（Modifierによる色分け） */
-.p-pack-card__tag {
-  align-self: flex-start;
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 6px;
-  margin-bottom: 14px;
-  background-color: #f1f5f9;
-  color: #475569;
-}
-.p-pack-card__tag--rank   { background-color: #fee2e2; color: #991b1b; }
-.p-pack-card__tag--quest  { background-color: #fef3c7; color: #92400e; }
-.p-pack-card__tag--tower  { background-color: #dbeafe; color: #1e40af; }
-
-.p-pack-card__target {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin-bottom: 8px;
-}
-.p-pack-card__reward {
-  font-size: 0.9rem;
-  color: #64748b;
-  line-height: 1.5;
-  margin-bottom: 18px;
-}
-.p-pack-card__footer {
-  margin-top: auto;
-}
-
-/* アクションボタン */
-.p-pack-card__btn {
-  width: 100%;
-  background-color: #3b82f6;
-  color: #ffffff;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 700;
-  text-align: center;
-  transition: background-color 0.2s;
-}
-.p-pack-card__btn:hover {
-  background-color: #2563eb;
-}
-
-/* ❌ 状態：回収済み (is-checked) のスタイル変更 */
-.p-pack-card.is-checked {
-  opacity: 0.55;
-  background-color: #f8fafc;
-  border-color: #cbd5e1;
-  box-shadow: none;
-}
-.p-pack-card.is-checked:hover {
-  transform: none;
-}
-.p-pack-card.is-checked .p-pack-card__btn {
-  background-color: #64748b;
-}
-
-/* アコーディオンヘッダー */
+/* 📂 アコーディオンヘッダー（こちらも見出しに準じて 1.4rem に統一） */
 .p-pack-accordion-trigger {
   width: 100%;
   display: flex;
@@ -124,10 +47,9 @@
   border: 1px solid #e2e8f0;
   padding: 16px;
   border-radius: 12px;
-  font-size: 1rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: #334155;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
   transition: background-color 0.2s;
 }
 .p-pack-accordion-trigger:hover {
@@ -137,17 +59,18 @@
   margin-right: 8px;
   color: #64748b;
 }
+.p-pack-accordion-trigger--completed i {
+  color: #10b981;
+}
 
-/* アコーディオン開閉連動 */
 .p-pack-accordion-trigger[aria-expanded="true"] {
   border-radius: 12px 12px 0 0;
   background-color: #f8fafc;
 }
 .p-pack-accordion-trigger[aria-expanded="true"] + .p-pack-accordion-content {
-  display: block;
+  display: flex;
 }
 
-/* アコーディオン中身 */
 .p-pack-accordion-content {
   display: none;
   background-color: #ffffff;
@@ -157,18 +80,104 @@
   border-radius: 0 0 12px 12px;
 }
 
-/* アーカイブ内のカテゴリグループ */
-.p-pack-group {
-  margin-bottom: 28px;
+/* 🧱 縦積み用の「列（カラム）」：横幅を280pxに固定 */
+.p-pack-column {
+  flex: 0 0 280px;
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
 }
-.p-pack-group:last-child {
-  margin-bottom: 0;
-}
-.p-pack-group__title {
+
+/* 🌟 属性塔4種：一目で区別できる極淡パステルカラー */
+.p-pack-column--tower_blue         { background-color: #eef2ff; }
+.p-pack-column--tower_blue .p-pack-column__title { border-left-color: #818cf8; color: #4338ca; }
+
+.p-pack-column--tower_red          { background-color: #fff7ed; }
+.p-pack-column--tower_red .p-pack-column__title { border-left-color: #fb923c; color: #c2410c; }
+
+.p-pack-column--tower_green        { background-color: #f0fdf4; }
+.p-pack-column--tower_green .p-pack-column__title { border-left-color: #4ade80; color: #15803d; }
+
+.p-pack-column--tower_yellow       { background-color: #fefce8; }
+.p-pack-column--tower_yellow .p-pack-column__title { border-left-color: #facc15; color: #a16207; }
+
+/* 🌟 それ以外の一般カテゴリ：ノイズにならない淡いグレーで一括統一 */
+.p-pack-column--rank,
+.p-pack-column--quest,
+.p-pack-column--tower_all,
+.p-pack-column--tower_element_all  { background-color: #f1f5f9; }
+
+.p-pack-column--rank .p-pack-column__title,
+.p-pack-column--quest .p-pack-column__title,
+.p-pack-column--tower_all .p-pack-column__title,
+.p-pack-column--tower_element_all .p-pack-column__title { border-left-color: #94a3b8; color: #475569; }
+
+.p-pack-column__title {
   font-size: 0.95rem;
   font-weight: 700;
-  color: #475569;
-  border-left: 4px solid #3b82f6;
+  border-left: 4px solid #cbd5e1;
   padding-left: 10px;
   margin-bottom: 14px;
+}
+
+/* 🧱 カードを縦に積み重ねるギャラリースペース */
+.p-pack-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  white-space: normal;
+}
+
+/* パックカードの基本スタイル（ボタンを消したため余白を最適化） */
+.p-pack-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  cursor: pointer; /* 💡 将来的にモーダルを開けるよう、ホバー時にクリック可能であることを明示 */
+}
+.p-pack-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+
+/* カード内テキスト */
+.p-pack-card__target {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+/* 報酬リスト（ボタンが無くなったため下部のマージンを0に調整） */
+.p-pack-card__reward {
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.5;
+  padding-left: 0;
+  list-style: none;
+  margin-bottom: 0;
+}
+.p-pack-card__reward-item {
+  margin-bottom: 2px;
+  white-space: nowrap;
+}
+.p-pack-card__reward-item:last-child {
+  margin-bottom: 0;
+}
+
+/* ❌ 状態：回収済み (is-checked) のスタイル */
+.p-pack-card.is-checked {
+  opacity: 0.45;
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+  box-shadow: none;
+}
+.p-pack-card.is-checked:hover {
+  transform: none;
 }

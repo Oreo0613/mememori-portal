@@ -124,6 +124,10 @@ body.is-modal-open {
     padding-top: 100px;
 }
 
+.l-container--wide {
+    max-width: 1600px;
+}
+
 /*    フッターエリア ＆ 固定ナビゲーション   */
 .l-footer {
     padding: 18px;

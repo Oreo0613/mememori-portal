@@ -18,39 +18,50 @@
 </head>
 
 <body>
-  <div class="l-container">
+  <div class="l-container l-container--wide">
     <header class="l-header c-floating-header">
       <div id="js-world-selector-container" class="c-main__header js-header-container"></div>
     </header>
     <main class="l-main">
-      <!-- 達成パック（ウルトラセール）管理メインエリア -->
       <div class="p-pack-manager">
 
-        <!-- 🌟 Notion風：直近到達予定の3つ（メインギャラリービュー） -->
+        <!-- 🎯 エリア①：直近の到達予定パック（常設・最上部） -->
         <section class="p-pack-manager__section">
           <h2 class="p-pack-manager__title">
-            <span class="p-pack-manager__title-icon">🎯</span>直近の到達予定パック（次の目標）
+            <span class="p-pack-manager__title-icon">🎯</span>直近の到達予定パック
           </h2>
-          <div class="p-pack-gallery js-pack-urgent-gallery">
-            <!-- JavaScriptによって直近の未獲得パックが最大3つ自動生成されます -->
-          </div>
+          <div class="p-pack-board js-pack-urgent-board"></div>
         </section>
 
-        <!-- 📂 Notion風：それ以外のグループ（アコーディオン） -->
-        <section class="p-pack-manager__section p-pack-manager__section--archive">
-          <button class="p-pack-accordion-trigger js-archive-toggle" aria-expanded="false">
+        <!-- ⏳ エリア②：今後の未達成パック（独立アコーディオン） -->
+        <section class="p-pack-manager__section">
+          <button class="p-pack-accordion-trigger js-archive-toggle" aria-expanded="false" data-target="future">
             <span class="p-pack-accordion-trigger__text">
-              <i class="fa-solid fa-box-open"></i>その他のすべてのパック（カテゴリ別一覧）
+              <i class="fa-solid fa-hourglass-half"></i>今後の未達成パック
             </span>
             <span class="p-pack-accordion-trigger__icon js-archive-icon">▼</span>
           </button>
+          <div class="p-pack-accordion-content p-pack-board js-pack-future-board" id="board-future">
+            <!-- 4番目以降の未達成パックがここに横並び -->
+          </div>
+        </section>
 
-          <div class="p-pack-accordion-content js-archive-content">
-            <!-- JavaScriptによって全カテゴリのグループとパックカードが自動生成されます -->
+        <!-- ✅ エリア③：獲得・達成済みパック（独立アコーディオン） -->
+        <section class="p-pack-manager__section">
+          <button class="p-pack-accordion-trigger p-pack-accordion-trigger--completed js-archive-toggle"
+            aria-expanded="false" data-target="completed">
+            <span class="p-pack-accordion-trigger__text">
+              <i class="fa-solid fa-circle-check"></i>獲得・達成済みのパック
+            </span>
+            <span class="p-pack-accordion-trigger__icon js-archive-icon">▼</span>
+          </button>
+          <div class="p-pack-accordion-content p-pack-board js-pack-completed-board" id="board-completed">
+            <!-- 達成済みの全パックがここに横並び -->
           </div>
         </section>
 
       </div>
+
 
     </main>
   </div>
