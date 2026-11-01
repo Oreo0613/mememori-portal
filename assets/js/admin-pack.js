@@ -1,10 +1,10 @@
 /**
  * =========================================================================
- * 📦 ウルトラセールパック管理専用 制御スクリプト（ダイヤ固定構成・前半）
+ * 📦 ウルトラセールパック管理専用 制御スクリプト（完全統合版・前半）
  * =========================================================================
  */
 
-// --- 0. 🌟 課金額ごとのデフォルト有償ダイヤ数マスタ（上部で一括管理） ---
+// --- 0. 課金額ごとのデフォルト有償ダイヤ数マスタ（上部で一括管理） ---
 const DEFAULT_DIAMOND_COUNTS = {
   11800: 5900,
   6000: 3000,
@@ -71,7 +71,7 @@ async function loadItemMaster() {
   }
 }
 
-// 🌟 選択用画像グリッドの動的描画（有償ダイヤ item_01 を自動で除外する）
+// 選択用画像グリッドの動的描画（有償ダイヤ item_01 を自動で除外する）
 function renderItemGrid() {
   if (!itemGrid) return;
   itemGrid.innerHTML = itemMaster
@@ -138,7 +138,7 @@ function initDynamicFilters() {
     categoryContainer.appendChild(li);
   });
 
-  // 💳 課金額タブ組み立て（エラー修正完了版）
+  // 💳 課金額タブ組み立て（修正完了版）
   uniquePrices.forEach((price) => {
     const li = document.createElement("li");
     li.className = `admin-tabs__item ${price === activePrice ? "is-active" : ""}`;
@@ -150,7 +150,7 @@ function initDynamicFilters() {
       e.currentTarget.classList.add("is-active");
       activePrice = e.currentTarget.dataset.price;
       syncTabsWithForm();
-      renderTable(); // 報酬内容アイコンが切り替わるため再ビルド
+      renderTable(); // 報酬内容とチェック状態が切り替わるため再ビルド
     });
     priceContainer.appendChild(li);
   });
@@ -164,14 +164,14 @@ function syncTabsWithForm() {
   if (priceInput)
     priceInput.value = Number(activePrice).toLocaleString() + "円";
 
-  // 💎 金額タブが切り替わったら、フォームの固定ダイヤ入力欄にデフォルト数を自動自動同期
+  // 💎 金額タブが切り替わったら、フォームの固定ダイヤ入力欄にデフォルト数を自動同期
   const diamondInput = document.querySelector(".js-diamond-count-input");
   if (diamondInput && !editingPackId) {
     diamondInput.value = DEFAULT_DIAMOND_COUNTS[activePrice] || 0;
   }
 }
 
-// --- 6. テーブル描画・制御（「画像×個数」の一行収め仕様） ---
+// --- 6. テーブル描画・制御（「画像×個数」の一行収め仕様 ＆ 確認チェックボックス対応版） ---
 function renderTable() {
   const tbody = document.querySelector(".js-pack-table-body");
   if (!tbody) return;
@@ -205,12 +205,22 @@ function renderTable() {
         .join("");
     }
 
+    // 現在のisCheckedフラグの状態を取得（無ければデフォルトfalse）
+    const isChecked = currentPricePack ? !!currentPricePack.isChecked : false;
+    const checkedAttr = isChecked ? "checked" : "";
+
     const priceText = Number(activePrice).toLocaleString() + "円";
 
     tr.innerHTML = `
         <td><span class="condition-text">${conditionText}</span></td>
         <td>${priceText}</td>
         <td><div class="p-table-reward">${rewardContentHtml}</div></td>
+        <td>
+          <label class="p-table-check-label">
+            <input type="checkbox" class="p-table-check-input js-table-check" data-id="${pack.id}" ${checkedAttr}>
+            <span class="p-table-check-text">${isChecked ? "済" : "未"}</span>
+          </label>
+        </td>
         <td>
           <button class="table-edit-btn js-edit-btn" data-id="${pack.id}">編集</button>
           <button class="table-delete-btn js-delete-btn" data-id="${pack.id}">削除</button>
@@ -234,7 +244,7 @@ function updateTableDisplay() {
   });
 }
 
-// --- 7. フォームのモード管理・同期ロジック（前述の最新版を維持） ---
+// --- 7. フォームのモード管理・同期ロジック（ダイヤとカスタムを分離復元） ---
 function loadPackToForm(packId) {
   const pack = temporaryPackData.find((p) => p.id === packId);
   if (!pack) return;
@@ -267,8 +277,10 @@ function loadPackToForm(packId) {
   if (currentPricePack && currentPricePack.rewards) {
     currentPricePack.rewards.forEach((r) => {
       if (r.item === DIAMOND_ITEM_ID) {
+        // 💎 ダイヤは固定枠の入力値へ復元
         document.querySelector(".js-diamond-count-input").value = r.count;
       } else {
+        // 📦 それ以外は最大3つのカスタムアイテム枠へ
         selectedItems[r.item] = r.count;
       }
     });
@@ -336,20 +348,44 @@ function updateItemSelectorUI() {
   });
 }
 
-// --- 8. 各種イベント・ショートカット・入力制限の登録 ---
+// --- 8. 各種イベント・ショートカット・入力制限の登録（完全統合版） ---
 function setupFormEventListeners() {
-  // 🌟 【修正】テーブル内のクリック判定（編集ボタンと削除ボタンの両方をバブリングキャッチ）
+  // 🌟 一覧テーブル内のクリック判定（チェックボックス切り替え・編集・削除のバブリングキャッチ）
   document
     .querySelector(".js-pack-table-body")
     .addEventListener("click", (e) => {
-      // ① 編集ボタンが押されたとき
+      // ① テーブル上の確認チェックボックス（js-table-check）が切り替えられたとき
+      const tableCheck = e.target.closest(".js-table-check");
+      if (tableCheck) {
+        const packId = tableCheck.dataset.id;
+        const pack = temporaryPackData.find((p) => p.id === packId);
+        if (pack) {
+          // 現在アクティブな金額タブのパックデータを検索
+          const currentPricePack = pack.packs.find(
+            (p) => p.price === activePrice,
+          );
+          if (currentPricePack) {
+            // チェックボックスのON/OFF状態をそのままisCheckedに格納（データ同期）
+            currentPricePack.isChecked = tableCheck.checked;
+
+            // 隣のテキスト表記（済 / 未）をリアルタイムに書き換える
+            const textEl = tableCheck.nextElementSibling;
+            if (textEl) {
+              textEl.textContent = tableCheck.checked ? "済" : "未";
+            }
+          }
+        }
+        return;
+      }
+
+      // ② ✏️ 編集ボタンが押されたとき
       const editBtn = e.target.closest(".js-edit-btn");
       if (editBtn) {
         loadPackToForm(editBtn.dataset.id);
         return;
       }
 
-      // ② 🗑️ 削除ボタンが押されたとき
+      // ③ 🗑️ 削除ボタンが押されたとき
       const deleteBtn = e.target.closest(".js-delete-btn");
       if (deleteBtn) {
         const packId = deleteBtn.dataset.id;
@@ -364,20 +400,21 @@ function setupFormEventListeners() {
         );
 
         if (isConfirmed) {
-          // メモリ上の配列から対象オブジェクトを完全に削る
+          // 配列から対象データを完全消去
           temporaryPackData = temporaryPackData.filter((p) => p.id !== packId);
 
-          // もし今編集中のデータを消した場合はフォームもリセットする
+          // 編集中データを消した場合はフォームも連動リセット
           if (editingPackId === packId) {
             resetFormToNewMode();
           }
 
-          // テーブルを再描画して最新状態を画面に反映
+          // テーブルを再描画
           renderTable();
         }
       }
     });
 
+  // 📦 画像カードのクリック判定（親要素を確実に捉えて空きスロットへ割り当て）
   if (itemGrid) {
     itemGrid.addEventListener("click", (e) => {
       const card = e.target.closest(".js-item-card");
@@ -398,6 +435,7 @@ function setupFormEventListeners() {
     });
   }
 
+  // 📝 【確定版】マイルストーン入力欄（最初から半角限定・不要な文字は即座に消去）
   const milestoneInput = document.querySelector(".js-form-milestone");
   if (milestoneInput) {
     milestoneInput.addEventListener("input", (e) => {
@@ -411,6 +449,7 @@ function setupFormEventListeners() {
     });
   }
 
+  // 個数入力イベントを親要素でバブリングキャッチ
   const slotsContainer = document.querySelector(".p-selected-slots");
   if (slotsContainer) {
     slotsContainer.addEventListener("input", (e) => {
@@ -429,6 +468,7 @@ function setupFormEventListeners() {
     });
   }
 
+  // キャンセル・保存ボタンのイベント登録
   document
     .querySelector(".js-cancel-btn")
     .addEventListener("click", resetFormToNewMode);
@@ -436,7 +476,7 @@ function setupFormEventListeners() {
     .querySelector(".js-save-btn")
     .addEventListener("click", saveFormData);
 
-  // 💾 pack-master.jsonを直接生成してダウンロードする処理
+  // 💾 pack-master.jsonを直接生成してPCへダウンロードする処理
   document.querySelector(".js-generate-btn").addEventListener("click", () => {
     const jsonText = JSON.stringify(temporaryPackData, null, 2);
     const blob = new Blob([jsonText], { type: "application/json" });
@@ -450,18 +490,21 @@ function setupFormEventListeners() {
   });
 }
 
-// --- 9. データ保存ロジック（前述の重複チェック付きの最新版） ---
+// --- 9. データ保存ロジック（ダイヤ＋カスタム3枠・全金額スロット自動生成・isChecked対応版） ---
 function saveFormData() {
   const milestone = document.querySelector(".js-form-milestone").value.trim();
   if (!milestone) {
     alert("マイルストーン数値を入力してください");
     return;
   }
-
+  // 💎 現在の画面上のダイヤ入力数
   const diamondCount =
     parseInt(document.querySelector(".js-diamond-count-input").value, 10) || 0;
+
+  // 💎 まずはダイヤを報酬の先頭配列に格納
   const currentRewards = [{ item: DIAMOND_ITEM_ID, count: diamondCount }];
 
+  // 📦 選択されているカスタム枠（最大3枠）を合流させる
   Object.keys(selectedItems).forEach((itemId) => {
     currentRewards.push({ item: itemId, count: selectedItems[itemId] });
   });
@@ -469,6 +512,9 @@ function saveFormData() {
   const allPrices = ["11800", "6000", "3000", "1500", "1000", "650", "160"];
 
   if (editingPackId) {
+    // ==========================================
+    // 【編集モード】既存パックの対象金額を上書き ＆ チェック済みに更新
+    // ==========================================
     const pack = temporaryPackData.find((p) => p.id === editingPackId);
     if (pack) {
       pack.milestone = milestone;
@@ -477,11 +523,19 @@ function saveFormData() {
       );
       if (pricePackIndex !== -1) {
         pack.packs[pricePackIndex].rewards = currentRewards;
+        pack.packs[pricePackIndex].isChecked = true; // 手動で編集確定したのでチェック済みに
       } else {
-        pack.packs.push({ price: activePrice, rewards: currentRewards });
+        pack.packs.push({
+          price: activePrice,
+          rewards: currentRewards,
+          isChecked: true,
+        });
       }
     }
   } else {
+    // ==========================================
+    // 【新規登録モード】⚠️ カテゴリ＋マイルストーンの重複チェック
+    // ==========================================
     const targetId = `p_${activeCategory}_${milestone}`;
     const isDuplicate = temporaryPackData.some(
       (p) =>
@@ -492,21 +546,29 @@ function saveFormData() {
     if (isDuplicate) {
       const catLabel = categoryMap[activeCategory] || activeCategory;
       alert(
-        `【重複エラー】\n「${catLabel} ${milestone}」はすでに登録されています。\n\n報酬内容を追加・変更したい場合は、左側の一覧にある該当データの『✏️ 編集』ボタンから操作を行ってください。`,
+        `【重複エラー】\n「${catLabel} ${milestone}」はすでに登録されています。\n\n報酬内容を追加・変更したい場合は、左側の一覧にある該当データの『編集』ボタンから操作を行ってください。`,
       );
       return;
     }
 
+    // 🌟 全金額スロットを一括仮生成（新規登録時はすべての金額を一律「チェックなし」にする！）
     const generatedPacks = allPrices.map((price) => {
-      if (price === activePrice) {
-        return { price: price, rewards: currentRewards };
-      } else {
-        const defaultDia = DEFAULT_DIAMOND_COUNTS[price] || 0;
-        return {
-          price: price,
-          rewards: [{ item: DIAMOND_ITEM_ID, count: defaultDia }],
-        };
-      }
+      // 現在入力中の金額であれば画面のカスタム内容を入れ、それ以外は初期デフォルトダイヤを入れる
+      const rewards =
+        price === activePrice
+          ? currentRewards
+          : [
+              {
+                item: DIAMOND_ITEM_ID,
+                count: DEFAULT_DIAMOND_COUNTS[price] || 0,
+              },
+            ];
+
+      return {
+        price: price,
+        rewards: rewards,
+        isChecked: false, // 💤 今開いている金額も含めて、すべて最初は「未確認」からスタート！
+      };
     });
 
     const newPack = {
@@ -519,6 +581,7 @@ function saveFormData() {
     temporaryPackData.push(newPack);
   }
 
+  // 画面表示をすべて最新にリフレッシュ
   renderTable();
   resetFormToNewMode();
 }

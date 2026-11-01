@@ -117,7 +117,7 @@
 }
 
 .admin-table td {
-  padding: 6px 12px;
+  padding: 6px 8px;
   border-bottom: 1px solid var(--border);
   color: var(--text-main);
   vertical-align: middle;
@@ -589,4 +589,103 @@
 .table-delete-btn:hover {
   background: #ef4444;
   color: #ffffff;
+}
+
+/* 🌟 テーブル内チェック状態のトグル・ラベル装飾 */
+.p-table-check-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: bold;
+  user-select: none;
+}
+
+.p-table-check-input {
+  cursor: pointer;
+  width: 15px;
+  height: 15px;
+  border: 1px solid #fafafa;
+}
+
+/* チェック済み・未チェックの文字色をクッキリ分ける */
+.p-table-check-text {
+  color: var(--text-muted);
+}
+
+.p-table-check-input:checked+.p-table-check-text {
+  color: var(--success);
+}
+
+/* 🌟 テーブル内チェックマーク（レ点）の完全カスタマイズ */
+.p-table-check-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  /* 文字との隙間を少し広げて綺麗に */
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: bold;
+  user-select: none;
+}
+
+/* ブラウザ標準のダサいチェックボックスを隠す */
+.p-table-check-input {
+  display: none;
+}
+
+/* ⬜ 未チェック状態のカスタム四角枠を作る */
+.p-table-check-input+.p-table-check-text::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  vertical-align: -3px;
+  border: 2px solid var(--border-color, #ccc);
+  background: #fff;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+/* 👑 チェックが入ったとき（ヨシ！）の枠線の変化 */
+.p-table-check-input:checked+.p-table-check-text::before {
+  border-color: var(--success, #10b981);
+  /* 緑色の枠に */
+  background: var(--success, #10b981);
+  /* 中身を緑に塗りつぶし */
+}
+
+/* 👑 チェックが入ったときに「レ点（✔）」を描画する魔法の擬似要素 */
+.p-table-check-input:checked+.p-table-check-text {
+  color: var(--success, #10b981);
+  /* 文字色も緑に */
+  position: relative;
+}
+
+.p-table-check-input:checked+.p-table-check-text::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  /* 枠の内側の位置調整 */
+  top: 2px;
+  /* 枠の内側の位置調整 */
+  width: 5px;
+  /* レ点の短い棒の長さ */
+  height: 9px;
+  /* レ点の長い棒の長さ */
+  border: solid #fff;
+  /* 白色のレ点 */
+  border-width: 0 2px 2px 0;
+  /* 右と下だけ線を描いて L字を作る */
+  transform: rotate(45deg);
+  /* 45度回転させて「✔」にする */
+}
+
+/* 未チェック状態の文字色（トーンを落とす） */
+.p-table-check-text {
+  color: var(--text-muted, #6b7280);
+  display: inline-block;
+  line-height: 16px;
 }
