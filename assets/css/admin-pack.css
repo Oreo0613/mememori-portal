@@ -74,17 +74,18 @@
   border-color: var(--border-light);
 }
 
-.admin-tabs--category .admin-tabs__item.is-active {
+.admin-tabs--category .admin-tabs__item.is-active,
+.admin-tabs--price .admin-tabs__item.is-active {
   color: #ffffff;
   background: rgba(59, 130, 246, 0.06);
   border-color: var(--accent);
 }
 
-.admin-tabs--price .admin-tabs__item.is-active {
+/* .admin-tabs--price .admin-tabs__item.is-active {
   color: #ffffff;
   background: rgba(245, 158, 11, 0.06);
   border-color: var(--warning);
-}
+} */
 
 /* =========================================================================
    グループ 3：左側 データテーブル（色なしミニマル）
@@ -156,6 +157,21 @@
   border-color: var(--text-sub);
   color: #ffffff;
 }
+
+.admin-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.admin-table tbody tr.is-active {
+  background: rgba(245, 158, 11, 0.08);
+  outline: 1px solid var(--warning);
+}
+
+.admin-table tbody tr.is-active td {
+  color: #ffffff;
+}
+
+
 
 /* =========================================================================
    グループ 4：右側 入力フォーム & モード装飾
