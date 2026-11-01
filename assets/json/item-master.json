@@ -1,0 +1,306 @@
+[
+  {
+    "id": "item_01",
+    "name": "有償ダイヤ",
+    "category": "currency",
+    "imagePath": "assets/images/item/diamond-yushou.webp",
+    "sortOrder": 100,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_02",
+    "name": "属性ガチャチケット",
+    "category": "ticket_gacha",
+    "imagePath": "assets/images/item/ticket-zokusei.webp",
+    "sortOrder": 200,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_03",
+    "name": "運命ガチャチケット",
+    "category": "ticket_gacha",
+    "imagePath": "assets/images/item/ticket-unmei.webp",
+    "sortOrder": 210,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_04",
+    "name": "願い星のチケットケース",
+    "category": "ticket_gacha",
+    "imagePath": "assets/images/item/tikcetcase-negaihosi.webp",
+    "sortOrder": 220,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_05",
+    "name": "プラチナガチャチケット",
+    "category": "ticket_gacha",
+    "imagePath": "assets/images/item/ticket-platinum.webp",
+    "sortOrder": 230,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_06",
+    "name": "聖天使の信託チケット",
+    "category": "ticket_gacha",
+    "imagePath": "assets/images/item/ticket-shintaku.webp",
+    "sortOrder": 240,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_07",
+    "name": "魔女の秘奥チケット",
+    "category": "ticket_gacha",
+    "imagePath": "assets/images/item/ticket-hiou.webp",
+    "sortOrder": 250,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_08",
+    "name": "禁忌武具チケット",
+    "category": "ticket_gacha",
+    "imagePath": "assets/images/item/ticket-kinki.webp",
+    "sortOrder": 260,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_09",
+    "name": "ボスチケット",
+    "category": "ticket_other",
+    "imagePath": "assets/images/item/ticket-boss.webp",
+    "sortOrder": 310,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_10",
+    "name": "無窮の塔チケット",
+    "category": "ticket_other",
+    "imagePath": "assets/images/item/ticket-tower.webp",
+    "sortOrder": 320,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_11",
+    "name": "魔女の心片(SR)",
+    "category": "ticket_other",
+    "imagePath": "assets/images/item/shinpen-sr.webp",
+    "sortOrder": 330,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_12",
+    "name": "魔女の手紙(SR・選択)",
+    "category": "ticket_other",
+    "imagePath": "assets/images/item/tegami.webp",
+    "sortOrder": 340,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_13",
+    "name": "魔女の手紙(SR・藍)",
+    "category": "ticket_other",
+    "imagePath": "assets/images/item/tegami-blue.webp",
+    "sortOrder": 350,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_14",
+    "name": "魔女の手紙(SR・紅)",
+    "category": "ticket_other",
+    "imagePath": "assets/images/item/tegami-red.webp",
+    "sortOrder": 360,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_15",
+    "name": "魔女の手紙(SR・翠)",
+    "category": "ticket_other",
+    "imagePath": "assets/images/item/tegami-green.webp",
+    "sortOrder": 370,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_16",
+    "name": "魔女の手紙(SR・黄)",
+    "category": "ticket_other",
+    "imagePath": "assets/images/item/tegami-yellow.webp",
+    "sortOrder": 380,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_17",
+    "name": "強化秘薬",
+    "category": "material_gear",
+    "imagePath": "assets/images/item/akamizu.webp",
+    "sortOrder": 410,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_18",
+    "name": "強化水",
+    "category": "material_gear",
+    "imagePath": "assets/images/item/kyoukasui.webp",
+    "sortOrder": 420,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_19",
+    "name": "魔装高級香油",
+    "category": "material_gear",
+    "imagePath": "assets/images/item/masou-koukyuu.webp",
+    "sortOrder": 430,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_20",
+    "name": "魔装香油",
+    "category": "material_gear",
+    "imagePath": "assets/images/item/masou.webp",
+    "sortOrder": 440,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_21",
+    "name": "生命樹の雫",
+    "category": "material_gear",
+    "imagePath": "assets/images/item/shizuku.webp",
+    "sortOrder": 450,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_22",
+    "name": "聖装鋼",
+    "category": "material_gear",
+    "imagePath": "assets/images/item/seisoukou.webp",
+    "sortOrder": 460,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_23",
+    "name": "ゴールド6ｈ",
+    "category": "material_gear",
+    "imagePath": "assets/images/item/gold-6h.webp",
+    "sortOrder": 470,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_24",
+    "name": "ゴールド24h",
+    "category": "material_gear",
+    "imagePath": "assets/images/item/gold-24h.webp",
+    "sortOrder": 479,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_25",
+    "name": "潜在宝珠",
+    "category": "material_char",
+    "imagePath": "assets/images/item/akadama.webp",
+    "sortOrder": 510,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_26",
+    "name": "潜在宝珠24h",
+    "category": "material_char",
+    "imagePath": "assets/images/item/akadama-24h.webp",
+    "sortOrder": 519,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_27",
+    "name": "経験珠24h",
+    "category": "material_char",
+    "imagePath": "assets/images/item/midoridama-24h.webp",
+    "sortOrder": 529,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_28",
+    "name": "育成セット2h",
+    "category": "material_char",
+    "imagePath": "assets/images/item/ikusei-2h.webp",
+    "sortOrder": 530,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_29",
+    "name": "育成セット6h",
+    "category": "material_char",
+    "imagePath": "assets/images/item/ikusei-6h.webp",
+    "sortOrder": 535,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_30",
+    "name": "育成セット8h",
+    "category": "material_char",
+    "imagePath": "assets/images/item/ikusei-8h.webp",
+    "sortOrder": 537,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_31",
+    "name": "育成セット24h",
+    "category": "material_char",
+    "imagePath": "assets/images/item/ikusei-24h.webp",
+    "sortOrder": 539,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_32",
+    "name": "ルーンチケット",
+    "category": "rune",
+    "imagePath": "assets/images/item/ticket-rune.webp",
+    "sortOrder": 610,
+    "defaultPackPrices": ""
+  },
+  {
+    "id": "item_33",
+    "name": "ルーンLv2",
+    "category": "rune",
+    "imagePath": "assets/images/item/run-2.webp",
+    "sortOrder": 622,
+    "defaultPackPrices": 160
+  },
+  {
+    "id": "item_34",
+    "name": "ルーンLv3",
+    "category": "rune",
+    "imagePath": "assets/images/item/rune-3.webp",
+    "sortOrder": 623,
+    "defaultPackPrices": 650
+  },
+  {
+    "id": "item_35",
+    "name": "ルーンLv4",
+    "category": "rune",
+    "imagePath": "assets/images/item/rune-4.webp",
+    "sortOrder": 624,
+    "defaultPackPrices": 1000
+  },
+  {
+    "id": "item_36",
+    "name": "ルーンLv5",
+    "category": "rune",
+    "imagePath": "assets/images/item/rune-5.webp",
+    "sortOrder": 625,
+    "defaultPackPrices": 1500
+  },
+  {
+    "id": "item_37",
+    "name": "ルーンLv6",
+    "category": "rune",
+    "imagePath": "assets/images/item/rune-6.webp",
+    "sortOrder": 626,
+    "defaultPackPrices": 3000
+  },
+  {
+    "id": "item_38",
+    "name": "ルーンLv7",
+    "category": "rune",
+    "imagePath": "assets/images/item/rune-7.webp",
+    "sortOrder": 627,
+    "defaultPackPrices": "6000, 11800"
+  }
+]
