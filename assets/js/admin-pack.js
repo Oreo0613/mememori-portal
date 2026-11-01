@@ -46,10 +46,11 @@ const itemGrid = document.querySelector(".js-item-grid");
 // --- 3. 初期化ライフサイクル ---
 document.addEventListener("DOMContentLoaded", async () => {
   await loadItemMaster(); // ① 先にアイテムマスタを読み込む
+  await loadPackMaster(); // 🌟次に保存済みのパックマスタを読み込む
   initDynamicFilters(); // タブの自動組み立て
-  renderTable(); // テーブル初期描画
+  renderTable(); // テーブル初期描画（読み込んだデータが反映されます）
   syncTabsWithForm(); // フォームへ初期値を同期
-  setupFormEventListeners(); // イベントの登録（※後半で定義）
+  setupFormEventListeners(); // イベントの登録
 });
 
 // --- 4. アイテムマスタ（JSON）の非同期読み込み ---
@@ -68,6 +69,26 @@ async function loadItemMaster() {
     initFixedDiamondUI();
   } catch (error) {
     console.error("マスタ初期化エラー:", error);
+  }
+}
+
+// 保存済みパックマスタ（JSON）の非同期読み込み
+async function loadPackMaster() {
+  try {
+    const response = await fetch("assets/json/pack-master.json");
+    // ファイルがまだサーバー（ローカル）にない場合は、空のまま正常にスキップさせる
+    if (!response.ok) {
+      console.log(
+        "pack-master.json が見つからないため、新規作成として開始します。",
+      );
+      return;
+    }
+    const data = await response.json();
+    if (Array.isArray(data)) {
+      temporaryPackData = data; // 読み込んだデータをメイン配列へ格納！
+    }
+  } catch (error) {
+    console.error("パックマスタの読み込み・解析に失敗しました:", error);
   }
 }
 
