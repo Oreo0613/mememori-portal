@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>管理者用 - ウルトラセールパック管理</title>
+
+    <link rel="icon" href="data:,">
+    <!-- destyle.cssのCDN読み込み -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/destyle.css@4.0.0/destyle.min.css" />
+
+    <!-- 管理者用のデザインCSS -->
+    <link rel="stylesheet" href="assets/css/admin.css" />
+    <link rel="stylesheet" href="assets/css/admin-pack.css" />
+
+    <script src="https://kit.fontawesome.com/d36bec305b.js" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+    <!-- 管理者用の専用ヘッダー -->
+    <header class="admin-header">
+        <div class="admin-header-container">
+            <div class="header-logo">マスタ管理</div>
+            <nav class="header-nav">
+                <ul>
+                    <li><a href="admin-arcana.html">アルカナマスタ</a></li>
+                    <li><a href="admin-character.html">キャラクターマスタ</a></li>
+                    <li><a href="#" class="active">コルディパックマスタ</a></li>
+                    <li><button id="globalLogoutBtn" class="ar-btn btn-muted admin-logout-btn">🚪 ログアウト</button></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- admin-container の中身を以下のように2カラム構造に分割します -->
+    <div class="admin-container admin-container--wide">
+        <h1 class="admin-title">📦 ウルトラセールパック管理</h1>
+
+        <!-- 2カラムを包むラッパーを新設 -->
+        <div class="admin-main-wrapper">
+
+
+            <!-- 【左側】登録済みパックの一覧テーブルエリア -->
+            <div class="admin-list-side">
+
+                <!-- 📂 1段目タブ：ゲーム内カテゴリ（JSで動的生成するため中身は空に） -->
+                <ul class="admin-tabs admin-tabs--category js-tabs-category"></ul>
+
+                <!-- 💳 2段目タブ：課金額（JSで動的生成するため中身は空に） -->
+                <ul class="admin-tabs admin-tabs--price js-tabs-price"></ul>
+
+                <!-- テーブルコンテナ -->
+                <div class="table-container">
+                    <table class="admin-table">
+                        <thead class="admin-table-header">
+                            <tr>
+                                <th style="width: 20%;">解放条件</th>
+                                <th style="width: 15%;">金額</th>
+                                <th style="width: 53%;">報酬内容</th>
+                                <th style="width: 12%;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody class="js-pack-table-body">
+                            <!-- ここにデータがJSで挿入されます -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+
+
+            <!-- 【右側】新規登録・編集用の入力フォームサイド（40%） -->
+            <div class="admin-form-side">
+                <div class="admin-form">
+                    <!-- モード表示ヘッダー -->
+                    <div class="admin-form__mode-header js-form-mode-title">新規登録モード</div>
+
+                    <!-- 基本設定（自動ロック項目） -->
+                    <div class="form-grid">
+                        <div class="admin-form__group">
+                            <label class="admin-form__label">カテゴリ（連動中）</label>
+                            <input type="text" class="admin-form__input js-form-category-display" readonly>
+                        </div>
+                        <div class="admin-form__group">
+                            <label class="admin-form__label">金額（連動中）</label>
+                            <input type="text" class="admin-form__input js-form-price-display" readonly>
+                        </div>
+                    </div>
+
+                    <!-- マイルストーン入力 -->
+                    <div class="admin-form__group">
+                        <label class="admin-form__label">マイルストーン数値</label>
+                        <input type="text" class="admin-form__input js-form-milestone" placeholder="例: 10-24, 200, 150">
+                    </div>
+
+                    <!-- 📦 報酬アイテム設定（3グループ固定縦並び） -->
+                    <div class="admin-form__group">
+                        <label class="admin-form__label">報酬アイテムの選択（画像をクリック）</label>
+
+                        <!-- ① マスタから全38アイテムの画像を並べるグリッド -->
+                        <div class="p-item-grid js-item-grid">
+                            <!-- ここにJSでマスタの画像カードが自動生成されます -->
+                        </div>
+
+                        <label class="admin-form__label" style="margin-top: 20px;">選択中のアイテム・個数設定（最大3枠）</label>
+                        <!-- ② 3グループ固定の横並びスロットエリア -->
+                        <div class="p-selected-slots">
+                            <!-- 1つ目のグループ -->
+                            <div class="p-selected-row js-selected-row" data-slot="1">
+                                <div class="p-selected-row__item-zone js-item-zone">
+                                    <span class="p-selected-row__placeholder">未選択</span>
+                                </div>
+                                <div class="p-selected-row__counter">
+                                    <input type="number" class="p-selected-row__input js-count-input" min="1"
+                                        placeholder="個数" disabled>
+                                    <span class="p-selected-row__unit">個</span>
+                                </div>
+                            </div>
+                            <!-- 2つ目のグループ -->
+                            <div class="p-selected-row js-selected-row" data-slot="2">
+                                <div class="p-selected-row__item-zone js-item-zone">
+                                    <span class="p-selected-row__placeholder">未選択</span>
+                                </div>
+                                <div class="p-selected-row__counter">
+                                    <input type="number" class="p-selected-row__input js-count-input" min="1"
+                                        placeholder="個数" disabled>
+                                    <span class="p-selected-row__unit">個</span>
+                                </div>
+                            </div>
+                            <!-- 3つ目のグループ -->
+                            <div class="p-selected-row js-selected-row" data-slot="3">
+                                <div class="p-selected-row__item-zone js-item-zone">
+                                    <span class="p-selected-row__placeholder">未選択</span>
+                                </div>
+                                <div class="p-selected-row__counter">
+                                    <input type="number" class="p-selected-row__input js-count-input" min="1"
+                                        placeholder="個数" disabled>
+                                    <span class="p-selected-row__unit">個</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- アクションボタン群 -->
+                    <div class="form-grid">
+                        <button type="button" class="admin-form__btn admin-form__btn--save js-save-btn">仮保存</button>
+                        <button type="button" class="admin-form__btn admin-form__btn--cancel js-cancel-btn"
+                            style="display: none;">編集キャンセル</button>
+                    </div>
+
+                    <hr class="admin-form__divider">
+
+                    <!-- 一括出力エリア -->
+                    <button type="button" class="admin-form__btn admin-form__btn--generate js-generate-btn">
+                        全データをJSONコードとして出力
+                    </button>
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+
+
+    <script type="module" src="assets/js/admin.js"></script>
+    <script type="module" src="assets/js/admin-pack.js"></script>
+</body>
+
+</html>

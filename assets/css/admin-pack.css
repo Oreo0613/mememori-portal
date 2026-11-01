@@ -1,0 +1,541 @@
+@charset "UTF-8";
+
+.admin-container--wide {
+  max-width: 1600px;
+  padding-bottom: 0;
+}
+
+/* =========================================================================
+   グループ 1：全体構造・2カラムレイアウト
+   ========================================================================= */
+.admin-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-bottom: 24px;
+  background: linear-gradient(to right, #fff, var(--text-sub));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.admin-main-wrapper {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.admin-list-side {
+  flex: 6;
+  min-width: 0;
+}
+
+.admin-form-side {
+  flex: 4;
+  position: sticky;
+  top: 100px;
+}
+
+/* =========================================================================
+   グループ 2：フィルタータブ（2段構成・トーンダウン仕様）
+   ========================================================================= */
+.admin-tabs {
+  display: flex;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin-bottom: 12px;
+}
+
+.admin-tabs--price {
+  margin-bottom: 20px;
+}
+
+.admin-tabs__item {
+  font-size: 1.2rem !important;
+  font-weight: bold;
+  padding: 10px 20px;
+  color: var(--text-muted);
+  background: var(--input-bg-sub);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-tabs__item:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.02);
+  border-color: var(--border-light);
+}
+
+.admin-tabs--category .admin-tabs__item.is-active {
+  color: #ffffff;
+  background: rgba(59, 130, 246, 0.06);
+  border-color: var(--accent);
+}
+
+.admin-tabs--price .admin-tabs__item.is-active {
+  color: #ffffff;
+  background: rgba(245, 158, 11, 0.06);
+  border-color: var(--warning);
+}
+
+/* =========================================================================
+   グループ 3：左側 データテーブル（色なしミニマル）
+   ========================================================================= */
+.table-container {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow);
+
+  max-height: 68vh;
+  overflow-y: scroll;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+  table-layout: fixed;
+}
+
+.admin-table th {
+  background: var(--input-bg-sub);
+  color: var(--text-sub);
+  font-weight: bold;
+  padding: 14px 12px;
+  border-bottom: 2px solid var(--border);
+}
+
+.admin-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-main);
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-table tbody tr {
+  cursor: pointer;
+}
+
+.admin-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.condition-text {
+  font-weight: bold;
+  color: var(--text-main);
+}
+
+.table-edit-btn {
+  background: var(--input-bg-sub);
+  border: 1px solid var(--border);
+  color: var(--text-sub);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: bold;
+  transition: all 0.15s ease;
+}
+
+.table-edit-btn:hover {
+  background: var(--border-light);
+  border-color: var(--text-sub);
+  color: #ffffff;
+}
+
+/* =========================================================================
+   グループ 4：右側 入力フォーム & モード装飾
+   ========================================================================= */
+.admin-form {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-form__mode-header {
+  font-size: 14px;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-left: 4px solid var(--text-muted);
+  color: var(--text-sub);
+  text-align: left;
+}
+
+/* 編集モード時の装飾変更用状態クラス */
+.admin-form__mode-header.is-edit {
+  border-left-color: var(--warning);
+  color: var(--warning);
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.admin-form__group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-form__group--output {
+  margin-top: 4px;
+}
+
+.admin-form__label {
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--text-sub);
+  letter-spacing: 0.5px;
+}
+
+.admin-form__select,
+.admin-form__input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.admin-form__reward-list {
+  background: var(--card-bg-dark);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reward-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.reward-row__select,
+.reward-row__input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+/* ボタンバリエーション */
+.admin-form__btn {
+  padding: 12px 20px;
+  font-size: 13px;
+  font-weight: bold;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.admin-form__btn--save {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #fff;
+}
+
+.admin-form__btn--save:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.admin-form__btn--cancel {
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--text-sub);
+}
+
+.admin-form__btn--cancel:hover {
+  background: var(--input-bg);
+  color: #fff;
+}
+
+.admin-form__btn--generate {
+  background: var(--input-bg-sub);
+  border: 1px solid var(--border-light);
+  color: var(--text-main);
+}
+
+.admin-form__btn--generate:hover {
+  background: var(--card-bg-dark);
+  border-color: var(--text-main);
+}
+
+.admin-form__divider {
+  border: none;
+  border-top: 1px dashed var(--border);
+  margin: 4px 0;
+}
+
+.admin-form__textarea {
+  width: 100%;
+  height: 140px;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--input-bg-sub);
+  color: var(--success);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* =========================================================================
+   共通インタラクション
+   ========================================================================= */
+.admin-form__select:focus,
+.admin-form__input:focus,
+.reward-row__select:focus,
+.reward-row__input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* =========================================================================
+ * 📦 報酬アイテム画像選択・個数設定用（必要最小限の追加スタイル）
+ * =========================================================================
+ */
+
+/* ① 画像を並べる選択用グリッド（枠線とスクロール用） */
+.p-item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  /* gap: 6px; */
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  /* padding: 8px; */
+  background: #fafafa;
+  border-radius: 4px;
+}
+
+/* グリッド内の個々のアイテムカード */
+.p-item-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  background: #fff;
+  border: 2px solid #e5e5e5;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  aspect-ratio: 1 / 1;
+}
+
+.p-item-card__image {
+  width: 100%;
+  height: 100%;
+  max-width: 52px;
+  max-height: 52px;
+  object-fit: contain;
+}
+
+.p-item-card__name {
+  display: none;
+}
+
+.p-item-card__name {
+  font-size: 10px;
+  color: #666;
+  text-align: center;
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+/* 画像が選択された際のアクティブ状態 */
+.p-item-card.is-selected {
+  border-color: #007bff;
+  background-color: #ebf3ff;
+}
+
+/* ② 選択が確定したアイテムが並ぶリストエリア */
+.p-selected-list {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 6px 12px;
+  min-height: 50px;
+}
+
+.p-selected-list__empty {
+  font-size: 12px;
+  color: #999;
+  text-align: center;
+  padding: 10px 0;
+}
+
+/* 選択済みアイテムの行レイアウト */
+.p-selected-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px dashed #eee;
+}
+
+.p-selected-row:last-child {
+  border-bottom: none;
+}
+
+.p-selected-row__image {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.p-selected-row__name {
+  font-size: 13px;
+  font-weight: bold;
+  color: #333;
+  flex: 1;
+}
+
+.p-selected-row__counter {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.p-selected-row__input {
+  width: 75px;
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: right;
+  font-size: 14px;
+}
+
+.p-selected-row__unit {
+  font-size: 12px;
+  color: #555;
+}
+
+/* 3グループ固定の縦並びコンテナ */
+.p-selected-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--input-bg-sub);
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  padding: 6px 12px;
+}
+
+/* 1グループごとの横並びレイアウト */
+.p-selected-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--border-light);
+}
+
+.p-selected-row:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+/* アイテムの画像と名前が表示されるゾーン */
+.p-selected-row__item-zone {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.p-selected-row__placeholder {
+  font-size: 13px;
+  color: #aaa;
+  font-style: italic;
+}
+
+.p-selected-row__image {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.p-selected-row__name {
+  font-size: 13px;
+  font-weight: bold;
+  color: #fafafa;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 個数入力欄（横幅を狭く制限） */
+.p-selected-row__counter {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.p-selected-row__input {
+  width: 65px;
+  /* 入力欄を狭く設定 */
+  padding: 6px;
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  text-align: right;
+  font-size: 14px;
+}
+
+.p-selected-row__input:disabled {
+  background: #f5f5f5;
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.p-selected-row__unit {
+  font-size: 12px;
+  color: #555;
+}
