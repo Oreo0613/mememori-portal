@@ -27,7 +27,7 @@
     "id": "item_04",
     "name": "願い星のチケットケース",
     "category": "ticket_gacha",
-    "imagePath": "assets/images/item/tikcetcase-negaihosi.webp",
+    "imagePath": "assets/images/item/ticketcase-negaihosi.webp",
     "sortOrder": 220,
     "defaultPackPrices": ""
   },
@@ -259,7 +259,7 @@
     "id": "item_33",
     "name": "ルーンLv2",
     "category": "rune",
-    "imagePath": "assets/images/item/run-2.webp",
+    "imagePath": "assets/images/item/rune-2.webp",
     "sortOrder": 622,
     "defaultPackPrices": 160
   },
