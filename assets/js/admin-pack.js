@@ -1,10 +1,10 @@
 /**
  * =========================================================================
- * 📦 ウルトラセールパック管理専用 制御スクリプト（完全統合版・前半）
+ * 📦 ウルトラセールパック管理専用 制御スクリプト（IndexedDB対応版・1/3）
  * =========================================================================
  */
 
-// --- 0. 課金額ごとのデフォルト有償ダイヤ数マスタ（上部で一括管理） ---
+// --- 0. 課金額ごとのデフォルト有償ダイヤ数マスタ ---
 const DEFAULT_DIAMOND_COUNTS = {
   11800: 5900,
   6000: 3000,
@@ -18,17 +18,15 @@ const DEFAULT_DIAMOND_COUNTS = {
 // 有償ダイヤのアイテムID定義
 const DIAMOND_ITEM_ID = "item_01";
 
-// --- 1. 仮保存データを保持するメイン配列（メモリ上管理） ---
+// --- 1. メモリ上の管理用データと状態管理 ---
 let temporaryPackData = [];
-
-// --- 2. 状態管理 ---
-let itemMaster = []; // JSONから読み込むアイテムマスタ
-let selectedItems = {}; // フォームで現在選択中の「カスタムアイテム」と個数 { item_id: count }
+let itemMaster = [];
+let selectedItems = {};
 let activeCategory = "rank";
 let activePrice = "11800";
-let editingPackId = null; // nullなら新規登録モード、値があれば編集モード
+let editingPackId = null;
 
-// 日本語マップ（カテゴリ用）
+// 日本語マップ
 const categoryMap = {
   rank: "ランク",
   quest: "クエスト",
@@ -43,14 +41,82 @@ const categoryMap = {
 // DOM要素の取得
 const itemGrid = document.querySelector(".js-item-grid");
 
+// --- 2. IndexedDB 制御クラス ---
+class PackDB {
+  constructor() {
+    this.dbName = "mememori-portal-db";
+    this.dbVersion = 1;
+    this.storeName = "pack-master";
+    this.db = null;
+  }
+
+  open() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.dbName, this.dbVersion);
+      request.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(this.storeName)) {
+          db.createObjectStore(this.storeName, { keyPath: "id" });
+        }
+      };
+      request.onsuccess = (e) => {
+        this.db = e.target.result;
+        resolve();
+      };
+      request.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  async getAll() {
+    return new Promise((resolve, reject) => {
+      const transaction = this.db.transaction(this.storeName, "readonly");
+      const store = transaction.objectStore(this.storeName);
+      const request = store.getAll();
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async saveAll(dataArray) {
+    return new Promise((resolve, reject) => {
+      const transaction = this.db.transaction(this.storeName, "readwrite");
+      const store = transaction.objectStore(this.storeName);
+
+      // 一度全削除して最新状態で上書き
+      store.clear().onsuccess = () => {
+        if (dataArray.length === 0) {
+          resolve();
+          return;
+        }
+        let count = 0;
+        dataArray.forEach((item) => {
+          const req = store.put(item);
+          req.onsuccess = () => {
+            count++;
+            if (count === dataArray.length) resolve();
+          };
+          req.onerror = () => reject(req.error);
+        });
+      };
+    });
+  }
+}
+
+const db = new PackDB();
+
 // --- 3. 初期化ライフサイクル ---
 document.addEventListener("DOMContentLoaded", async () => {
-  await loadItemMaster(); // ① 先にアイテムマスタを読み込む
-  await loadPackMaster(); // 🌟次に保存済みのパックマスタを読み込む
-  initDynamicFilters(); // タブの自動組み立て
-  renderTable(); // テーブル初期描画（読み込んだデータが反映されます）
-  syncTabsWithForm(); // フォームへ初期値を同期
-  setupFormEventListeners(); // イベントの登録
+  try {
+    await db.open(); // ① IndexedDBの準備
+    await loadItemMaster(); // ② アイテムマスタ読み込み
+    await loadPackMaster(); // ③ IndexedDB/JSON からパックデータ同期
+    initDynamicFilters(); // ④ タブの生成
+    renderTable(); // ⑤ テーブル描画
+    syncTabsWithForm(); // ⑥ フォームの同期
+    setupFormEventListeners(); // ⑦ イベントリスナー登録
+  } catch (err) {
+    console.error("アプリケーションの初期化に失敗しました:", err);
+  }
 });
 
 // --- 4. アイテムマスタ（JSON）の非同期読み込み ---
@@ -59,44 +125,56 @@ async function loadItemMaster() {
     const response = await fetch("assets/json/item-master.json");
     if (!response.ok) throw new Error("アイテムマスタの読み込みに失敗しました");
     itemMaster = await response.json();
-
-    // sortOrder（昇順）に並び替え
     itemMaster.sort((a, b) => a.sortOrder - b.sortOrder);
 
-    // 画像グリッドを生成
     renderItemGrid();
-    // 固定ダイヤ枠の表示を初期化
     initFixedDiamondUI();
   } catch (error) {
     console.error("マスタ初期化エラー:", error);
   }
 }
 
-// 保存済みパックマスタ（JSON）の非同期読み込み
+// パックマスタの非同期読み込み（IndexedDBを最優先、空ならJSONから移行）
 async function loadPackMaster() {
   try {
+    // まずIndexedDBからローカルデータを取得
+    const localData = await db.getAll();
+    if (localData && localData.length > 0) {
+      temporaryPackData = localData;
+      console.log("IndexedDBからデータをロードしました。");
+      return;
+    }
+
+    // IndexedDBが空なら初期設定ファイル(json)を読みに行く
     const response = await fetch("assets/json/pack-master.json");
-    // ファイルがまだサーバー（ローカル）にない場合は、空のまま正常にスキップさせる
     if (!response.ok) {
       console.log(
-        "pack-master.json が見つからないため、新規作成として開始します。",
+        "pack-master.json が見つからないため、新規空データで開始します。",
       );
       return;
     }
     const data = await response.json();
-    if (Array.isArray(data)) {
-      temporaryPackData = data; // 読み込んだデータをメイン配列へ格納！
+    if (Array.isArray(data) && data.length > 0) {
+      temporaryPackData = data;
+      await db.saveAll(temporaryPackData); // IndexedDBにキャッシュ保存
+      console.log("pack-master.json からデータを移行しました。");
     }
   } catch (error) {
     console.error("パックマスタの読み込み・解析に失敗しました:", error);
   }
 }
 
-// 選択用画像グリッドの動的描画（有償ダイヤ item_01 を自動で除外する）
+/**
+ * =========================================================================
+ * 📦 ウルトラセールパック管理専用 制御スクリプト（IndexedDB対応版・2/3）
+ * =========================================================================
+ */
+
+// 選択用画像グリッドの動的描画
 function renderItemGrid() {
   if (!itemGrid) return;
   itemGrid.innerHTML = itemMaster
-    .filter((item) => item.id !== DIAMOND_ITEM_ID) // 👈 有償ダイヤをグリッドから除外！
+    .filter((item) => item.id !== DIAMOND_ITEM_ID)
     .map(
       (item) => `
       <div class="p-item-card js-item-card" data-id="${item.id}" title="${item.name}">
@@ -108,7 +186,7 @@ function renderItemGrid() {
     .join("");
 }
 
-// 💎 フォーム内の固定ダイヤ枠に、マスタから取得した画像と名前を最初からセットする関数
+// フォーム内の固定ダイヤ枠初期化
 function initFixedDiamondUI() {
   const diamondItem = itemMaster.find((m) => m.id === DIAMOND_ITEM_ID);
   const fixedZone = document.querySelector(
@@ -122,7 +200,7 @@ function initFixedDiamondUI() {
   }
 }
 
-// --- 5. フィルター動的生成・同期処理 ---
+// フィルター動的生成
 function initDynamicFilters() {
   const categoryContainer = document.querySelector(".js-tabs-category");
   const priceContainer = document.querySelector(".js-tabs-price");
@@ -140,7 +218,6 @@ function initDynamicFilters() {
   ];
   const uniquePrices = ["11800", "6000", "3000", "1500", "1000", "650", "160"];
 
-  // 📂 カテゴリタブ組み立て
   uniqueCategories.forEach((cat) => {
     const li = document.createElement("li");
     li.className = `admin-tabs__item ${cat === activeCategory ? "is-active" : ""}`;
@@ -159,7 +236,6 @@ function initDynamicFilters() {
     categoryContainer.appendChild(li);
   });
 
-  // 💳 課金額タブ組み立て（修正完了版）
   uniquePrices.forEach((price) => {
     const li = document.createElement("li");
     li.className = `admin-tabs__item ${price === activePrice ? "is-active" : ""}`;
@@ -171,7 +247,7 @@ function initDynamicFilters() {
       e.currentTarget.classList.add("is-active");
       activePrice = e.currentTarget.dataset.price;
       syncTabsWithForm();
-      renderTable(); // 報酬内容とチェック状態が切り替わるため再ビルド
+      renderTable();
     });
     priceContainer.appendChild(li);
   });
@@ -185,93 +261,18 @@ function syncTabsWithForm() {
   if (priceInput)
     priceInput.value = Number(activePrice).toLocaleString() + "円";
 
-  // 💎 金額タブが切り替わったら、フォームの固定ダイヤ入力欄にデフォルト数を自動同期
   const diamondInput = document.querySelector(".js-diamond-count-input");
   if (diamondInput && !editingPackId) {
     diamondInput.value = DEFAULT_DIAMOND_COUNTS[activePrice] || 0;
   }
 }
 
-// --- 6. テーブル描画・制御（「画像×個数」の一行収め仕様 ＆ 確認チェックボックス対応版） ---
-function renderTable() {
-  const tbody = document.querySelector(".js-pack-table-body");
-  if (!tbody) return;
-  tbody.innerHTML = "";
-
-  temporaryPackData.forEach((pack) => {
-    const tr = document.createElement("tr");
-    tr.dataset.category = pack.category;
-    tr.dataset.id = pack.id;
-
-    const catLabel = categoryMap[pack.category] || pack.category;
-    const conditionText = `${catLabel} ${pack.milestone}`;
-    const currentPricePack = pack.packs.find((p) => p.price === activePrice);
-
-    let rewardContentHtml = "";
-    if (currentPricePack && currentPricePack.rewards) {
-      rewardContentHtml = currentPricePack.rewards
-        .map((r) => {
-          const matchedItem = itemMaster.find((m) => m.id === r.item);
-          const imgSrc = matchedItem
-            ? matchedItem.imagePath
-            : "assets/images/item/placeholder.webp";
-          const itemName = matchedItem ? matchedItem.name : r.item;
-          return `
-            <div class="p-table-reward__item" title="${itemName}">
-              <img src="${imgSrc}" alt="${itemName}" class="p-table-reward__image">
-              <span class="p-table-reward__count">×${r.count.toLocaleString()}</span>
-            </div>
-          `;
-        })
-        .join("");
-    }
-
-    // 現在のisCheckedフラグの状態を取得（無ければデフォルトfalse）
-    const isChecked = currentPricePack ? !!currentPricePack.isChecked : false;
-    const checkedAttr = isChecked ? "checked" : "";
-
-    const priceText = Number(activePrice).toLocaleString() + "円";
-
-    tr.innerHTML = `
-        <td><span class="condition-text">${conditionText}</span></td>
-        <td>${priceText}</td>
-        <td><div class="p-table-reward">${rewardContentHtml}</div></td>
-        <td>
-          <label class="p-table-check-label">
-            <input type="checkbox" class="p-table-check-input js-table-check" data-id="${pack.id}" ${checkedAttr}>
-            <span class="p-table-check-text">${isChecked ? "済" : "未"}</span>
-          </label>
-        </td>
-        <td>
-          <button class="table-edit-btn js-edit-btn" data-id="${pack.id}">編集</button>
-          <button class="table-delete-btn js-delete-btn" data-id="${pack.id}">削除</button>
-        </td>
-      `;
-    tbody.appendChild(tr);
-  });
-
-  updateTableDisplay();
-}
-
-function updateTableDisplay() {
-  const tableRows = document.querySelectorAll(".js-pack-table-body tr");
-  tableRows.forEach((row) => {
-    const pack = temporaryPackData.find((p) => p.id === row.dataset.id);
-    const isCategoryMatch = row.dataset.category === activeCategory;
-    const hasPriceData = pack
-      ? pack.packs.some((p) => p.price === activePrice)
-      : false;
-    row.style.display = isCategoryMatch && hasPriceData ? "" : "none";
-  });
-}
-
-// --- 7. フォームのモード管理・同期ロジック（ダイヤとカスタムを分離復元） ---
+// フォームへのデータ読み込み（編集モード）
 function loadPackToForm(packId) {
   const pack = temporaryPackData.find((p) => p.id === packId);
   if (!pack) return;
 
   editingPackId = packId;
-
   document.querySelectorAll(".js-pack-table-body tr").forEach((row) => {
     row.classList.toggle("is-active", row.dataset.id === packId);
   });
@@ -287,33 +288,25 @@ function loadPackToForm(packId) {
   if (saveBtn) saveBtn.textContent = "変更を確定する";
 
   document.querySelector(".js-form-milestone").value = pack.milestone;
-  document.querySelector(".js-form-category-display").value =
-    categoryMap[pack.category] || pack.category;
-  document.querySelector(".js-form-price-display").value =
-    Number(activePrice).toLocaleString() + "円";
 
   selectedItems = {};
   const currentPricePack = pack.packs.find((p) => p.price === activePrice);
-
   if (currentPricePack && currentPricePack.rewards) {
     currentPricePack.rewards.forEach((r) => {
       if (r.item === DIAMOND_ITEM_ID) {
-        // 💎 ダイヤは固定枠の入力値へ復元
         document.querySelector(".js-diamond-count-input").value = r.count;
       } else {
-        // 📦 それ以外は最大3つのカスタムアイテム枠へ
         selectedItems[r.item] = r.count;
       }
     });
   }
   updateItemSelectorUI();
-
   document.querySelector(".js-form-milestone").focus();
 }
 
+// フォームのリセット（新規登録モード）
 function resetFormToNewMode() {
   editingPackId = null;
-
   document.querySelectorAll(".js-pack-table-body tr").forEach((row) => {
     row.classList.remove("is-active");
   });
@@ -331,7 +324,6 @@ function resetFormToNewMode() {
   document.querySelector(".js-form-milestone").value = "";
   selectedItems = {};
   updateItemSelectorUI();
-
   syncTabsWithForm();
   document.querySelector(".js-form-milestone").focus();
 }
@@ -369,44 +361,115 @@ function updateItemSelectorUI() {
   });
 }
 
-// --- 8. 各種イベント・ショートカット・入力制限の登録（完全統合版） ---
+/**
+ * =========================================================================
+ * 📦 ウルトラセールパック管理専用 制御スクリプト（IndexedDB対応版・3/3）
+ * =========================================================================
+ */
+
+// --- 5. テーブルレンダリングと連動表示 ---
+function renderTable() {
+  const tbody = document.querySelector(".js-pack-table-body");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  temporaryPackData.forEach((pack) => {
+    const tr = document.createElement("tr");
+    tr.dataset.category = pack.category;
+    tr.dataset.id = pack.id;
+
+    const catLabel = categoryMap[pack.category] || pack.category;
+    const conditionText = `${catLabel} ${pack.milestone}`;
+    const currentPricePack = pack.packs.find((p) => p.price === activePrice);
+
+    let rewardContentHtml = "";
+    if (currentPricePack && currentPricePack.rewards) {
+      rewardContentHtml = currentPricePack.rewards
+        .map((r) => {
+          const matchedItem = itemMaster.find((m) => m.id === r.item);
+          const imgSrc = matchedItem
+            ? matchedItem.imagePath
+            : "assets/images/item/placeholder.webp";
+          const itemName = matchedItem ? matchedItem.name : r.item;
+          return `
+          <div class="p-table-reward__item" title="${itemName}">
+            <img src="${imgSrc}" alt="${itemName}" class="p-table-reward__image">
+            <span class="p-table-reward__count">×${r.count.toLocaleString()}</span>
+          </div>
+        `;
+        })
+        .join("");
+    }
+
+    const isChecked = currentPricePack ? !!currentPricePack.isChecked : false;
+    const checkedAttr = isChecked ? "checked" : "";
+    const priceText = Number(activePrice).toLocaleString() + "円";
+
+    tr.innerHTML = `
+        <td><span class="condition-text">${conditionText}</span></td>
+        <td>${priceText}</td>
+        <td><div class="p-table-reward">${rewardContentHtml}</div></td>
+        <td>
+          <label class="p-table-check-label">
+            <input type="checkbox" class="p-table-check-input js-table-check" data-id="${pack.id}" ${checkedAttr}>
+            <span class="p-table-check-text">${isChecked ? "済" : "未"}</span>
+          </label>
+        </td>
+        <td>
+          <button class="table-edit-btn js-edit-btn" data-id="${pack.id}">編集</button>
+          <button class="table-delete-btn js-delete-btn" data-id="${pack.id}">削除</button>
+        </td>
+      `;
+    tbody.appendChild(tr);
+  });
+
+  updateTableDisplay();
+}
+
+function updateTableDisplay() {
+  const tableRows = document.querySelectorAll(".js-pack-table-body tr");
+  tableRows.forEach((row) => {
+    const pack = temporaryPackData.find((p) => p.id === row.dataset.id);
+    const isCategoryMatch = row.dataset.category === activeCategory;
+    const hasPriceData = pack
+      ? pack.packs.some((p) => p.price === activePrice)
+      : false;
+    row.style.display = isCategoryMatch && hasPriceData ? "" : "none";
+  });
+}
+
+// --- 6. イベントリスナーとデータ同期 ---
 function setupFormEventListeners() {
-  // 🌟 一覧テーブル内のクリック判定（チェックボックス切り替え・編集・削除のバブリングキャッチ）
   document
     .querySelector(".js-pack-table-body")
-    .addEventListener("click", (e) => {
-      // ① テーブル上の確認チェックボックス（js-table-check）が切り替えられたとき
+    .addEventListener("click", async (e) => {
+      // ① チェックボックスの同期＆IndexedDB保存
       const tableCheck = e.target.closest(".js-table-check");
       if (tableCheck) {
         const packId = tableCheck.dataset.id;
         const pack = temporaryPackData.find((p) => p.id === packId);
         if (pack) {
-          // 現在アクティブな金額タブのパックデータを検索
           const currentPricePack = pack.packs.find(
             (p) => p.price === activePrice,
           );
           if (currentPricePack) {
-            // チェックボックスのON/OFF状態をそのままisCheckedに格納（データ同期）
             currentPricePack.isChecked = tableCheck.checked;
-
-            // 隣のテキスト表記（済 / 未）をリアルタイムに書き換える
             const textEl = tableCheck.nextElementSibling;
-            if (textEl) {
-              textEl.textContent = tableCheck.checked ? "済" : "未";
-            }
+            if (textEl) textEl.textContent = tableCheck.checked ? "済" : "未";
+            await db.saveAll(temporaryPackData); // 状態を保存
           }
         }
         return;
       }
 
-      // ② ✏️ 編集ボタンが押されたとき
+      // ② 編集
       const editBtn = e.target.closest(".js-edit-btn");
       if (editBtn) {
         loadPackToForm(editBtn.dataset.id);
         return;
       }
 
-      // ③ 🗑️ 削除ボタンが押されたとき
+      // ③ 削除＆IndexedDB同期
       const deleteBtn = e.target.closest(".js-delete-btn");
       if (deleteBtn) {
         const packId = deleteBtn.dataset.id;
@@ -414,40 +477,31 @@ function setupFormEventListeners() {
         if (!pack) return;
 
         const catLabel = categoryMap[pack.category] || pack.category;
-
-        // 誤操作防止の確認アラート
-        const isConfirmed = confirm(
-          `【削除の確認】\n「${catLabel} ${pack.milestone}」のデータを完全に削除しますか？\n（※このマイルストーンに含まれるすべての金額パックが消去されます）`,
-        );
-
-        if (isConfirmed) {
-          // 配列から対象データを完全消去
+        if (
+          confirm(
+            `【削除の確認】\n「${catLabel} ${pack.milestone}」を完全に削除しますか？`,
+          )
+        ) {
           temporaryPackData = temporaryPackData.filter((p) => p.id !== packId);
-
-          // 編集中データを消した場合はフォームも連動リセット
-          if (editingPackId === packId) {
-            resetFormToNewMode();
-          }
-
-          // テーブルを再描画
+          if (editingPackId === packId) resetFormToNewMode();
+          await db.saveAll(temporaryPackData); // DB更新
           renderTable();
         }
       }
     });
 
-  // 📦 画像カードのクリック判定（親要素を確実に捉えて空きスロットへ割り当て）
+  // 画像グリッドクリック
   if (itemGrid) {
     itemGrid.addEventListener("click", (e) => {
       const card = e.target.closest(".js-item-card");
       if (!card) return;
-
       const itemId = card.dataset.id;
 
       if (selectedItems[itemId] !== undefined) {
         delete selectedItems[itemId];
       } else {
         if (Object.keys(selectedItems).length >= 3) {
-          alert("カスタム報酬アイテムは最大3つまでしか選択できません。");
+          alert("カスタム報酬アイテムは最大3つまで選択できます。");
           return;
         }
         selectedItems[itemId] = 1;
@@ -456,7 +510,7 @@ function setupFormEventListeners() {
     });
   }
 
-  // 📝 【確定版】マイルストーン入力欄（最初から半角限定・不要な文字は即座に消去）
+  // 入力制限
   const milestoneInput = document.querySelector(".js-form-milestone");
   if (milestoneInput) {
     milestoneInput.addEventListener("input", (e) => {
@@ -470,26 +524,17 @@ function setupFormEventListeners() {
     });
   }
 
-  // 個数入力イベントを親要素でバブリングキャッチ
+  // 個数入力の親バブリング
   const slotsContainer = document.querySelector(".p-selected-slots");
   if (slotsContainer) {
     slotsContainer.addEventListener("input", (e) => {
       if (e.target.classList.contains("js-count-input")) {
         const itemId = e.target.dataset.id;
-        if (itemId) {
-          selectedItems[itemId] = parseInt(e.target.value, 10) || 1;
-        }
-      }
-    });
-    slotsContainer.addEventListener("keydown", (e) => {
-      if (e.target.classList.contains("js-count-input") && e.key === "Enter") {
-        e.preventDefault();
-        saveFormData();
+        if (itemId) selectedItems[itemId] = parseInt(e.target.value, 10) || 1;
       }
     });
   }
 
-  // キャンセル・保存ボタンのイベント登録
   document
     .querySelector(".js-cancel-btn")
     .addEventListener("click", resetFormToNewMode);
@@ -497,7 +542,7 @@ function setupFormEventListeners() {
     .querySelector(".js-save-btn")
     .addEventListener("click", saveFormData);
 
-  // 💾 pack-master.jsonを直接生成してPCへダウンロードする処理
+  // 全データをJSON出力
   document.querySelector(".js-generate-btn").addEventListener("click", () => {
     const jsonText = JSON.stringify(temporaryPackData, null, 2);
     const blob = new Blob([jsonText], { type: "application/json" });
@@ -511,21 +556,18 @@ function setupFormEventListeners() {
   });
 }
 
-// --- 9. データ保存ロジック（ダイヤ＋カスタム3枠・全金額スロット自動生成・isChecked対応版） ---
-function saveFormData() {
+// --- 7. データ保存ロジック（IndexedDBへ永続書き込み仕様） ---
+async function saveFormData() {
   const milestone = document.querySelector(".js-form-milestone").value.trim();
   if (!milestone) {
     alert("マイルストーン数値を入力してください");
     return;
   }
-  // 💎 現在の画面上のダイヤ入力数
+
   const diamondCount =
     parseInt(document.querySelector(".js-diamond-count-input").value, 10) || 0;
-
-  // 💎 まずはダイヤを報酬の先頭配列に格納
   const currentRewards = [{ item: DIAMOND_ITEM_ID, count: diamondCount }];
 
-  // 📦 選択されているカスタム枠（最大3枠）を合流させる
   Object.keys(selectedItems).forEach((itemId) => {
     currentRewards.push({ item: itemId, count: selectedItems[itemId] });
   });
@@ -533,9 +575,6 @@ function saveFormData() {
   const allPrices = ["11800", "6000", "3000", "1500", "1000", "650", "160"];
 
   if (editingPackId) {
-    // ==========================================
-    // 【編集モード】既存パックの対象金額を上書き ＆ チェック済みに更新
-    // ==========================================
     const pack = temporaryPackData.find((p) => p.id === editingPackId);
     if (pack) {
       pack.milestone = milestone;
@@ -544,7 +583,7 @@ function saveFormData() {
       );
       if (pricePackIndex !== -1) {
         pack.packs[pricePackIndex].rewards = currentRewards;
-        pack.packs[pricePackIndex].isChecked = true; // 手動で編集確定したのでチェック済みに
+        pack.packs[pricePackIndex].isChecked = true;
       } else {
         pack.packs.push({
           price: activePrice,
@@ -554,28 +593,17 @@ function saveFormData() {
       }
     }
   } else {
-    // ==========================================
-    // 【新規登録モード】⚠️ カテゴリ＋マイルストーンの重複チェック
-    // ==========================================
     const targetId = `p_${activeCategory}_${milestone}`;
-    const isDuplicate = temporaryPackData.some(
-      (p) =>
-        p.id === targetId ||
-        (p.category === activeCategory && p.milestone === milestone),
-    );
+    const isDuplicate = temporaryPackData.some((p) => p.id === targetId);
 
     if (isDuplicate) {
-      const catLabel = categoryMap[activeCategory] || activeCategory;
-      alert(
-        `【重複エラー】\n「${catLabel} ${milestone}」はすでに登録されています。\n\n報酬内容を追加・変更したい場合は、左側の一覧にある該当データの『編集』ボタンから操作を行ってください。`,
-      );
+      alert("【重複エラー】このマイルストーンは既に登録されています。");
       return;
     }
 
-    // 🌟 全金額スロットを一括仮生成（新規登録時はすべての金額を一律「チェックなし」にする！）
-    const generatedPacks = allPrices.map((price) => {
-      // 現在入力中の金額であれば画面のカスタム内容を入れ、それ以外は初期デフォルトダイヤを入れる
-      const rewards =
+    const generatedPacks = allPrices.map((price) => ({
+      price: price,
+      rewards:
         price === activePrice
           ? currentRewards
           : [
@@ -583,26 +611,26 @@ function saveFormData() {
                 item: DIAMOND_ITEM_ID,
                 count: DEFAULT_DIAMOND_COUNTS[price] || 0,
               },
-            ];
+            ],
+      isChecked: false,
+    }));
 
-      return {
-        price: price,
-        rewards: rewards,
-        isChecked: false, // 💤 今開いている金額も含めて、すべて最初は「未確認」からスタート！
-      };
-    });
-
-    const newPack = {
-      id: `p_${activeCategory}_${milestone}`,
+    temporaryPackData.push({
+      id: targetId,
       category: activeCategory,
       milestone: milestone,
       packs: generatedPacks,
-    };
-
-    temporaryPackData.push(newPack);
+    });
   }
 
-  // 画面表示をすべて最新にリフレッシュ
+  // 🌟 IndexedDB に現在の全データを同期保存
+  await db.saveAll(temporaryPackData);
+
   renderTable();
   resetFormToNewMode();
 }
+
+// ショートカットキーガード
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && editingPackId !== null) resetFormToNewMode();
+});
