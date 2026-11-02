@@ -80,9 +80,8 @@
   border-radius: 0 0 12px 12px;
 }
 
-/* 🧱 縦積み用の「列（カラム）」：横幅を280pxに固定 */
 .p-pack-column {
-  flex: 0 0 280px;
+  /* flex: 0 0 280px; */
   border-radius: 12px;
   padding: 14px;
   display: flex;
