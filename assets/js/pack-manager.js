@@ -1,28 +1,36 @@
 /**
  * pack-manager.js
- * 達成パック管理・パックマスタ＆アイテムマスタ完全連動版
+ * 達成パック管理・パックマスタ＆アイテムマスタ完全連動UI版
  */
 
 // ==========================================
 // 1. 状態管理（ステータス）
 // ==========================================
 let packMasterData = [];
-let itemMasterMap = {}; // アイテムIDをキーにした名前キャッシュ用のマップ
+let itemMasterMap = {}; // アイテムIDをキーにしたオブジェクトマスタのキャッシュ
 let userSaveData = {
   checkedPackIds: [], // 回収済みのパックIDリスト（Firestoreから同期）
 };
 
-// 全画面で共通使用する固定の8カテゴリー定義
+// 全画面で共通使用する固定の8カテゴリー定義（「達成」を排除しました）
 const PACK_CATEGORIES = [
-  { key: "rank", name: "ランク達成" },
-  { key: "quest", name: "クエスト達成" },
+  { key: "rank", name: "ランク" },
+  { key: "quest", name: "クエスト" },
   { key: "tower", name: "無窮の塔" },
-  { key: "tower-all", name: "無窮の塔(一括)" },
+  { key: "tower-all", name: "無窮の塔(全)" },
   { key: "tower-blue", name: "属性塔(藍)" },
   { key: "tower-red", name: "属性塔(紅)" },
   { key: "tower-green", name: "属性塔(翠)" },
   { key: "tower-yellow", name: "属性塔(黄)" },
 ];
+
+// ==========================================
+// アンダースコアとハイフンを同一視してカテゴリーを判定するヘルパー
+// ==========================================
+function catConfigMatches(key, jsonCategory) {
+  if (!key || !jsonCategory) return false;
+  return key.replace("-", "_") === jsonCategory.replace("-", "_");
+}
 
 // ==========================================
 // 2. データ取得・構造変換・自動昇順ソート
@@ -32,7 +40,7 @@ async function loadPortalData() {
     // パックマスタとアイテムマスタのjsonを同時に並列取得
     const [packRes, itemRes] = await Promise.all([
       fetch("./assets/json/pack-master.json"),
-      fetch("./assets/json/item-master.json"), // パスが異なる場合は適宜修正してください
+      fetch("./assets/json/item-master.json"),
     ]);
 
     if (!packRes.ok)
@@ -43,31 +51,50 @@ async function loadPortalData() {
     const rawPackData = await packRes.json();
     const rawItemData = await itemRes.json();
 
-    // アイテムIDから名前を爆速で引けるようにマップ化 (item_01 -> "有償ダイヤ" など)
+    // アイテムマスタをオブジェクト型でマッピング（名前と画像パスを保持）
     rawItemData.forEach((item) => {
-      itemMasterMap[item.id] = item.name;
+      itemMasterMap[item.id] = {
+        name: item.name,
+        imagePath: item.imagePath || "assets/images/item/default.webp", // 代替用
+      };
     });
 
     // パックマスタ構造をアプリのカード用フラット形式に変換
     const formattedData = rawPackData.map((group) => {
-      // 11800円のパックを最優先で抽出
+      // 11800円のパックを最優先で抽出。見つからない場合は最初のパック
       const targetPack =
-        group.packs.find((p) => p.price === "11800") || group.packs[0];
+        group.packs.find((p) => p.price === "11800") ||
+        (group.packs.length > 0 ? group.packs[0] : null);
 
-      // 報酬アイテム配列をアイテムマスタから日本語名に紐づけて展開
-      const rewardStrings = targetPack
-        ? targetPack.rewards.map((r) => {
-            const itemName = itemMasterMap[r.item] || r.item; // マスタに無ければIDのまま表示
-            return `${itemName} × ${r.count.toLocaleString()}`;
-          })
-        : [];
+      // 報酬アイテム配列をHTML描画用のオブジェクト配列に変換
+      const rewardItems =
+        targetPack && targetPack.rewards
+          ? targetPack.rewards.map((r) => {
+              const itemMeta = itemMasterMap[r.item] || {
+                name: r.item,
+                imagePath: "assets/images/item/default.webp",
+              };
+              return {
+                name: itemMeta.name,
+                imagePath: itemMeta.imagePath,
+                count: r.count,
+              };
+            })
+          : [];
+
+      // カテゴリーの日本語名を取得
+      const catConfig = PACK_CATEGORIES.find((c) =>
+        catConfigMatches(c.key, group.category),
+      );
+      const categoryName = catConfig ? catConfig.name : group.category;
 
       return {
         id: group.id,
         category: group.category,
         milestone: group.milestone,
-        target: `${group.milestone} 達成パック`,
-        reward: rewardStrings,
+        // タイトルを「カテゴリー名 マイルストーン」の形式に結合
+        target: `${categoryName} ${group.milestone}`,
+        reward: rewardItems,
       };
     });
 
@@ -89,16 +116,19 @@ function extractNumber(str) {
 }
 
 // ==========================================
-// 3. HTMLテンプレート生成
+// 3. HTMLテンプレート生成（アイテム画像×個数のグリッド表現）
 // ==========================================
 function createPackCardHtml(pack) {
   const isChecked = userSaveData.checkedPackIds.includes(pack.id);
   const checkedClass = isChecked ? "is-checked" : "";
 
-  const rewardListItems = pack.reward
+  const rewardGridItems = pack.reward
     .map(
       (item) => `
-    <li class="p-pack-card__reward-item">${item}</li>
+    <div class="p-pack-card__reward-item" title="${item.name}">
+      <img src="${item.imagePath}" alt="${item.name}" class="p-pack-card__reward-img" onerror="this.src='assets/images/item/default.webp'">
+      <span class="p-pack-card__reward-count">×${item.count.toLocaleString()}</span>
+    </div>
   `,
     )
     .join("");
@@ -106,9 +136,9 @@ function createPackCardHtml(pack) {
   return `
     <article class="p-pack-card ${checkedClass} js-pack-card" data-pack-id="${pack.id}">
       <h3 class="p-pack-card__target">${pack.target}</h3>
-      <ul class="p-pack-card__reward">
-        ${rewardListItems}
-      </ul>
+      <div class="p-pack-card__reward-grid">
+        ${rewardGridItems}
+      </div>
     </article>
   `;
 }
@@ -118,7 +148,9 @@ function createPackCardHtml(pack) {
 // ==========================================
 function generateBoardColumnsHtml(sourcePackList) {
   return PACK_CATEGORIES.map((cat) => {
-    let catPacks = sourcePackList.filter((pack) => pack.category === cat.key);
+    let catPacks = sourcePackList.filter((pack) =>
+      catConfigMatches(cat.key, pack.category),
+    );
     if (catPacks.length === 0) return "";
 
     return `
@@ -150,11 +182,11 @@ function renderPackPortal() {
   let futurePacks = [];
 
   PACK_CATEGORIES.forEach((cat) => {
-    const catUncollected = uncollectedPacks.filter(
-      (pack) => pack.category === cat.key,
+    const catUncollected = uncollectedPacks.filter((pack) =>
+      catConfigMatches(cat.key, pack.category),
     );
-    urgentPacks = urgentPacks.concat(catUncollected.slice(0, 3)); // 直近3件
-    futurePacks = futurePacks.concat(catUncollected.slice(3)); // それ以降
+    urgentPacks = urgentPacks.concat(catUncollected.slice(0, 3)); // 直近3つ
+    futurePacks = futurePacks.concat(catUncollected.slice(3)); // 4つ目以降
   });
 
   urgentBoard.innerHTML =
@@ -199,18 +231,21 @@ function bindCardEvents() {
   });
 }
 
-function initAccordion() {
-  document.querySelectorAll(".js-archive-toggle").forEach((toggleBtn) => {
-    toggleBtn.removeEventListener("click", handleAccordionToggle);
-    toggleBtn.addEventListener("click", handleAccordionToggle);
-  });
-}
-
+/**
+ * アコーディオンのトグルイベント処理
+ */
 function handleAccordionToggle(event) {
   const btn = event.currentTarget;
   const expanded = btn.getAttribute("aria-expanded") === "true";
   btn.setAttribute("aria-expanded", !expanded);
   btn.querySelector(".js-archive-icon").textContent = expanded ? "▼" : "▲";
+}
+
+function initAccordion() {
+  document.querySelectorAll(".js-archive-toggle").forEach((toggleBtn) => {
+    toggleBtn.removeEventListener("click", handleAccordionToggle);
+    toggleBtn.addEventListener("click", handleAccordionToggle);
+  });
 }
 
 // 起動エントリーポイント

@@ -31,7 +31,7 @@
 /* 🧱 横並びボード */
 .p-pack-board {
   display: flex;
-  gap: 20px;
+  gap: 10px;
   overflow-x: auto;
   padding-bottom: 16px;
   white-space: nowrap;
@@ -52,13 +52,16 @@
   color: #334155;
   transition: background-color 0.2s;
 }
+
 .p-pack-accordion-trigger:hover {
   background-color: #f8fafc;
 }
+
 .p-pack-accordion-trigger i {
   margin-right: 8px;
   color: #64748b;
 }
+
 .p-pack-accordion-trigger--completed i {
   color: #10b981;
 }
@@ -67,7 +70,8 @@
   border-radius: 12px 12px 0 0;
   background-color: #f8fafc;
 }
-.p-pack-accordion-trigger[aria-expanded="true"] + .p-pack-accordion-content {
+
+.p-pack-accordion-trigger[aria-expanded="true"]+.p-pack-accordion-content {
   display: flex;
 }
 
@@ -83,37 +87,66 @@
 .p-pack-column {
   /* flex: 0 0 280px; */
   border-radius: 12px;
-  padding: 14px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
 }
 
 /* 🌟 属性塔4種：一目で区別できる極淡パステルカラー */
-.p-pack-column--tower_blue         { background-color: #eef2ff; }
-.p-pack-column--tower_blue .p-pack-column__title { border-left-color: #818cf8; color: #4338ca; }
+.p-pack-column--tower_blue {
+  background-color: #eef2ff;
+}
 
-.p-pack-column--tower_red          { background-color: #fff7ed; }
-.p-pack-column--tower_red .p-pack-column__title { border-left-color: #fb923c; color: #c2410c; }
+.p-pack-column--tower_blue .p-pack-column__title {
+  border-left-color: #818cf8;
+  color: #4338ca;
+}
 
-.p-pack-column--tower_green        { background-color: #f0fdf4; }
-.p-pack-column--tower_green .p-pack-column__title { border-left-color: #4ade80; color: #15803d; }
+.p-pack-column--tower_red {
+  background-color: #fff7ed;
+}
 
-.p-pack-column--tower_yellow       { background-color: #fefce8; }
-.p-pack-column--tower_yellow .p-pack-column__title { border-left-color: #facc15; color: #a16207; }
+.p-pack-column--tower_red .p-pack-column__title {
+  border-left-color: #fb923c;
+  color: #c2410c;
+}
+
+.p-pack-column--tower_green {
+  background-color: #f0fdf4;
+}
+
+.p-pack-column--tower_green .p-pack-column__title {
+  border-left-color: #4ade80;
+  color: #15803d;
+}
+
+.p-pack-column--tower_yellow {
+  background-color: #fefce8;
+}
+
+.p-pack-column--tower_yellow .p-pack-column__title {
+  border-left-color: #facc15;
+  color: #a16207;
+}
 
 /* 🌟 それ以外の一般カテゴリ：ノイズにならない淡いグレーで一括統一 */
 .p-pack-column--rank,
 .p-pack-column--quest,
 .p-pack-column--tower_all,
-.p-pack-column--tower_element_all  { background-color: #f1f5f9; }
+.p-pack-column--tower_element_all {
+  background-color: #f1f5f9;
+}
 
 .p-pack-column--rank .p-pack-column__title,
 .p-pack-column--quest .p-pack-column__title,
 .p-pack-column--tower_all .p-pack-column__title,
-.p-pack-column--tower_element_all .p-pack-column__title { border-left-color: #94a3b8; color: #475569; }
+.p-pack-column--tower_element_all .p-pack-column__title {
+  border-left-color: #94a3b8;
+  color: #475569;
+}
 
 .p-pack-column__title {
-  font-size: 0.95rem;
+  font-size: 1.4rem;
   font-weight: 700;
   border-left: 4px solid #cbd5e1;
   padding-left: 10px;
@@ -133,13 +166,15 @@
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
-  padding: 16px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
-  cursor: pointer; /* 💡 将来的にモーダルを開けるよう、ホバー時にクリック可能であることを明示 */
+  cursor: pointer;
+  /* 💡 将来的にモーダルを開けるよう、ホバー時にクリック可能であることを明示 */
 }
+
 .p-pack-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
@@ -147,7 +182,7 @@
 
 /* カード内テキスト */
 .p-pack-card__target {
-  font-size: 0.95rem;
+  font-size: 1.3rem;
   font-weight: 700;
   color: #0f172a;
   margin-bottom: 8px;
@@ -162,10 +197,12 @@
   list-style: none;
   margin-bottom: 0;
 }
+
 .p-pack-card__reward-item {
   margin-bottom: 2px;
   white-space: nowrap;
 }
+
 .p-pack-card__reward-item:last-child {
   margin-bottom: 0;
 }
@@ -177,6 +214,37 @@
   border-color: #e2e8f0;
   box-shadow: none;
 }
+
 .p-pack-card.is-checked:hover {
   transform: none;
+}
+
+/* カード内の報酬をグリッド表現にする */
+.p-pack-card__reward-grid {
+  display: grid;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+/* 各アイテムの並び（横並びで整列） */
+.p-pack-card__reward-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* アイテム画像 */
+.p-pack-card__reward-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* 数量表示のテキスト */
+.p-pack-card__reward-count {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #475569;
+  white-space: nowrap;
 }
