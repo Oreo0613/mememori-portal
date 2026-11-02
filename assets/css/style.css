@@ -319,6 +319,7 @@ body.is-modal-open {
 
 }
 
+
 .c-floating-header .c-world-selector {
     padding: 0;
     border: none;
@@ -978,6 +979,11 @@ body.is-modal-open {
     height: 60px;
     /* ボタンの高さ分 */
 }
+
+.c-update-btn__wrap--wide {
+    max-width: 1980px;    
+}
+
 
 .c-update-btn:hover {
     transform: translateY(-2px);

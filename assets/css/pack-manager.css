@@ -489,3 +489,7 @@
   cursor: not-allowed;
   /* マウスホバー時に禁止マーク */
 }
+
+.c-world-selector__btn {
+  left: 0.6vw;
+}

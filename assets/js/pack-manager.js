@@ -692,3 +692,42 @@ window.addEventListener("appWorldChanged", async (e) => {
     bindUpdateTrigger(user.uid, newWorldId);
   }
 });
+
+// ==========================================
+// 🚀 トップへ戻るボタン (Scroll To Top) スマートスクロール制御ロジック
+// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
+  const scrollToTopBtn = document.getElementById("scrollToTopBtn");
+  if (!scrollToTopBtn) return;
+
+  // 直前のスクロール位置を記録する変数
+  let lastScrollY = window.scrollY;
+
+  window.addEventListener("scroll", () => {
+    const currentScrollY = window.scrollY;
+
+    // ① そもそもスクロール位置が300px未満なら絶対に非表示
+    if (currentScrollY < 300) {
+      scrollToTopBtn.classList.remove("is-show");
+    }
+    // ② 300px以上スクロールしており、かつ「上スクロール」を検知した場合のみ表示
+    else if (currentScrollY < lastScrollY) {
+      scrollToTopBtn.classList.add("is-show");
+    }
+    // ③ 下スクロール中の場合は非表示にする
+    else {
+      scrollToTopBtn.classList.remove("is-show");
+    }
+
+    // 現在のスクロール位置を次の判定用に記憶
+    lastScrollY = currentScrollY;
+  });
+
+  // ボタンクリック時に最上部へスムーズスクロール
+  scrollToTopBtn.addEventListener("click", () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  });
+});
