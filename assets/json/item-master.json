@@ -302,5 +302,13 @@
     "imagePath": "assets/images/item/rune-7.webp",
     "sortOrder": 627,
     "defaultPackPrices": "6000, 11800"
+  },
+  {
+    "id": "item_39",
+    "name": "潜在宝珠6h",
+    "category": "material_char",
+    "imagePath": "assets/images/item/akadama-6h.webp",
+    "sortOrder": 516,
+    "defaultPackPrices": ""
   }
 ]
