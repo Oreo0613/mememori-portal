@@ -1,10 +1,10 @@
 /**
  * =========================================================================
- * 📦 ウルトラセールパック管理専用 制御スクリプト（バージョン比較同期・1/3）
+ * 📦 ウルトラセールパック管理専用 制御スクリプト（日本時間表記版・1/3）
  * =========================================================================
  */
 
-// --- 0. 課金額ごとのデフォルト有償ダイヤ数マスタ ---
+// --- 0. 課金額ごとのデフォルト有償ダイヤ数マスタ（上部で一括管理） ---
 const DEFAULT_DIAMOND_COUNTS = {
   11800: 5900,
   6000: 3000,
@@ -19,15 +19,14 @@ const DEFAULT_DIAMOND_COUNTS = {
 const DIAMOND_ITEM_ID = "item_01";
 
 // --- 1. メモリ上の管理用データと状態管理 ---
-let temporaryPackData = []; // ここには純粋なパック配列（packs）のみを格納
-let currentLastUpdated = ""; // 現在の最終更新日時
-let itemMaster = [];
-let selectedItems = {};
+let temporaryPackData = []; // 純粋なパック配列形式 [...]
+let itemMaster = []; // JSONから読み込むアイテムマスタ
+let selectedItems = {}; // フォームで現在選択中の「カスタムアイテム」と個数 { item_id: count }
 let activeCategory = "rank";
 let activePrice = "11800";
-let editingPackId = null;
+let editingPackId = null; // nullなら新規登録モード、値があれば編集モード
 
-// 日本語マップ
+// 日本語マップ（カテゴリ用）
 const categoryMap = {
   rank: "ランク",
   quest: "クエスト",
@@ -39,15 +38,15 @@ const categoryMap = {
   "tower-all": "塔(全)",
 };
 
+// DOM要素の取得
 const itemGrid = document.querySelector(".js-item-grid");
 
-// --- 2. IndexedDB 制御クラス（メタデータ・パックデータ管理） ---
+// --- 2. IndexedDB 制御クラス ---
 class PackDB {
   constructor() {
     this.dbName = "mememori-portal-db";
-    this.dbVersion = 2; // バージョン比較構造のためDB構造をアップデート
-    this.packStore = "packs";
-    this.metaStore = "metadata";
+    this.dbVersion = 4; // 日本時間対応およびレコード管理のため最適化
+    this.storeName = "pack-master";
     this.db = null;
   }
 
@@ -56,12 +55,11 @@ class PackDB {
       const request = indexedDB.open(this.dbName, this.dbVersion);
       request.onupgradeneeded = (e) => {
         const db = e.target.result;
-        if (!db.objectStoreNames.contains(this.packStore)) {
-          db.createObjectStore(this.packStore, { keyPath: "id" });
+        // 旧構造のストアが存在する場合は一度クリアして再生成
+        if (db.objectStoreNames.contains(this.storeName)) {
+          db.deleteObjectStore(this.storeName);
         }
-        if (!db.objectStoreNames.contains(this.metaStore)) {
-          db.createObjectStore(this.metaStore);
-        }
+        db.createObjectStore(this.storeName, { keyPath: "id" });
       };
       request.onsuccess = (e) => {
         this.db = e.target.result;
@@ -71,46 +69,35 @@ class PackDB {
     });
   }
 
-  // ローカルブラウザの全データを一括取得
-  async loadLocalState() {
+  async getAll() {
     return new Promise((resolve, reject) => {
-      const transaction = this.db.transaction(
-        [this.packStore, this.metaStore],
-        "readonly",
-      );
-      const packStore = transaction.objectStore(this.packStore);
-      const metaStore = transaction.objectStore(this.metaStore);
-
-      const packsRequest = packStore.getAll();
-      const metaRequest = metaStore.get("lastUpdated");
-
-      transaction.oncomplete = () => {
-        resolve({
-          packs: packsRequest.result || [],
-          lastUpdated: metaRequest.result || "",
-        });
-      };
-      transaction.onerror = () => reject(transaction.error);
+      const transaction = this.db.transaction(this.storeName, "readonly");
+      const store = transaction.objectStore(this.storeName);
+      const request = store.getAll();
+      request.onsuccess = () => resolve(request.result || []);
+      request.onerror = () => reject(request.error);
     });
   }
 
-  // ローカルブラウザのデータを最新情報で完全上書き
-  async saveAll(packs, lastUpdated) {
+  async saveAll(dataArray) {
     return new Promise((resolve, reject) => {
-      const transaction = this.db.transaction(
-        [this.packStore, this.metaStore],
-        "readwrite",
-      );
-      const packStore = transaction.objectStore(this.packStore);
-      const metaStore = transaction.objectStore(this.metaStore);
-
-      packStore.clear().onsuccess = () => {
-        packs.forEach((pack) => packStore.put(pack));
+      const transaction = this.db.transaction(this.storeName, "readwrite");
+      const store = transaction.objectStore(this.storeName);
+      store.clear().onsuccess = () => {
+        if (dataArray.length === 0) {
+          resolve();
+          return;
+        }
+        let count = 0;
+        dataArray.forEach((item) => {
+          const req = store.put(item);
+          req.onsuccess = () => {
+            count++;
+            if (count === dataArray.length) resolve();
+          };
+          req.onerror = () => reject(req.error);
+        });
       };
-      metaStore.put(lastUpdated, "lastUpdated");
-
-      transaction.oncomplete = () => resolve();
-      transaction.onerror = () => reject(transaction.error);
     });
   }
 }
@@ -120,13 +107,13 @@ const db = new PackDB();
 // --- 3. 初期化ライフサイクル ---
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    await db.open();
-    await loadItemMaster();
-    await loadPackMasterAndSync(); // 🌟 バージョン比較＆自動同期処理
-    initDynamicFilters();
-    renderTable();
-    syncTabsWithForm();
-    setupFormEventListeners();
+    await db.open(); // ① IndexedDBの接続開始
+    await loadItemMaster(); // ② 先にアイテムマスタを読み込む
+    await loadPackMasterAndSync(); // 🌟③ レコード単位でのマージ・同期処理
+    initDynamicFilters(); // ④ タブの自動組み立て
+    renderTable(); // ⑤ テーブル初期描画
+    syncTabsWithForm(); // ⑥ フォームへ初期値を同期
+    setupFormEventListeners(); // ⑦ イベントの登録
   } catch (err) {
     console.error("アプリケーションの初期化に失敗しました:", err);
   }
@@ -138,8 +125,11 @@ async function loadItemMaster() {
     const response = await fetch("assets/json/item-master.json");
     if (!response.ok) throw new Error("アイテムマスタの読み込みに失敗しました");
     itemMaster = await response.json();
+
+    // sortOrder（昇順）に並び替え
     itemMaster.sort((a, b) => a.sortOrder - b.sortOrder);
 
+    // 画像グリッドと固定ダイヤUIを生成
     renderItemGrid();
     initFixedDiamondUI();
   } catch (error) {
@@ -150,74 +140,72 @@ async function loadItemMaster() {
 // 🌟 JSONファイルとブラウザデータの「lastUpdated」比較・競合自動解決ロジック
 async function loadPackMasterAndSync() {
   try {
-    // 1. ブラウザ側（IndexedDB）のデータを取得
-    const localState = await db.loadLocalState();
+    const localPacks = await db.getAll();
+    let jsonPacks = [];
 
-    // 2. サーバー（ローカルファイル）側の JSON データを取得
-    let jsonState = { packs: [], lastUpdated: "" };
     try {
       const response = await fetch("assets/json/pack-master.json");
       if (response.ok) {
         const fileData = await response.json();
-        // 古い配列形式だった場合の互換性ケア、および新オブジェクト形式のパース
-        if (Array.isArray(fileData)) {
-          jsonState.packs = fileData;
-          jsonState.lastUpdated = new Date(0).toISOString(); // 日付がなければ最古にする
-        } else {
-          jsonState.packs = fileData.packs || [];
-          jsonState.lastUpdated =
-            fileData.lastUpdated || new Date(0).toISOString();
-        }
+        // 配列またはメタオブジェクト構造からの柔軟な配列抽出
+        jsonPacks = Array.isArray(fileData) ? fileData : fileData.packs || [];
       }
     } catch (e) {
       console.log(
-        "pack-master.json が未生成、または読み込めないためスキップします。",
+        "pack-master.json が未生成または読み込めないためローカルデータのみで開始します。",
       );
     }
 
-    // 3. タイムスタンプの比較（ミリ秒換算）
-    const localTime = localState.lastUpdated
-      ? new Date(localState.lastUpdated).getTime()
-      : 0;
-    const jsonTime = jsonState.lastUpdated
-      ? new Date(jsonState.lastUpdated).getTime()
-      : 0;
+    const mergedMap = new Map();
 
-    if (jsonTime > localTime) {
-      // JSONファイルのほうが新しい ➔ ブラウザ側をJSONデータで上書きアップデート
-      temporaryPackData = jsonState.packs;
-      currentLastUpdated = jsonState.lastUpdated;
-      await db.saveAll(temporaryPackData, currentLastUpdated);
-      console.log(
-        `🔄 JSONファイルが新しいため、ローカルDBを更新しました。(${jsonState.lastUpdated})`,
-      );
-    } else {
-      // ブラウザ（IndexedDB）のほうが新しい、または同一 ➔ ブラウザのデータを優先採用
-      temporaryPackData = localState.packs;
-      currentLastUpdated = localState.lastUpdated || new Date().toISOString();
-      if (!localState.lastUpdated) {
-        // 初回起動時などでDB側の日付が空なら初期保存
-        await db.saveAll(temporaryPackData, currentLastUpdated);
+    // 1. まずIndexedDBのローカルデータをすべて格納
+    localPacks.forEach((pack) => mergedMap.set(pack.id, pack));
+
+    // 2. 次にJSONファイルのデータを1件ずつ日本時間比較しながらマージ
+    jsonPacks.forEach((jsonPack) => {
+      const localPack = mergedMap.get(jsonPack.id);
+
+      if (!localPack) {
+        // ローカル側に存在しないマイルストーンならそのまま採用
+        mergedMap.set(jsonPack.id, jsonPack);
+      } else {
+        // 双方が持つデータは日本時間のタイムスタンプ文字列をミリ秒換算して比較
+        const localTime = localPack.lastUpdated
+          ? new Date(localPack.lastUpdated.replace(/-/g, "/")).getTime()
+          : 0;
+        const jsonTime = jsonPack.lastUpdated
+          ? new Date(jsonPack.lastUpdated.replace(/-/g, "/")).getTime()
+          : 0;
+
+        if (jsonTime > localTime) {
+          // JSONファイル側の編集日時が本当に新しい場合のみ上書きマージ
+          mergedMap.set(jsonPack.id, jsonPack);
+        }
       }
-      console.log(
-        `💾 ブラウザのローカルDBデータを優先採用しました。(${currentLastUpdated})`,
-      );
-    }
+    });
+
+    // 3. マージ完了データを展開し、ローカルDB側へ永続同期保存
+    temporaryPackData = Array.from(mergedMap.values());
+    await db.saveAll(temporaryPackData);
+    console.log(
+      `📊 日本時間ベースでのデータ検証完了。総件数: ${temporaryPackData.length} 件`,
+    );
   } catch (error) {
-    console.error("パックマスタの同期・解析に失敗しました:", error);
+    console.error("パックマスタのマージ・同期処理に失敗しました:", error);
   }
 }
 
 /**
  * =========================================================================
- * 📦 ウルトラセールパック管理専用 制御スクリプト（バージョン比較同期・2/3）
+ * 📦 ウルトラセールパック管理専用 制御スクリプト（日本時間表記版・2/3）
  * =========================================================================
  */
 
+// 選択用画像グリッドの動的描画（有償ダイヤ item_01 を自動で除外する）
 function renderItemGrid() {
   if (!itemGrid) return;
   itemGrid.innerHTML = itemMaster
-    .filter((item) => item.id !== DIAMOND_ITEM_ID)
+    .filter((item) => item.id !== DIAMOND_ITEM_ID) // 有償ダイヤをグリッドから除外
     .map(
       (item) => `
       <div class="p-item-card js-item-card" data-id="${item.id}" title="${item.name}">
@@ -229,6 +217,7 @@ function renderItemGrid() {
     .join("");
 }
 
+// 💎 フォーム内の固定ダイヤ枠にマスタから取得した画像と名前をセット
 function initFixedDiamondUI() {
   const diamondItem = itemMaster.find((m) => m.id === DIAMOND_ITEM_ID);
   const fixedZone = document.querySelector(
@@ -242,6 +231,7 @@ function initFixedDiamondUI() {
   }
 }
 
+// --- 5. フィルター動的生成・同期処理 ---
 function initDynamicFilters() {
   const categoryContainer = document.querySelector(".js-tabs-category");
   const priceContainer = document.querySelector(".js-tabs-price");
@@ -259,6 +249,7 @@ function initDynamicFilters() {
   ];
   const uniquePrices = ["11800", "6000", "3000", "1500", "1000", "650", "160"];
 
+  // 📂 カテゴリタブ組み立て
   uniqueCategories.forEach((cat) => {
     const li = document.createElement("li");
     li.className = `admin-tabs__item ${cat === activeCategory ? "is-active" : ""}`;
@@ -277,6 +268,7 @@ function initDynamicFilters() {
     categoryContainer.appendChild(li);
   });
 
+  // 💳 課金額タブ組み立て
   uniquePrices.forEach((price) => {
     const li = document.createElement("li");
     li.className = `admin-tabs__item ${price === activePrice ? "is-active" : ""}`;
@@ -288,7 +280,7 @@ function initDynamicFilters() {
       e.currentTarget.classList.add("is-active");
       activePrice = e.currentTarget.dataset.price;
       syncTabsWithForm();
-      renderTable();
+      renderTable(); // 金額切り替え時はテーブルを再ビルド
     });
     priceContainer.appendChild(li);
   });
@@ -302,17 +294,20 @@ function syncTabsWithForm() {
   if (priceInput)
     priceInput.value = Number(activePrice).toLocaleString() + "円";
 
+  // 金額タブが切り替わったらフォームの固定ダイヤ入力欄にデフォルト数を自動同期
   const diamondInput = document.querySelector(".js-diamond-count-input");
   if (diamondInput && !editingPackId) {
     diamondInput.value = DEFAULT_DIAMOND_COUNTS[activePrice] || 0;
   }
 }
 
+// フォームへのデータ読み込み（編集モード）
 function loadPackToForm(packId) {
   const pack = temporaryPackData.find((p) => p.id === packId);
   if (!pack) return;
 
   editingPackId = packId;
+
   document.querySelectorAll(".js-pack-table-body tr").forEach((row) => {
     row.classList.toggle("is-active", row.dataset.id === packId);
   });
@@ -331,6 +326,7 @@ function loadPackToForm(packId) {
 
   selectedItems = {};
   const currentPricePack = pack.packs.find((p) => p.price === activePrice);
+
   if (currentPricePack && currentPricePack.rewards) {
     currentPricePack.rewards.forEach((r) => {
       if (r.item === DIAMOND_ITEM_ID) {
@@ -344,8 +340,10 @@ function loadPackToForm(packId) {
   document.querySelector(".js-form-milestone").focus();
 }
 
+// フォームのリセット（新規登録モード）
 function resetFormToNewMode() {
   editingPackId = null;
+
   document.querySelectorAll(".js-pack-table-body tr").forEach((row) => {
     row.classList.remove("is-active");
   });
@@ -363,6 +361,7 @@ function resetFormToNewMode() {
   document.querySelector(".js-form-milestone").value = "";
   selectedItems = {};
   updateItemSelectorUI();
+
   syncTabsWithForm();
   document.querySelector(".js-form-milestone").focus();
 }
@@ -402,14 +401,37 @@ function updateItemSelectorUI() {
 
 /**
  * =========================================================================
- * 📦 ウルトラセールパック管理専用 制御スクリプト（バージョン比較同期・3/3）
+ * 📦 ウルトラセールパック管理専用 制御スクリプト（日本時間表記版・3/3）
  * =========================================================================
  */
 
+// 🌟 現在の時刻を「YYYY-MM-DD HH:mm:ss」の日本時間形式の文字列で取得するヘルパー関数
+function getJSTDateTimeString() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+// --- 6. テーブル描画・制御（マイルストーン数値の昇順ソート対応版） ---
 function renderTable() {
   const tbody = document.querySelector(".js-pack-table-body");
   if (!tbody) return;
   tbody.innerHTML = "";
+
+  // 🌟 描画する前に、マイルストーン数値を賢く数値昇順（小さい順）に並び替える
+  temporaryPackData.sort((a, b) => {
+    // 文字列から比較用の先頭数値を取り出す（例: "10-24" ➔ 10、"120" ➔ 120）
+    const numA = parseInt(a.milestone.split("-")[0], 10) || 0;
+    const numB = parseInt(b.milestone.split("-")[0], 10) || 0;
+
+    if (numA !== numB) {
+      return numA - numB; // 先頭の数値が違えば昇順
+    }
+    // 万が一 "10-24" と "10-50" のように先頭が同じなら、後半の数値でさらに比較
+    const subA = parseInt(a.milestone.split("-")[1], 10) || 0;
+    const subB = parseInt(b.milestone.split("-")[1], 10) || 0;
+    return subA - subB;
+  });
 
   temporaryPackData.forEach((pack) => {
     const tr = document.createElement("tr");
@@ -441,11 +463,10 @@ function renderTable() {
 
     const isChecked = currentPricePack ? !!currentPricePack.isChecked : false;
     const checkedAttr = isChecked ? "checked" : "";
-    const priceText = Number(activePrice).toLocaleString() + "円";
 
     tr.innerHTML = `
         <td><span class="condition-text">${conditionText}</span></td>
-        <td>${priceText}</td>
+        <td>${Number(activePrice).toLocaleString()}円</td>
         <td><div class="p-table-reward">${rewardContentHtml}</div></td>
         <td>
           <label class="p-table-check-label">
@@ -476,60 +497,61 @@ function updateTableDisplay() {
   });
 }
 
+// --- 7. 各種イベント・入力制限の登録 ---
 function setupFormEventListeners() {
+  // テーブル内イベントの一括バブリングキャッチ
   document
     .querySelector(".js-pack-table-body")
     .addEventListener("click", async (e) => {
+      // ① 確認用の完了チェックボックス（js-table-check）切り替え時
       const tableCheck = e.target.closest(".js-table-check");
       if (tableCheck) {
-        const packId = tableCheck.dataset.id;
-        const pack = temporaryPackData.find((p) => p.id === packId);
+        const pack = temporaryPackData.find(
+          (p) => p.id === tableCheck.dataset.id,
+        );
         if (pack) {
           const currentPricePack = pack.packs.find(
             (p) => p.price === activePrice,
           );
           if (currentPricePack) {
             currentPricePack.isChecked = tableCheck.checked;
-            const textEl = tableCheck.nextElementSibling;
-            if (textEl) textEl.textContent = tableCheck.checked ? "済" : "未";
+            e.target.nextElementSibling.textContent = tableCheck.checked
+              ? "済"
+              : "未";
 
-            // 🌟 チェックの変更もデータ変更とみなし、タイムスタンプを更新してローカルセーブ
-            currentLastUpdated = new Date().toISOString();
-            await db.saveAll(temporaryPackData, currentLastUpdated);
+            // 🌟該当レコードのタイムスタンプのみを日本時間で更新してセーブ
+            pack.lastUpdated = getJSTDateTimeString();
+            await db.saveAll(temporaryPackData);
           }
         }
         return;
       }
 
+      // ② ✏️ 編集ボタン
       const editBtn = e.target.closest(".js-edit-btn");
       if (editBtn) {
         loadPackToForm(editBtn.dataset.id);
         return;
       }
 
+      // ③ 🗑️ 削除ボタン
       const deleteBtn = e.target.closest(".js-delete-btn");
       if (deleteBtn) {
         const packId = deleteBtn.dataset.id;
-        const pack = temporaryPackData.find((p) => p.id === packId);
-        if (!pack) return;
-
-        const catLabel = categoryMap[pack.category] || pack.category;
         if (
           confirm(
-            `【削除の確認】\n「${catLabel} ${pack.milestone}」を完全に削除しますか？`,
+            "このマイルストーンデータを完全に削除しますか？\n（※含まれるすべての金額データが破棄されます）",
           )
         ) {
           temporaryPackData = temporaryPackData.filter((p) => p.id !== packId);
           if (editingPackId === packId) resetFormToNewMode();
-
-          // 🌟 削除時もタイムスタンプを更新してローカルセーブ
-          currentLastUpdated = new Date().toISOString();
-          await db.saveAll(temporaryPackData, currentLastUpdated);
+          await db.saveAll(temporaryPackData);
           renderTable();
         }
       }
     });
 
+  // 📦 画像カードのクリック判定
   if (itemGrid) {
     itemGrid.addEventListener("click", (e) => {
       const card = e.target.closest(".js-item-card");
@@ -540,7 +562,7 @@ function setupFormEventListeners() {
         delete selectedItems[itemId];
       } else {
         if (Object.keys(selectedItems).length >= 3) {
-          alert("カスタム報酬アイテムは最大3つまで選択できます。");
+          alert("カスタム報酬アイテムは最大3つまでしか選択できません。");
           return;
         }
         selectedItems[itemId] = 1;
@@ -549,6 +571,7 @@ function setupFormEventListeners() {
     });
   }
 
+  // 📝 マイルストーン入力欄制限＆Enterキーフック
   const milestoneInput = document.querySelector(".js-form-milestone");
   if (milestoneInput) {
     milestoneInput.addEventListener("input", (e) => {
@@ -562,16 +585,20 @@ function setupFormEventListeners() {
     });
   }
 
+  // 個数入力値の変更追従
   const slotsContainer = document.querySelector(".p-selected-slots");
   if (slotsContainer) {
     slotsContainer.addEventListener("input", (e) => {
       if (e.target.classList.contains("js-count-input")) {
         const itemId = e.target.dataset.id;
-        if (itemId) selectedItems[itemId] = parseInt(e.target.value, 10) || 1;
+        if (itemId) {
+          selectedItems[itemId] = parseInt(e.target.value, 10) || 1;
+        }
       }
     });
   }
 
+  // ボタンイベント紐付け
   document
     .querySelector(".js-cancel-btn")
     .addEventListener("click", resetFormToNewMode);
@@ -579,13 +606,9 @@ function setupFormEventListeners() {
     .querySelector(".js-save-btn")
     .addEventListener("click", saveFormData);
 
-  // 🌟 全データをメタデータ（lastUpdated）付き構造にパッケージングして出力
+  // 💾 純粋な配列形式（各レコード内に個別のlastUpdatedを保持）でJSON出力する処理
   document.querySelector(".js-generate-btn").addEventListener("click", () => {
-    const exportStructure = {
-      lastUpdated: currentLastUpdated,
-      packs: temporaryPackData,
-    };
-    const jsonText = JSON.stringify(exportStructure, null, 2);
+    const jsonText = JSON.stringify(temporaryPackData, null, 2);
     const blob = new Blob([jsonText], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -597,7 +620,7 @@ function setupFormEventListeners() {
   });
 }
 
-// データ保存（保存のタイミングでタイムスタンプを自動更新）
+// --- 8. データ保存ロジック（レコード個別日本時間スタンプ刻印） ---
 async function saveFormData() {
   const milestone = document.querySelector(".js-form-milestone").value.trim();
   if (!milestone) {
@@ -614,17 +637,17 @@ async function saveFormData() {
   });
 
   const allPrices = ["11800", "6000", "3000", "1500", "1000", "650", "160"];
+  const currentTimeStamp = getJSTDateTimeString(); // 現在の日本時間
 
   if (editingPackId) {
+    // 【編集モード】
     const pack = temporaryPackData.find((p) => p.id === editingPackId);
     if (pack) {
       pack.milestone = milestone;
-      const pricePackIndex = pack.packs.findIndex(
-        (p) => p.price === activePrice,
-      );
-      if (pricePackIndex !== -1) {
-        pack.packs[pricePackIndex].rewards = currentRewards;
-        pack.packs[pricePackIndex].isChecked = true;
+      const idx = pack.packs.findIndex((p) => p.price === activePrice);
+      if (idx !== -1) {
+        pack.packs[idx].rewards = currentRewards;
+        pack.packs[idx].isChecked = true; // 手動確定のためチェック済みに
       } else {
         pack.packs.push({
           price: activePrice,
@@ -632,12 +655,13 @@ async function saveFormData() {
           isChecked: true,
         });
       }
+      // 🌟編集した特定レコードのみ最終更新日時を日本時間に更新
+      pack.lastUpdated = currentTimeStamp;
     }
   } else {
+    // 【新規登録モード】
     const targetId = `p_${activeCategory}_${milestone}`;
-    const isDuplicate = temporaryPackData.some((p) => p.id === targetId);
-
-    if (isDuplicate) {
+    if (temporaryPackData.some((p) => p.id === targetId)) {
       alert("【重複エラー】このマイルストーンは既に登録されています。");
       return;
     }
@@ -653,25 +677,25 @@ async function saveFormData() {
                 count: DEFAULT_DIAMOND_COUNTS[price] || 0,
               },
             ],
-      isChecked: false,
+      isChecked: false, // 初期値は未確認
     }));
 
     temporaryPackData.push({
       id: targetId,
       category: activeCategory,
       milestone: milestone,
+      lastUpdated: currentTimeStamp, // 🌟新規データに日本時間スタンプを直下保持
       packs: generatedPacks,
     });
   }
 
-  // 🌟 新規・編集保存時にタイムスタンプを「現在時刻」に更新し、DBに保存
-  currentLastUpdated = new Date().toISOString();
-  await db.saveAll(temporaryPackData, currentLastUpdated);
-
+  // ローカルDBの書き換えと画面更新
+  await db.saveAll(temporaryPackData);
   renderTable();
   resetFormToNewMode();
 }
 
+// ユーティリティキーフック
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && editingPackId !== null) resetFormToNewMode();
 });
