@@ -1,6 +1,6 @@
 /**
  * =========================================================================
- * 📦 ウルトラセールパック管理専用 制御スクリプト（IndexedDB対応版・1/3）
+ * 📦 ウルトラセールパック管理専用 制御スクリプト（バージョン比較同期・1/3）
  * =========================================================================
  */
 
@@ -19,7 +19,8 @@ const DEFAULT_DIAMOND_COUNTS = {
 const DIAMOND_ITEM_ID = "item_01";
 
 // --- 1. メモリ上の管理用データと状態管理 ---
-let temporaryPackData = [];
+let temporaryPackData = []; // ここには純粋なパック配列（packs）のみを格納
+let currentLastUpdated = ""; // 現在の最終更新日時
 let itemMaster = [];
 let selectedItems = {};
 let activeCategory = "rank";
@@ -38,15 +39,15 @@ const categoryMap = {
   "tower-all": "塔(全)",
 };
 
-// DOM要素の取得
 const itemGrid = document.querySelector(".js-item-grid");
 
-// --- 2. IndexedDB 制御クラス ---
+// --- 2. IndexedDB 制御クラス（メタデータ・パックデータ管理） ---
 class PackDB {
   constructor() {
     this.dbName = "mememori-portal-db";
-    this.dbVersion = 1;
-    this.storeName = "pack-master";
+    this.dbVersion = 2; // バージョン比較構造のためDB構造をアップデート
+    this.packStore = "packs";
+    this.metaStore = "metadata";
     this.db = null;
   }
 
@@ -55,8 +56,11 @@ class PackDB {
       const request = indexedDB.open(this.dbName, this.dbVersion);
       request.onupgradeneeded = (e) => {
         const db = e.target.result;
-        if (!db.objectStoreNames.contains(this.storeName)) {
-          db.createObjectStore(this.storeName, { keyPath: "id" });
+        if (!db.objectStoreNames.contains(this.packStore)) {
+          db.createObjectStore(this.packStore, { keyPath: "id" });
+        }
+        if (!db.objectStoreNames.contains(this.metaStore)) {
+          db.createObjectStore(this.metaStore);
         }
       };
       request.onsuccess = (e) => {
@@ -67,37 +71,46 @@ class PackDB {
     });
   }
 
-  async getAll() {
+  // ローカルブラウザの全データを一括取得
+  async loadLocalState() {
     return new Promise((resolve, reject) => {
-      const transaction = this.db.transaction(this.storeName, "readonly");
-      const store = transaction.objectStore(this.storeName);
-      const request = store.getAll();
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
+      const transaction = this.db.transaction(
+        [this.packStore, this.metaStore],
+        "readonly",
+      );
+      const packStore = transaction.objectStore(this.packStore);
+      const metaStore = transaction.objectStore(this.metaStore);
+
+      const packsRequest = packStore.getAll();
+      const metaRequest = metaStore.get("lastUpdated");
+
+      transaction.oncomplete = () => {
+        resolve({
+          packs: packsRequest.result || [],
+          lastUpdated: metaRequest.result || "",
+        });
+      };
+      transaction.onerror = () => reject(transaction.error);
     });
   }
 
-  async saveAll(dataArray) {
+  // ローカルブラウザのデータを最新情報で完全上書き
+  async saveAll(packs, lastUpdated) {
     return new Promise((resolve, reject) => {
-      const transaction = this.db.transaction(this.storeName, "readwrite");
-      const store = transaction.objectStore(this.storeName);
+      const transaction = this.db.transaction(
+        [this.packStore, this.metaStore],
+        "readwrite",
+      );
+      const packStore = transaction.objectStore(this.packStore);
+      const metaStore = transaction.objectStore(this.metaStore);
 
-      // 一度全削除して最新状態で上書き
-      store.clear().onsuccess = () => {
-        if (dataArray.length === 0) {
-          resolve();
-          return;
-        }
-        let count = 0;
-        dataArray.forEach((item) => {
-          const req = store.put(item);
-          req.onsuccess = () => {
-            count++;
-            if (count === dataArray.length) resolve();
-          };
-          req.onerror = () => reject(req.error);
-        });
+      packStore.clear().onsuccess = () => {
+        packs.forEach((pack) => packStore.put(pack));
       };
+      metaStore.put(lastUpdated, "lastUpdated");
+
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
     });
   }
 }
@@ -107,13 +120,13 @@ const db = new PackDB();
 // --- 3. 初期化ライフサイクル ---
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    await db.open(); // ① IndexedDBの準備
-    await loadItemMaster(); // ② アイテムマスタ読み込み
-    await loadPackMaster(); // ③ IndexedDB/JSON からパックデータ同期
-    initDynamicFilters(); // ④ タブの生成
-    renderTable(); // ⑤ テーブル描画
-    syncTabsWithForm(); // ⑥ フォームの同期
-    setupFormEventListeners(); // ⑦ イベントリスナー登録
+    await db.open();
+    await loadItemMaster();
+    await loadPackMasterAndSync(); // 🌟 バージョン比較＆自動同期処理
+    initDynamicFilters();
+    renderTable();
+    syncTabsWithForm();
+    setupFormEventListeners();
   } catch (err) {
     console.error("アプリケーションの初期化に失敗しました:", err);
   }
@@ -134,43 +147,73 @@ async function loadItemMaster() {
   }
 }
 
-// パックマスタの非同期読み込み（IndexedDBを最優先、空ならJSONから移行）
-async function loadPackMaster() {
+// 🌟 JSONファイルとブラウザデータの「lastUpdated」比較・競合自動解決ロジック
+async function loadPackMasterAndSync() {
   try {
-    // まずIndexedDBからローカルデータを取得
-    const localData = await db.getAll();
-    if (localData && localData.length > 0) {
-      temporaryPackData = localData;
-      console.log("IndexedDBからデータをロードしました。");
-      return;
+    // 1. ブラウザ側（IndexedDB）のデータを取得
+    const localState = await db.loadLocalState();
+
+    // 2. サーバー（ローカルファイル）側の JSON データを取得
+    let jsonState = { packs: [], lastUpdated: "" };
+    try {
+      const response = await fetch("assets/json/pack-master.json");
+      if (response.ok) {
+        const fileData = await response.json();
+        // 古い配列形式だった場合の互換性ケア、および新オブジェクト形式のパース
+        if (Array.isArray(fileData)) {
+          jsonState.packs = fileData;
+          jsonState.lastUpdated = new Date(0).toISOString(); // 日付がなければ最古にする
+        } else {
+          jsonState.packs = fileData.packs || [];
+          jsonState.lastUpdated =
+            fileData.lastUpdated || new Date(0).toISOString();
+        }
+      }
+    } catch (e) {
+      console.log(
+        "pack-master.json が未生成、または読み込めないためスキップします。",
+      );
     }
 
-    // IndexedDBが空なら初期設定ファイル(json)を読みに行く
-    const response = await fetch("assets/json/pack-master.json");
-    if (!response.ok) {
+    // 3. タイムスタンプの比較（ミリ秒換算）
+    const localTime = localState.lastUpdated
+      ? new Date(localState.lastUpdated).getTime()
+      : 0;
+    const jsonTime = jsonState.lastUpdated
+      ? new Date(jsonState.lastUpdated).getTime()
+      : 0;
+
+    if (jsonTime > localTime) {
+      // JSONファイルのほうが新しい ➔ ブラウザ側をJSONデータで上書きアップデート
+      temporaryPackData = jsonState.packs;
+      currentLastUpdated = jsonState.lastUpdated;
+      await db.saveAll(temporaryPackData, currentLastUpdated);
       console.log(
-        "pack-master.json が見つからないため、新規空データで開始します。",
+        `🔄 JSONファイルが新しいため、ローカルDBを更新しました。(${jsonState.lastUpdated})`,
       );
-      return;
-    }
-    const data = await response.json();
-    if (Array.isArray(data) && data.length > 0) {
-      temporaryPackData = data;
-      await db.saveAll(temporaryPackData); // IndexedDBにキャッシュ保存
-      console.log("pack-master.json からデータを移行しました。");
+    } else {
+      // ブラウザ（IndexedDB）のほうが新しい、または同一 ➔ ブラウザのデータを優先採用
+      temporaryPackData = localState.packs;
+      currentLastUpdated = localState.lastUpdated || new Date().toISOString();
+      if (!localState.lastUpdated) {
+        // 初回起動時などでDB側の日付が空なら初期保存
+        await db.saveAll(temporaryPackData, currentLastUpdated);
+      }
+      console.log(
+        `💾 ブラウザのローカルDBデータを優先採用しました。(${currentLastUpdated})`,
+      );
     }
   } catch (error) {
-    console.error("パックマスタの読み込み・解析に失敗しました:", error);
+    console.error("パックマスタの同期・解析に失敗しました:", error);
   }
 }
 
 /**
  * =========================================================================
- * 📦 ウルトラセールパック管理専用 制御スクリプト（IndexedDB対応版・2/3）
+ * 📦 ウルトラセールパック管理専用 制御スクリプト（バージョン比較同期・2/3）
  * =========================================================================
  */
 
-// 選択用画像グリッドの動的描画
 function renderItemGrid() {
   if (!itemGrid) return;
   itemGrid.innerHTML = itemMaster
@@ -186,7 +229,6 @@ function renderItemGrid() {
     .join("");
 }
 
-// フォーム内の固定ダイヤ枠初期化
 function initFixedDiamondUI() {
   const diamondItem = itemMaster.find((m) => m.id === DIAMOND_ITEM_ID);
   const fixedZone = document.querySelector(
@@ -200,7 +242,6 @@ function initFixedDiamondUI() {
   }
 }
 
-// フィルター動的生成
 function initDynamicFilters() {
   const categoryContainer = document.querySelector(".js-tabs-category");
   const priceContainer = document.querySelector(".js-tabs-price");
@@ -267,7 +308,6 @@ function syncTabsWithForm() {
   }
 }
 
-// フォームへのデータ読み込み（編集モード）
 function loadPackToForm(packId) {
   const pack = temporaryPackData.find((p) => p.id === packId);
   if (!pack) return;
@@ -304,7 +344,6 @@ function loadPackToForm(packId) {
   document.querySelector(".js-form-milestone").focus();
 }
 
-// フォームのリセット（新規登録モード）
 function resetFormToNewMode() {
   editingPackId = null;
   document.querySelectorAll(".js-pack-table-body tr").forEach((row) => {
@@ -363,11 +402,10 @@ function updateItemSelectorUI() {
 
 /**
  * =========================================================================
- * 📦 ウルトラセールパック管理専用 制御スクリプト（IndexedDB対応版・3/3）
+ * 📦 ウルトラセールパック管理専用 制御スクリプト（バージョン比較同期・3/3）
  * =========================================================================
  */
 
-// --- 5. テーブルレンダリングと連動表示 ---
 function renderTable() {
   const tbody = document.querySelector(".js-pack-table-body");
   if (!tbody) return;
@@ -438,12 +476,10 @@ function updateTableDisplay() {
   });
 }
 
-// --- 6. イベントリスナーとデータ同期 ---
 function setupFormEventListeners() {
   document
     .querySelector(".js-pack-table-body")
     .addEventListener("click", async (e) => {
-      // ① チェックボックスの同期＆IndexedDB保存
       const tableCheck = e.target.closest(".js-table-check");
       if (tableCheck) {
         const packId = tableCheck.dataset.id;
@@ -456,20 +492,21 @@ function setupFormEventListeners() {
             currentPricePack.isChecked = tableCheck.checked;
             const textEl = tableCheck.nextElementSibling;
             if (textEl) textEl.textContent = tableCheck.checked ? "済" : "未";
-            await db.saveAll(temporaryPackData); // 状態を保存
+
+            // 🌟 チェックの変更もデータ変更とみなし、タイムスタンプを更新してローカルセーブ
+            currentLastUpdated = new Date().toISOString();
+            await db.saveAll(temporaryPackData, currentLastUpdated);
           }
         }
         return;
       }
 
-      // ② 編集
       const editBtn = e.target.closest(".js-edit-btn");
       if (editBtn) {
         loadPackToForm(editBtn.dataset.id);
         return;
       }
 
-      // ③ 削除＆IndexedDB同期
       const deleteBtn = e.target.closest(".js-delete-btn");
       if (deleteBtn) {
         const packId = deleteBtn.dataset.id;
@@ -484,13 +521,15 @@ function setupFormEventListeners() {
         ) {
           temporaryPackData = temporaryPackData.filter((p) => p.id !== packId);
           if (editingPackId === packId) resetFormToNewMode();
-          await db.saveAll(temporaryPackData); // DB更新
+
+          // 🌟 削除時もタイムスタンプを更新してローカルセーブ
+          currentLastUpdated = new Date().toISOString();
+          await db.saveAll(temporaryPackData, currentLastUpdated);
           renderTable();
         }
       }
     });
 
-  // 画像グリッドクリック
   if (itemGrid) {
     itemGrid.addEventListener("click", (e) => {
       const card = e.target.closest(".js-item-card");
@@ -510,7 +549,6 @@ function setupFormEventListeners() {
     });
   }
 
-  // 入力制限
   const milestoneInput = document.querySelector(".js-form-milestone");
   if (milestoneInput) {
     milestoneInput.addEventListener("input", (e) => {
@@ -524,7 +562,6 @@ function setupFormEventListeners() {
     });
   }
 
-  // 個数入力の親バブリング
   const slotsContainer = document.querySelector(".p-selected-slots");
   if (slotsContainer) {
     slotsContainer.addEventListener("input", (e) => {
@@ -542,9 +579,13 @@ function setupFormEventListeners() {
     .querySelector(".js-save-btn")
     .addEventListener("click", saveFormData);
 
-  // 全データをJSON出力
+  // 🌟 全データをメタデータ（lastUpdated）付き構造にパッケージングして出力
   document.querySelector(".js-generate-btn").addEventListener("click", () => {
-    const jsonText = JSON.stringify(temporaryPackData, null, 2);
+    const exportStructure = {
+      lastUpdated: currentLastUpdated,
+      packs: temporaryPackData,
+    };
+    const jsonText = JSON.stringify(exportStructure, null, 2);
     const blob = new Blob([jsonText], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -556,7 +597,7 @@ function setupFormEventListeners() {
   });
 }
 
-// --- 7. データ保存ロジック（IndexedDBへ永続書き込み仕様） ---
+// データ保存（保存のタイミングでタイムスタンプを自動更新）
 async function saveFormData() {
   const milestone = document.querySelector(".js-form-milestone").value.trim();
   if (!milestone) {
@@ -623,14 +664,14 @@ async function saveFormData() {
     });
   }
 
-  // 🌟 IndexedDB に現在の全データを同期保存
-  await db.saveAll(temporaryPackData);
+  // 🌟 新規・編集保存時にタイムスタンプを「現在時刻」に更新し、DBに保存
+  currentLastUpdated = new Date().toISOString();
+  await db.saveAll(temporaryPackData, currentLastUpdated);
 
   renderTable();
   resetFormToNewMode();
 }
 
-// ショートカットキーガード
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && editingPackId !== null) resetFormToNewMode();
 });
