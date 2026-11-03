@@ -69,7 +69,7 @@
     "category": "ticket_other",
     "imagePath": "assets/images/item/ticket-boss.webp",
     "sortOrder": 310,
-    "defaultPackPrices": ""
+    "defaultPackPrices": "1500,1000,650,160"
   },
   {
     "id": "item_10",
@@ -132,7 +132,7 @@
     "name": "強化秘薬",
     "category": "material_gear",
     "imagePath": "assets/images/item/akamizu.webp",
-    "sortOrder": 410,
+    "sortOrder": 420,
     "defaultPackPrices": ""
   },
   {
@@ -140,7 +140,7 @@
     "name": "強化水",
     "category": "material_gear",
     "imagePath": "assets/images/item/kyoukasui.webp",
-    "sortOrder": 420,
+    "sortOrder": 410,
     "defaultPackPrices": ""
   },
   {
@@ -148,16 +148,16 @@
     "name": "魔装高級香油",
     "category": "material_gear",
     "imagePath": "assets/images/item/masou-koukyuu.webp",
-    "sortOrder": 430,
-    "defaultPackPrices": ""
+    "sortOrder": 440,
+    "defaultPackPrices": "11800,6000,3000"
   },
   {
     "id": "item_20",
     "name": "魔装香油",
     "category": "material_gear",
     "imagePath": "assets/images/item/masou.webp",
-    "sortOrder": 440,
-    "defaultPackPrices": ""
+    "sortOrder": 430,
+    "defaultPackPrices": "6000,3000,1500,1000,650,160"
   },
   {
     "id": "item_21",
@@ -165,7 +165,7 @@
     "category": "material_gear",
     "imagePath": "assets/images/item/shizuku.webp",
     "sortOrder": 450,
-    "defaultPackPrices": ""
+    "defaultPackPrices": "11800"
   },
   {
     "id": "item_22",
@@ -181,7 +181,7 @@
     "category": "material_gear",
     "imagePath": "assets/images/item/gold-6h.webp",
     "sortOrder": 470,
-    "defaultPackPrices": ""
+    "defaultPackPrices": "160"
   },
   {
     "id": "item_24",
@@ -189,7 +189,7 @@
     "category": "material_gear",
     "imagePath": "assets/images/item/gold-24h.webp",
     "sortOrder": 479,
-    "defaultPackPrices": ""
+    "defaultPackPrices": "11800,6000,3000,1500,1000,650"
   },
   {
     "id": "item_25",
@@ -205,7 +205,7 @@
     "category": "material_char",
     "imagePath": "assets/images/item/akadama-24h.webp",
     "sortOrder": 519,
-    "defaultPackPrices": ""
+    "defaultPackPrices": "11800,6000"
   },
   {
     "id": "item_27",
@@ -213,7 +213,7 @@
     "category": "material_char",
     "imagePath": "assets/images/item/midoridama-24h.webp",
     "sortOrder": 529,
-    "defaultPackPrices": ""
+    "defaultPackPrices": "11800,6000,3000,1500,1000,650"
   },
   {
     "id": "item_28",
@@ -221,7 +221,7 @@
     "category": "material_char",
     "imagePath": "assets/images/item/ikusei-2h.webp",
     "sortOrder": 530,
-    "defaultPackPrices": ""
+    "defaultPackPrices": "160"
   },
   {
     "id": "item_29",
@@ -229,7 +229,7 @@
     "category": "material_char",
     "imagePath": "assets/images/item/ikusei-6h.webp",
     "sortOrder": 535,
-    "defaultPackPrices": ""
+    "defaultPackPrices": "3000,1500,1000,650,160"
   },
   {
     "id": "item_30",
@@ -237,7 +237,7 @@
     "category": "material_char",
     "imagePath": "assets/images/item/ikusei-8h.webp",
     "sortOrder": 537,
-    "defaultPackPrices": ""
+    "defaultPackPrices": "1500"
   },
   {
     "id": "item_31",
@@ -245,7 +245,7 @@
     "category": "material_char",
     "imagePath": "assets/images/item/ikusei-24h.webp",
     "sortOrder": 539,
-    "defaultPackPrices": ""
+    "defaultPackPrices": "11800,6000,3000"
   },
   {
     "id": "item_32",
@@ -261,7 +261,7 @@
     "category": "rune",
     "imagePath": "assets/images/item/rune-2.webp",
     "sortOrder": 622,
-    "defaultPackPrices": 160
+    "defaultPackPrices": "160"
   },
   {
     "id": "item_34",
@@ -269,7 +269,7 @@
     "category": "rune",
     "imagePath": "assets/images/item/rune-3.webp",
     "sortOrder": 623,
-    "defaultPackPrices": 650
+    "defaultPackPrices": "650"
   },
   {
     "id": "item_35",
@@ -277,7 +277,7 @@
     "category": "rune",
     "imagePath": "assets/images/item/rune-4.webp",
     "sortOrder": 624,
-    "defaultPackPrices": 1000
+    "defaultPackPrices": "1000,650"
   },
   {
     "id": "item_36",
@@ -285,7 +285,7 @@
     "category": "rune",
     "imagePath": "assets/images/item/rune-5.webp",
     "sortOrder": 625,
-    "defaultPackPrices": 1500
+    "defaultPackPrices": "1500"
   },
   {
     "id": "item_37",
@@ -293,7 +293,7 @@
     "category": "rune",
     "imagePath": "assets/images/item/rune-6.webp",
     "sortOrder": 626,
-    "defaultPackPrices": 3000
+    "defaultPackPrices": "3000"
   },
   {
     "id": "item_38",
@@ -301,7 +301,7 @@
     "category": "rune",
     "imagePath": "assets/images/item/rune-7.webp",
     "sortOrder": 627,
-    "defaultPackPrices": "6000, 11800"
+    "defaultPackPrices": "11800,6000"
   },
   {
     "id": "item_39",
@@ -309,6 +309,22 @@
     "category": "material_char",
     "imagePath": "assets/images/item/akadama-6h.webp",
     "sortOrder": 516,
-    "defaultPackPrices": ""
+    "defaultPackPrices": "650"
+  },
+  {
+    "id": "item_40",
+    "name": "経験珠8h",
+    "category": "material_char",
+    "imagePath": "assets/images/item/midoridama-8h.webp",
+    "sortOrder": 528,
+    "defaultPackPrices": "1500,1000,650,160"
+  },
+  {
+    "id": "item_41",
+    "name": "経験珠6h",
+    "category": "material_char",
+    "imagePath": "assets/images/item/midoridama-6h.webp",
+    "sortOrder": 526,
+    "defaultPackPrices": "160"
   }
 ]
