@@ -201,11 +201,30 @@ async function loadPackMasterAndSync() {
  * =========================================================================
  */
 
-// 選択用画像グリッドの動的描画（有償ダイヤ item_01 を自動で除外する）
+// 選択用画像グリッドの動的描画（有償ダイヤ除外 ＋ defaultPackPricesに応じたフィルター）
 function renderItemGrid() {
   if (!itemGrid) return;
   itemGrid.innerHTML = itemMaster
-    .filter((item) => item.id !== DIAMOND_ITEM_ID) // 有償ダイヤをグリッドから除外
+    .filter((item) => {
+      // 1. 有償ダイヤは常に除外
+      if (item.id === DIAMOND_ITEM_ID) return false;
+
+      // 2. defaultPackPrices が設定されている場合は金額チェック
+      if (
+        item.defaultPackPrices &&
+        typeof item.defaultPackPrices === "string"
+      ) {
+        // カンマで区切って空白を除去し配列化する（例: ["6000", "11800"]）
+        const allowedPrices = item.defaultPackPrices
+          .split(",")
+          .map((p) => p.trim());
+        // 現在フォームで選ばれている金額（activePrice）が含まれている場合のみ表示
+        return allowedPrices.includes(activePrice);
+      }
+
+      // 指定がないアイテムはすべての価格で表示
+      return true;
+    })
     .map(
       (item) => `
       <div class="p-item-card js-item-card" data-id="${item.id}" title="${item.name}">
@@ -268,7 +287,7 @@ function initDynamicFilters() {
     categoryContainer.appendChild(li);
   });
 
-  // 💳 課金額タブ組み立て
+  // 💳 課金額タブ組み立て（initDynamicFilters 内）
   uniquePrices.forEach((price) => {
     const li = document.createElement("li");
     li.className = `admin-tabs__item ${price === activePrice ? "is-active" : ""}`;
@@ -279,8 +298,13 @@ function initDynamicFilters() {
       priceContainer.querySelector(".is-active").classList.remove("is-active");
       e.currentTarget.classList.add("is-active");
       activePrice = e.currentTarget.dataset.price;
+
       syncTabsWithForm();
       renderTable(); // 金額切り替え時はテーブルを再ビルド
+
+      // 🌟ここを追記：タブ切り替え時にピッカーの表示アイテムを最新化
+      renderItemGrid();
+      updateItemSelectorUI();
     });
     priceContainer.appendChild(li);
   });
