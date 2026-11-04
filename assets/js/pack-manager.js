@@ -577,13 +577,34 @@ function bindInputEvents() {
   });
 }
 
+// アコーディオンの開閉と状態クラスの制御ロジック
 function initAccordion() {
   document.querySelectorAll(".js-archive-toggle").forEach((toggleBtn) => {
     toggleBtn.addEventListener("click", (e) => {
       const btn = e.currentTarget;
+
+      // ① HTMLの data-target 属性から連動する中身のIDを特定
+      const targetId = btn.dataset.target; // "future" または "completed"
+      const contentEl = document.getElementById(`board-${targetId}`);
+
+      if (!contentEl) return;
+
+      // ② 現在開いているかどうかの判定（true/false）
       const expanded = btn.getAttribute("aria-expanded") === "true";
-      btn.setAttribute("aria-expanded", !expanded);
-      btn.querySelector(".js-archive-icon").textContent = expanded ? "▼" : "▲";
+      const nextState = !expanded;
+
+      // ③ ボタンの属性と矢印の切り替え
+      btn.setAttribute("aria-expanded", String(nextState));
+      btn.querySelector(".js-archive-icon").textContent = nextState ? "▲" : "▼";
+
+      // ④ 設計ルール(is-)に則り、ボタンと中身の双方に状態クラスを付け外し
+      if (nextState) {
+        btn.classList.add("is-open");
+        contentEl.classList.add("is-open");
+      } else {
+        btn.classList.remove("is-open");
+        contentEl.classList.remove("is-open");
+      }
     });
   });
 }

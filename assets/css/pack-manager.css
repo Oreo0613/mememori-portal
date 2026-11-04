@@ -68,12 +68,14 @@
   color: #10b981;
 }
 
-.p-pack-accordion-trigger[aria-expanded="true"] {
+/* 🌟 [修正] 状態クラス is-open がトリガー（ボタン）についた時のスタイル */
+.p-pack-accordion-trigger.is-open {
   border-radius: 12px 12px 0 0;
   background-color: #f8fafc;
 }
 
-.p-pack-accordion-trigger[aria-expanded="true"]+.p-pack-accordion-content {
+/* 🌟 [修正] 状態クラス is-open がコンテンツ（中身）についたら flex で表示する */
+.p-pack-accordion-content.is-open {
   display: flex;
 }
 
