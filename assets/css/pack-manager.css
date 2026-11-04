@@ -495,3 +495,103 @@
 .c-world-selector__btn {
   left: 0.6vw;
 }
+
+/* ==========================================
+ * 🎛️ ポチポチカウンター専用スタイル（追加分）
+ * ========================================== */
+
+/* クエスト全体のラッパー */
+.p-pack-column__filter-quest {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background-color: #ffffff;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 12px;
+}
+
+/* 通常のカウンターラッパー（既存の上書きと共通化） */
+.p-pack-column__filter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 中央に配置 */
+  background-color: #ffffff;
+  padding: 6px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+/* 章・ステージの横一行 */
+.p-pack-counter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* 「章」「ステージ」の文字ラベル */
+.p-pack-counter-label {
+  font-size: 1.0rem;
+  font-weight: 700;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+/* ➖ 🔢 ➕ を囲む共通の枠 */
+.p-pack-counter-field {
+  display: flex;
+  align-items: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* 増減ボタン */
+.p-pack-counter-btn {
+  width: 24px;
+  height: 24px;
+  font-weight: bold;
+  background-color: #e2e8f0;
+  color: #334155;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.1s;
+}
+
+.p-pack-counter-btn:hover {
+  background-color: #cbd5e1;
+}
+
+/* 数値入力インプット */
+.p-pack-counter-input {
+  width: 32px;
+  height: 24px;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+  border: none;
+  background: transparent;
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+/* ランクや塔など、単体で置かれるカウンターの幅微調整 */
+.p-pack-counter-input--single {
+  width: 45px;
+}
+
+/* ブラウザ標準のスピンボタンを非表示化 */
+.p-pack-counter-input::-webkit-outer-spin-button,
+.p-pack-counter-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

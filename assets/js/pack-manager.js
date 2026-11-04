@@ -1,5 +1,4 @@
 /**
- * pack-manager.js (1/3)
  * 達成パック管理・マイルストーン自動フィルタ＆3ステータスモーダル【Firestoreクラウド同期完全版】
  */
 
@@ -87,7 +86,7 @@ async function loadUserPackDataFromFirestore(userId, worldId) {
       // ① 進捗情報 (currentMilestones) の復元
       if (data.currentMilestones) {
         Object.keys(data.currentMilestones).forEach((dbKey) => {
-          const appKey = dbKey.replace(/_/g, "-"); // 進捗キーのハイフン吸収
+          const appKey = dbKey.replace(/_/g, "-");
           userSaveData.currentMilestones[appKey] = String(
             data.currentMilestones[dbKey] || "0",
           );
@@ -113,8 +112,15 @@ async function loadUserPackDataFromFirestore(userId, worldId) {
         );
       }
 
+      // 🎯 【バグ完全修正】配列のインデックス[0], [1]を確実に割り当て、2桁以上の章番号を完全維持
+      const qVal = userSaveData.currentMilestones["quest"] || "0-0";
+      const qParts = qVal.split("-");
+      userSaveData.currentMilestones["quest-chapter"] = String(
+        qParts[0] || "0",
+      );
+      userSaveData.currentMilestones["quest-stage"] = String(qParts[1] || "0");
+
       // ② 各パックの個別カスタム設定 (packSettings) の復元
-      // 🌟【最重要修正】マスタIDの形を崩さないよう、IDの文字列変換・置換を一切禁止します
       if (data.packSettings) {
         Object.keys(data.packSettings).forEach((packId) => {
           userSaveData.packSettings[packId] = {
@@ -141,11 +147,13 @@ async function saveUserPackDataToFirestore(userId, worldId) {
 
   const firestoreMilestones = {};
   Object.keys(userSaveData.currentMilestones).forEach((key) => {
+    // 🌟 【超重要】Firestoreへ送る直前に、不要な作業用項目を完全にシャットアウト！
+    if (key === "quest-chapter" || key === "quest-stage" || key === "quest_chapter" || key === "quest_stage") return;
+
     const dbKey = key.replace(/-/g, "_");
     firestoreMilestones[dbKey] = userSaveData.currentMilestones[key];
   });
 
-  // 🌟【最重要修正】パックIDの置換・変換を廃止し、元のIDのままでオブジェクトを構築
   const firestorePackSettings = {};
   Object.keys(userSaveData.packSettings).forEach((packId) => {
     firestorePackSettings[packId] = {
@@ -155,13 +163,7 @@ async function saveUserPackDataToFirestore(userId, worldId) {
   });
 
   try {
-    const worldDocRef = firestoreDoc(
-      window.db,
-      "users",
-      userId,
-      "worlds",
-      worldId,
-    );
+    const worldDocRef = firestoreDoc(window.db, "users", userId, "worlds", worldId);
     await setDoc(
       worldDocRef,
       {
@@ -169,16 +171,15 @@ async function saveUserPackDataToFirestore(userId, worldId) {
         packSettings: firestorePackSettings,
         updatedAt: serverTimestamp(),
       },
-      { merge: true },
+      { merge: true }
     );
-    console.log(
-      `🎯 ワールド [${worldId}] のパックデータをクラウドへコミットしました。`,
-    );
+    console.log(`🎯 ワールド [${worldId}] のパックデータをクラウドへコミットしました。`);
   } catch (error) {
     console.error("🚨 Firestoreへの保存に失敗しました:", error);
     throw error;
   }
 }
+
 
 function resetUserSaveData() {
   userSaveData.currentMilestones = {
@@ -195,7 +196,7 @@ function resetUserSaveData() {
 }
 
 // ==========================================
-// 3. データ取得・構造変換（クラウド設定反映・4択ステータス同期版）
+// 3. データ取得・構造変換
 // ==========================================
 async function loadPortalData() {
   try {
@@ -228,8 +229,6 @@ async function loadPortalData() {
       const selectedPrice = userSetting.price
         ? String(userSetting.price)
         : defaultPrice;
-
-      // 🌟 デフォルト値を「unconfigured（未設定）」に指定
       const currentStatus = userSetting.status || "unconfigured";
 
       let targetPack = group.packs.find(
@@ -276,11 +275,11 @@ async function loadPortalData() {
   }
 }
 
+// 🎯 【バグ修正】matchへのインデックス指定を追加してクラッシュを完全に排除
 function extractNumber(str) {
   if (!str) return 0;
   const match = str.match(/\d+([-.]\d+)?/);
   if (!match) return 0;
-  // 🌟 修正：matchオブジェクトではなく、抽出された文字列「match[0]」に対して置換を行います
   return parseFloat(match[0].replace("-", "."));
 }
 
@@ -295,7 +294,7 @@ function syncTowerAllMilestone() {
 }
 
 // ==========================================
-// 4. モーダル生成・制御ロジック（4択セレクトボックス化）
+// 4. モーダル生成・制御ロジック
 // ==========================================
 function openPackModal(packId) {
   const pack = packMasterData.find((p) => p.id === packId);
@@ -304,7 +303,6 @@ function openPackModal(packId) {
   const oldModal = document.getElementById("js-pack-modal");
   if (oldModal) oldModal.remove();
 
-  // 🌟 ステータスのセレクトボックスを4択に拡張
   const modalHtml = `
     <div id="js-pack-modal" class="c-modal-overlay">
       <div class="c-modal-window">
@@ -412,10 +410,9 @@ function updateModalPreview(packId) {
 }
 
 // ==========================================
-// 5. レンダリング制御（入力欄を破壊しない工夫・4択バッジ対応）
+// 5. レンダリング制御
 // ==========================================
 function createPackCardHtml(pack) {
-  // 🌟 ステータスに応じた適切なテキストラベルを生成
   const statusLabel =
     pack.status === "unconfigured"
       ? "未設定"
@@ -424,7 +421,6 @@ function createPackCardHtml(pack) {
         : pack.status === "pending"
           ? "検討中"
           : "買わない";
-
   return `
     <article class="p-pack-card is-status-${pack.status} js-pack-card" data-pack-id="${pack.id}">
       <div class="p-pack-card__header-row">
@@ -456,13 +452,58 @@ function renderPackPortalFullStructure() {
   const generateSkeleton = (isAccordion) => {
     return PACK_CATEGORIES.map((cat) => {
       const isTowerAll = cat.key === "tower-all";
-      const inputHtml = isAccordion
-        ? ""
-        : `
-        <div class="p-pack-column__filter ${isTowerAll ? "is-disabled-filter" : ""}">
-          <label>現在進捗:</label>
-          <input type="text" class="js-milestone-input" data-cat-key="${cat.key}" value="${userSaveData.currentMilestones[cat.key] || "0"}" placeholder="例: 14-28" ${isTowerAll ? "readonly tabindex='-1'" : ""}>
-        </div>`;
+
+      if (isAccordion) {
+        return `
+          <div class="p-pack-column p-pack-column--${cat.key}">
+            <h4 class="p-pack-column__title">${cat.name}</h4>
+            <div class="p-pack-gallery js-pack-gallery-space" data-cat-key="${cat.key}"></div>
+          </div>`;
+      }
+
+      let inputHtml = "";
+
+      if (cat.key === "quest") {
+        // 🎯 【左右横並び・手抜きUI完成形】インラインスタイルを全消去し、ゲームと同じ感覚で入力可能
+        const chVal = userSaveData.currentMilestones["quest-chapter"] || "0";
+        const stVal = userSaveData.currentMilestones["quest-stage"] || "0";
+
+        inputHtml = `
+          <div class="p-pack-column__filter-quest">
+            <div class="p-pack-counter-row">
+              <div class="p-pack-counter-field js-progress-item">
+                <button type="button" class="p-pack-counter-btn js-counter-minus">−</button>
+                <input type="number" class="p-pack-counter-input js-milestone-input-quest" data-cat-key="quest-chapter" value="${chVal}" inputmode="numeric" min="0">
+                <button type="button" class="p-pack-counter-btn js-counter-plus">+</button>
+              </div>
+              <span class="p-pack-counter-label">章</span>
+              
+              <div class="p-pack-counter-field js-progress-item">
+                <button type="button" class="p-pack-counter-btn js-counter-minus">−</button>
+                <input type="number" class="p-pack-counter-input js-milestone-input-quest" data-cat-key="quest-stage" value="${stVal}" inputmode="numeric" min="0">
+                <button type="button" class="p-pack-counter-btn js-counter-plus">+</button>
+              </div>
+              <span class="p-pack-counter-label"></span>
+            </div>
+            <input type="hidden" class="js-milestone-input" data-cat-key="quest" value="${userSaveData.currentMilestones["quest"] || "0-0"}">
+          </div>`;
+      } else {
+        inputHtml = `
+          <div class="p-pack-column__filter ${isTowerAll ? "is-disabled-filter" : ""} js-progress-item">
+            <div class="p-pack-counter-field">
+              ${isTowerAll ? "" : `<button type="button" class="p-pack-counter-btn js-counter-minus">−</button>`}
+              <input type="number" 
+                     class="p-pack-counter-input p-pack-counter-input--single js-milestone-input" 
+                     data-cat-key="${cat.key}" 
+                     value="${userSaveData.currentMilestones[cat.key] || "0"}" 
+                     inputmode="numeric"
+                     min="0"
+                     ${isTowerAll ? "readonly tabindex='-1'" : ""}>
+              ${isTowerAll ? "" : `<button type="button" class="p-pack-counter-btn js-counter-plus">+</button>`}
+            </div>
+          </div>`;
+      }
+
       return `
         <div class="p-pack-column p-pack-column--${cat.key}">
           <h4 class="p-pack-column__title">${cat.name}</h4>
@@ -480,9 +521,7 @@ function renderPackPortalFullStructure() {
   bindInputEvents();
 }
 
-/**
- * 🃏 [超重要] 入力欄を一切壊さず、カードのギャラリースペースだけをクリアして再分配する高速描画関数
- */
+
 function renderPackPortalOnlyCards() {
   syncTowerAllMilestone();
 
@@ -562,42 +601,55 @@ function renderPackPortalOnlyCards() {
 // 6. インタラクション・イベント制御
 // ==========================================
 function bindInputEvents() {
-  document.querySelectorAll(".js-milestone-input").forEach((input) => {
-    if (input.hasAttribute("readonly")) return;
+  document
+    .querySelectorAll(".js-milestone-input, .js-milestone-input-quest")
+    .forEach((input) => {
+      if (input.hasAttribute("readonly")) return;
 
-    input.addEventListener("input", (e) => {
-      const catKey = input.dataset.catKey;
-      userSaveData.currentMilestones[catKey] = e.target.value;
+      input.addEventListener("input", (e) => {
+        const catKey = input.dataset.catKey;
+        userSaveData.currentMilestones[catKey] = e.target.value;
 
-      clearTimeout(window.milestoneTimeout);
-      window.milestoneTimeout = setTimeout(() => {
-        renderPackPortalOnlyCards();
-      }, 350);
+        if (catKey === "quest-chapter" || catKey === "quest-stage") {
+          const chInput = document.querySelector(
+            '.js-milestone-input-quest[data-cat-key="quest-chapter"]',
+          );
+          const stInput = document.querySelector(
+            '.js-milestone-input-quest[data-cat-key="quest-stage"]',
+          );
+          const ch = chInput ? chInput.value.trim() : "0";
+          const st = stInput ? stInput.value.trim() : "0";
+          const combinedQuest = `${ch}-${st}`;
+          userSaveData.currentMilestones["quest"] = combinedQuest;
+          const hiddenQuestInput = document.querySelector(
+            '.js-milestone-input[data-cat-key="quest"]',
+          );
+          if (hiddenQuestInput) hiddenQuestInput.value = combinedQuest;
+        }
+
+        clearTimeout(window.milestoneTimeout);
+        window.milestoneTimeout = setTimeout(() => {
+          renderPackPortalOnlyCards();
+        }, 350);
+      });
     });
-  });
 }
 
-// アコーディオンの開閉と状態クラスの制御ロジック
 function initAccordion() {
   document.querySelectorAll(".js-archive-toggle").forEach((toggleBtn) => {
     toggleBtn.addEventListener("click", (e) => {
       const btn = e.currentTarget;
-
-      // ① HTMLの data-target 属性から連動する中身のIDを特定
-      const targetId = btn.dataset.target; // "future" または "completed"
+      const targetId = btn.dataset.target;
       const contentEl = document.getElementById(`board-${targetId}`);
 
       if (!contentEl) return;
 
-      // ② 現在開いているかどうかの判定（true/false）
       const expanded = btn.getAttribute("aria-expanded") === "true";
       const nextState = !expanded;
 
-      // ③ ボタンの属性と矢印の切り替え
       btn.setAttribute("aria-expanded", String(nextState));
       btn.querySelector(".js-archive-icon").textContent = nextState ? "▲" : "▼";
 
-      // ④ 設計ルール(is-)に則り、ボタンと中身の双方に状態クラスを付け外し
       if (nextState) {
         btn.classList.add("is-open");
         contentEl.classList.add("is-open");
@@ -622,28 +674,36 @@ function bindUpdateTrigger(userId, worldId) {
       newUpdateBtn.innerHTML =
         '<i class="fa-solid fa-spinner fa-spin"></i> 保存中...';
 
-      // ① 進捗入力欄の数値を一括回収
-      document.querySelectorAll(".js-milestone-input").forEach((input) => {
-        const catKey = input.dataset.catKey;
-        if (catKey)
-          userSaveData.currentMilestones[catKey] = input.value.trim() || "0";
-      });
+      document
+        .querySelectorAll(".js-milestone-input, .js-milestone-input-quest")
+        .forEach((input) => {
+          const catKey = input.dataset.catKey;
+          if (catKey)
+            userSaveData.currentMilestones[catKey] = input.value.trim() || "0";
+        });
 
-      // ==========================================================================
-      // 🌟【最重要修正】未設定(デフォルト価格)のパックはFirestoreに一切書き込まない
-      // ==========================================================================
-      userSaveData.packSettings = {}; // 一旦初期化して差分だけを回収
+      const chInput = document.querySelector(
+        '.js-milestone-input-quest[data-cat-key="quest-chapter"]',
+      );
+      const stInput = document.querySelector(
+        '.js-milestone-input-quest[data-cat-key="quest-stage"]',
+      );
+      if (chInput || stInput) {
+        const ch = chInput ? chInput.value.trim() : "0";
+        const st = stInput ? stInput.value.trim() : "0";
+        userSaveData.currentMilestones["quest"] = `${ch}-${st}`;
+      }
+
+      userSaveData.packSettings = {};
 
       packMasterData.forEach((pack) => {
         const currentPrice = pack.selectedPrice || "11800";
         const currentStatus = pack.status || "unconfigured";
-
         const defaultPrice =
           pack.allPacksRaw && pack.allPacksRaw.length > 0
             ? String(pack.allPacksRaw[0].price)
             : "11800";
 
-        // 「ステータスが未設定」かつ「価格もデフォルト価格のまま」ならクラウド保存対象から除外！
         if (currentStatus !== "unconfigured" || currentPrice !== defaultPrice) {
           userSaveData.packSettings[pack.id] = {
             price: currentPrice,
@@ -715,40 +775,86 @@ window.addEventListener("appWorldChanged", async (e) => {
 });
 
 // ==========================================
-// 🚀 トップへ戻るボタン (Scroll To Top) スマートスクロール制御ロジック
+// 🚀 トップへ戻るボタン
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
   const scrollToTopBtn = document.getElementById("scrollToTopBtn");
   if (!scrollToTopBtn) return;
 
-  // 直前のスクロール位置を記録する変数
   let lastScrollY = window.scrollY;
 
   window.addEventListener("scroll", () => {
     const currentScrollY = window.scrollY;
-
-    // ① そもそもスクロール位置が300px未満なら絶対に非表示
     if (currentScrollY < 300) {
       scrollToTopBtn.classList.remove("is-show");
-    }
-    // ② 300px以上スクロールしており、かつ「上スクロール」を検知した場合のみ表示
-    else if (currentScrollY < lastScrollY) {
+    } else if (currentScrollY < lastScrollY) {
       scrollToTopBtn.classList.add("is-show");
-    }
-    // ③ 下スクロール中の場合は非表示にする
-    else {
+    } else {
       scrollToTopBtn.classList.remove("is-show");
     }
-
-    // 現在のスクロール位置を次の判定用に記憶
     lastScrollY = currentScrollY;
   });
 
-  // ボタンクリック時に最上部へスムーズスクロール
   scrollToTopBtn.addEventListener("click", () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   });
+});
+
+// ==========================================
+// ➕➖ 完全数値型ポチポチ一括制御 ＆ クエスト自動結合ロジック
+// ==========================================
+document.addEventListener("click", (event) => {
+  const isPlus = event.target.classList.contains("js-counter-plus");
+  const isMinus = event.target.classList.contains("js-counter-minus");
+
+  if (!isPlus && !isMinus) return;
+
+  // ボタンから一番近い progress-item（入力の塊）を探す
+  const container = event.target.closest(".js-progress-item");
+  if (!container) return;
+
+  // 通常のインプットか、クエスト専用のインプットかを自動判定して取得
+  const inputEl =
+    container.querySelector(".js-milestone-input") ||
+    container.querySelector(".js-milestone-input-quest");
+  if (!inputEl) return;
+
+  const catKey = inputEl.dataset.catKey;
+  let currentValue = parseInt(inputEl.value, 10) || 0;
+  const min = parseInt(inputEl.min, 10) || 0;
+
+  // 数値の増減処理
+  if (isPlus) {
+    currentValue++;
+  } else if (isMinus && currentValue > min) {
+    currentValue--;
+  }
+
+  // 画面の数字を書き換え、内部ステートを更新
+  inputEl.value = String(currentValue);
+  userSaveData.currentMilestones[catKey] = String(currentValue);
+
+  // 🌟 クエスト（章・ステージ）が動いた場合は、両方の最新値を安全にガッチャンコして同期する
+  if (catKey === "quest-chapter" || catKey === "quest-stage") {
+    const chInput = document.querySelector(
+      '.js-milestone-input-quest[data-cat-key="quest-chapter"]',
+    );
+    const stInput = document.querySelector(
+      '.js-milestone-input-quest[data-cat-key="quest-stage"]',
+    );
+
+    const ch = chInput ? chInput.value.trim() : "0";
+    const st = stInput ? stInput.value.trim() : "0";
+    const combinedQuest = `${ch}-${st}`;
+
+    // 内部データと、クラウド保存時にスキャンされる隠し input の値を完全に同期
+    userSaveData.currentMilestones["quest"] = combinedQuest;
+    const hiddenQuestInput = document.querySelector(
+      '.js-milestone-input[data-cat-key="quest"]',
+    );
+    if (hiddenQuestInput) hiddenQuestInput.value = combinedQuest;
+  }
+
+  // リアルタイムにパックの達成・未達成判定を回して再描画
+  renderPackPortalOnlyCards();
 });
