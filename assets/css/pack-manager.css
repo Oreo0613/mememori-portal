@@ -563,6 +563,49 @@
   color: #1e293b;
 }
 
+/* 💡 セレクトボックスを包むラッパーを新設し、右端にカスタムの矢印を配置する */
+.p-modal-settings__select-wrap {
+  position: relative;
+  width: 100%;
+}
+
+/* 🌟 右端に表示する下向き矢印のスマートなデザイン */
+.p-modal-settings__select-wrap::after {
+  content: "▼";
+  font-size: 0.8rem;
+  color: #64748b;
+  /* 落ち着いたグレー */
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  /* 矢印の上をタップしてもセレクトボックスが開くようにする */
+}
+
+/* セレクトボックス自体のスタイル調整 */
+.p-modal-settings__group select {
+  width: 100%;
+  padding: 8px 32px 8px 12px;
+  /* 右側に矢印が被らないよう、右の余白（32px）を確保 */
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  -webkit-appearance: none;
+  /* ブラウザ標準の野暮ったい矢印を確実に消去 */
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.p-modal-settings__group select:focus {
+  outline: none;
+  border-color: #94a3b8;
+}
+
 /* ==========================================
 • 
 	7. その他共通ユーティリティ

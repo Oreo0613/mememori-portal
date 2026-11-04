@@ -315,34 +315,43 @@ function openPackModal(packId) {
 
   const oldModal = document.getElementById("js-pack-modal");
   if (oldModal) oldModal.remove();
-
   const modalHtml = `
     <div id="js-pack-modal" class="c-modal-overlay">
       <div class="c-modal-window">
         <header class="c-modal-window__header"><h2>${pack.target}</h2></header>
         <div class="c-modal-window__body">
           <div class="p-modal-settings">
+            
             <div class="p-modal-settings__group">
               <label>課金額:</label>
-              <select id="js-modal-price-select">
-                ${pack.allPacksRaw.map((p) => `<option value="${p.price}" ${String(p.price) === String(pack.selectedPrice) ? "selected" : ""}>${parseInt(p.price).toLocaleString()}円</option>`).join("")}
-              </select>
+              <!-- 🌟 矢印ラッパーで囲む -->
+              <div class="p-modal-settings__select-wrap">
+                <select id="js-modal-price-select">
+                  ${pack.allPacksRaw.map((p) => `<option value="${p.price}" ${String(p.price) === String(pack.selectedPrice) ? "selected" : ""}>${parseInt(p.price).toLocaleString()}円</option>`).join("")}
+                </select>
+              </div>
             </div>
+            
             <div class="p-modal-settings__group">
               <label>ステータス:</label>
-              <select id="js-modal-status-select">
-                <option value="unconfigured" ${pack.status === "unconfigured" ? "selected" : ""}>未設定</option>
-                <option value="planned" ${pack.status === "planned" ? "selected" : ""}>購入予定</option>
-                <option value="pending" ${pack.status === "pending" ? "selected" : ""}>検討中</option>
-                <option value="ignored" ${pack.status === "ignored" ? "selected" : ""}>買わない</option>
-              </select>
+              <!-- 🌟 矢印ラッパーで囲む -->
+              <div class="p-modal-settings__select-wrap">
+                <select id="js-modal-status-select">
+                  <option value="unconfigured" ${pack.status === "unconfigured" ? "selected" : ""}>未設定</option>
+                  <option value="planned" ${pack.status === "planned" ? "selected" : ""}>購入予定</option>
+                  <option value="pending" ${pack.status === "pending" ? "selected" : ""}>検討中</option>
+                  <option value="ignored" ${pack.status === "ignored" ? "selected" : ""}>買わない</option>
+                </select>
+              </div>
             </div>
+            
           </div>
           <div id="js-modal-reward-preview" class="p-modal-reward-list"></div>
         </div>
         <footer class="c-modal-window__footer"><button id="js-modal-close-btn" class="c-btn-close">閉じる</button></footer>
       </div>
     </div>
+
   `;
 
   document.body.insertAdjacentHTML("beforeend", modalHtml);
@@ -504,8 +513,7 @@ function renderPackPortalFullStructure() {
             </div>
             <input type="hidden" class="js-milestone-input" data-cat-key="quest" value="${userSaveData.currentMilestones["quest"] || "0-0"}">
           </div>`;
-      }
- else {
+      } else {
         inputHtml = `
           <div class="p-pack-column__filter ${isTowerAll ? "is-disabled-filter" : ""} js-progress-item">
             <div class="p-pack-counter-field">
