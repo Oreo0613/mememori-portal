@@ -148,7 +148,13 @@ async function saveUserPackDataToFirestore(userId, worldId) {
   const firestoreMilestones = {};
   Object.keys(userSaveData.currentMilestones).forEach((key) => {
     // 🌟 【超重要】Firestoreへ送る直前に、不要な作業用項目を完全にシャットアウト！
-    if (key === "quest-chapter" || key === "quest-stage" || key === "quest_chapter" || key === "quest_stage") return;
+    if (
+      key === "quest-chapter" ||
+      key === "quest-stage" ||
+      key === "quest_chapter" ||
+      key === "quest_stage"
+    )
+      return;
 
     const dbKey = key.replace(/-/g, "_");
     firestoreMilestones[dbKey] = userSaveData.currentMilestones[key];
@@ -163,7 +169,13 @@ async function saveUserPackDataToFirestore(userId, worldId) {
   });
 
   try {
-    const worldDocRef = firestoreDoc(window.db, "users", userId, "worlds", worldId);
+    const worldDocRef = firestoreDoc(
+      window.db,
+      "users",
+      userId,
+      "worlds",
+      worldId,
+    );
     await setDoc(
       worldDocRef,
       {
@@ -171,15 +183,16 @@ async function saveUserPackDataToFirestore(userId, worldId) {
         packSettings: firestorePackSettings,
         updatedAt: serverTimestamp(),
       },
-      { merge: true }
+      { merge: true },
     );
-    console.log(`🎯 ワールド [${worldId}] のパックデータをクラウドへコミットしました。`);
+    console.log(
+      `🎯 ワールド [${worldId}] のパックデータをクラウドへコミットしました。`,
+    );
   } catch (error) {
     console.error("🚨 Firestoreへの保存に失敗しました:", error);
     throw error;
   }
 }
-
 
 function resetUserSaveData() {
   userSaveData.currentMilestones = {
@@ -464,30 +477,35 @@ function renderPackPortalFullStructure() {
       let inputHtml = "";
 
       if (cat.key === "quest") {
-        // 🎯 【左右横並び・手抜きUI完成形】インラインスタイルを全消去し、ゲームと同じ感覚で入力可能
+        // 🎯 左右横並び・独立型カプセルデザイン（両方とも完璧にポチポチ可能）
         const chVal = userSaveData.currentMilestones["quest-chapter"] || "0";
         const stVal = userSaveData.currentMilestones["quest-stage"] || "0";
 
         inputHtml = `
           <div class="p-pack-column__filter-quest">
-            <div class="p-pack-counter-row">
-              <div class="p-pack-counter-field js-progress-item">
-                <button type="button" class="p-pack-counter-btn js-counter-minus">−</button>
-                <input type="number" class="p-pack-counter-input js-milestone-input-quest" data-cat-key="quest-chapter" value="${chVal}" inputmode="numeric" min="0">
-                <button type="button" class="p-pack-counter-btn js-counter-plus">+</button>
-              </div>
-              <span class="p-pack-counter-label">章</span>
+            <div class="p-pack-quest-row">
               
-              <div class="p-pack-counter-field js-progress-item">
-                <button type="button" class="p-pack-counter-btn js-counter-minus">−</button>
-                <input type="number" class="p-pack-counter-input js-milestone-input-quest" data-cat-key="quest-stage" value="${stVal}" inputmode="numeric" min="0">
-                <button type="button" class="p-pack-counter-btn js-counter-plus">+</button>
+              <!-- 🔢 章のポチポチブロック -->
+              <div class="p-pack-mini-counter js-progress-item">
+                <button type="button" class="p-pack-mini-counter__btn js-counter-minus">−</button>
+                <input type="number" class="p-pack-mini-counter__input js-milestone-input-quest" data-cat-key="quest-chapter" value="${chVal}" inputmode="numeric" min="0">
+                <button type="button" class="p-pack-mini-counter__btn js-counter-plus">+</button>
               </div>
-              <span class="p-pack-counter-label"></span>
+              
+              <span class="p-pack-quest-separator">-</span>
+              
+              <!-- 🔢 ステージのポチポチブロック -->
+              <div class="p-pack-mini-counter js-progress-item">
+                <button type="button" class="p-pack-mini-counter__btn js-counter-minus">−</button>
+                <input type="number" class="p-pack-mini-counter__input js-milestone-input-quest" data-cat-key="quest-stage" value="${stVal}" inputmode="numeric" min="0">
+                <button type="button" class="p-pack-mini-counter__btn js-counter-plus">+</button>
+              </div>
+              
             </div>
             <input type="hidden" class="js-milestone-input" data-cat-key="quest" value="${userSaveData.currentMilestones["quest"] || "0-0"}">
           </div>`;
-      } else {
+      }
+ else {
         inputHtml = `
           <div class="p-pack-column__filter ${isTowerAll ? "is-disabled-filter" : ""} js-progress-item">
             <div class="p-pack-counter-field">
@@ -520,7 +538,6 @@ function renderPackPortalFullStructure() {
   renderPackPortalOnlyCards();
   bindInputEvents();
 }
-
 
 function renderPackPortalOnlyCards() {
   syncTowerAllMilestone();

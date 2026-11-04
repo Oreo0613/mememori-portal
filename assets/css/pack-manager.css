@@ -1,8 +1,8 @@
 @charset "UTF-8";
 
 /**
- * pack-manager.css (1/2)
- * 見出し共通化・カード内画像グリッド・モーダル・3ステータス装飾版
+ * pack-manager.css
+ * 達成パック管理・マイルストーン自動フィルタ＆3ステータス装飾版
  */
 
 /* ==========================================
@@ -19,7 +19,7 @@
   margin-bottom: 28px;
 }
 
-/* 🌟 セクション大見出し（1.4rem） */
+/* セクション大見出し */
 .p-pack-manager__title {
   display: flex;
   align-items: center;
@@ -30,7 +30,7 @@
   margin-bottom: 16px;
 }
 
-/* 🧱 横並びボード */
+/* 横並びボード */
 .p-pack-board {
   display: flex;
   gap: 12px;
@@ -39,7 +39,7 @@
   white-space: nowrap;
 }
 
-/* 📂 アコーディオンヘッダー */
+/* アコーディオンヘッダー */
 .p-pack-accordion-trigger {
   width: 100%;
   display: flex;
@@ -68,13 +68,13 @@
   color: #10b981;
 }
 
-/* 🌟 [修正] 状態クラス is-open がトリガー（ボタン）についた時のスタイル */
+/* 状態クラス is-open がトリガー（ボタン）についた時のスタイル */
 .p-pack-accordion-trigger.is-open {
   border-radius: 12px 12px 0 0;
   background-color: #f8fafc;
 }
 
-/* 🌟 [修正] 状態クラス is-open がコンテンツ（中身）についたら flex で表示する */
+/* 状態クラス is-open がコンテンツ（中身）についたら flex で表示する */
 .p-pack-accordion-content.is-open {
   display: flex;
 }
@@ -89,7 +89,7 @@
 }
 
 /* ==========================================
- * 2. 縦積みカラム（列） & 進捗入力
+ * 2. 縦積みカラム（列） & カラーバリエーション
  * ========================================== */
 .p-pack-column {
   flex: 0 0 180px;
@@ -100,7 +100,7 @@
   background-color: #e0dfdf;
 }
 
-/* 各カテゴリータイトルのスタイル */
+/* 各カテゴリータイトル */
 .p-pack-column__title {
   font-size: 1.2rem;
   font-weight: 700;
@@ -109,40 +109,7 @@
   margin-bottom: 12px;
 }
 
-/* 🌟 自動フィルタリング用の現在進捗入力ボックス */
-.p-pack-column__filter {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background-color: #ffffff;
-  padding: 6px 10px;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  border: 1px solid #e2e8f0;
-}
-
-.p-pack-column__filter label {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #64748b;
-  white-space: nowrap;
-}
-
-.p-pack-column__filter input {
-  width: 100%;
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #1e293b;
-  border: none;
-  background: transparent;
-  padding: 2px 4px;
-}
-
-.p-pack-column__filter input:focus {
-  outline: none;
-}
-
-/* 🌟 属性塔4種：一目で区別できる極淡パステルカラー */
+/* 属性塔4種：一目で区別できる極淡パステルカラー */
 .p-pack-column--tower_blue {
   background-color: #eef2ff;
 }
@@ -175,7 +142,7 @@
   color: #475569;
 }
 
-/* 🧱 カードを縦に積み重ねるギャラリースペース */
+/* カードを縦に積み重ねるギャラリースペース */
 .p-pack-gallery {
   display: flex;
   flex-direction: column;
@@ -184,7 +151,151 @@
 }
 
 /* ==========================================
- * 3. パックカード & 報酬アイテムグリッド
+ * 3. 🎛️ ポチポチカウンター構造（リファクタリングの主役）
+ * ========================================== */
+
+/* ① 通常のカウンター枠（ランク・各種塔用） */
+.p-pack-column__filter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  padding: 6px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+/* ② クエスト専用の独立型ミニカプセル外枠 */
+.p-pack-column__filter-quest {
+  background-color: #ffffff;
+  padding: 6px 4px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+/* クエストの章とステージをハイフンで繋ぐコンテナ */
+.p-pack-quest-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+}
+
+/* 🎯 共通：数値入力と増減ボタンを囲むパーツ枠 */
+.p-pack-counter-field,
+.p-pack-mini-counter {
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* 通常列：白背景＋外枠付きの四角いフィールド */
+.p-pack-counter-field {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+}
+
+/* クエスト列：薄グレーの座布団背景に馴染むミニカウンター */
+.p-pack-mini-counter {
+  background-color: #f1f5f9;
+  padding: 1px;
+}
+
+/* 🎯 共通：増減ポチポチボタン */
+.p-pack-counter-btn,
+.p-pack-mini-counter__btn {
+  font-weight: bold;
+  background-color: #e2e8f0;
+  color: #334155;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.1s;
+}
+
+/* 通常列ボタン */
+.p-pack-counter-btn {
+  width: 24px;
+  height: 24px;
+}
+
+/* クエスト列用ボタン（極小だけど押しやすい設計） */
+.p-pack-mini-counter__btn {
+  width: 18px;
+  height: 22px;
+  font-size: 0.9rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 3px;
+  background-color: #ffffff;
+}
+
+.p-pack-counter-btn:hover,
+.p-pack-mini-counter__btn:hover {
+  background-color: #cbd5e1;
+}
+
+/* 🎯 共通：数値入力インプット */
+.p-pack-counter-input,
+.p-pack-mini-counter__input {
+  text-align: center;
+  font-weight: 700;
+  color: #1e293b;
+  border: none;
+  background: transparent;
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+/* 通常列インプット（幅ゆったり） */
+.p-pack-counter-input {
+  width: 100%;
+  height: 24px;
+  font-size: 1.1rem;
+}
+
+/* クエスト列用インプット（コンパクト） */
+.p-pack-mini-counter__input {
+  width: 26px;
+  height: 22px;
+  font-size: 1.05rem;
+}
+
+/* ブラウザ標準のダサいスピンボタンを非表示化 */
+.p-pack-counter-input::-webkit-outer-spin-button,
+.p-pack-counter-input::-webkit-inner-spin-button,
+.p-pack-mini-counter__input::-webkit-outer-spin-button,
+.p-pack-mini-counter__input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* クエスト中央の区切りハイフン */
+.p-pack-quest-separator {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #94a3b8;
+  padding: 0 3px;
+}
+
+/* 入力不可（属性塔 全）の非活性用スタイル */
+.p-pack-column__filter.is-disabled-filter {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.p-pack-column__filter.is-disabled-filter .p-pack-counter-input {
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+/* ==========================================
+ * 4. パックカード & 報酬アイテムグリッド
  * ========================================== */
 .p-pack-card {
   background-color: #f0f0f0;
@@ -203,7 +314,7 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
 }
 
-/* タイトルとステータスタグを綺麗に並べるための上部行 */
+/* タイトルとステータスタグの上部行 */
 .p-pack-card__header-row {
   margin-bottom: 8px;
   display: flex;
@@ -211,14 +322,14 @@
   gap: 8px;
 }
 
-/* 各マイルストーンのタイトル（1.1remに最適化） */
+/* 各マイルストーンのタイトル */
 .p-pack-card__target {
   font-size: 1.1rem;
   font-weight: 700;
   color: #0f172a;
 }
 
-/* カード内の報酬を「画像×数量」のタイル状グリッドで表示 */
+/* カード内の報酬タイル状グリッド */
 .p-pack-card__reward-grid {
   display: grid;
   gap: 6px;
@@ -240,7 +351,7 @@
   flex-shrink: 0;
 }
 
-/* 数量表示のテキスト（1.0remに最適化） */
+/* 数量表示のテキスト */
 .p-pack-card__reward-count {
   font-size: 1.0rem;
   font-weight: 600;
@@ -249,8 +360,14 @@
 }
 
 /* ==========================================
- * 4. 3ステータス（カラーバッジ & カード変化）
+ * 5. 3ステータス（カラーバッジ & カード変化）
  * ========================================== */
+.p-pack-card__badges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .p-pack-card__tag-badge {
   font-size: 1.0rem;
   font-weight: 600;
@@ -259,19 +376,30 @@
   white-space: nowrap;
 }
 
+/* 金額タグ：シックなダークグレーバッジ */
+.p-pack-card__price-badge {
+  font-size: 1.0rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  background-color: #838485;
+  color: #f8fafc;
+}
+
 /* 🔵 購入予定: 清潔感のあるブルー */
 .is-status-planned .p-pack-card__tag-badge {
   background-color: #e0f2fe;
   color: #0369a1;
 }
 
-/* 🟡 検討中: 買い忘れを防ぐ注目イエロー */
+/* 🟡 検討中: 注目イエロー */
 .is-status-pending .p-pack-card__tag-badge {
   background-color: #fef9c3;
   color: #a16207;
 }
 
-/* 🔴 買わない: 目立たせない薄いレッド ＋ カード自体を半透明化 */
+/* 🔴 買わない: 薄いレッド ＋ カード自体を半透明化 */
 .is-status-ignored .p-pack-card__tag-badge {
   background-color: #fee2e2;
   color: #b91c1c;
@@ -281,7 +409,7 @@
   opacity: 0.55;
 }
 
-/* リスト空白時のプレースホルダーテキスト */
+/* リスト空白時のプレースホルダー */
 .p-pack-empty-text {
   color: #94a3b8;
   font-size: 0.85rem;
@@ -290,9 +418,8 @@
 }
 
 /* ==========================================
- * 5. ポップアップ（モーダルウィンドウ）
+ * 6. ポップアップ（モーダルウィンドウ）
  * ========================================== */
-/* 背景の暗幕 */
 .c-modal-overlay {
   position: fixed;
   top: 0;
@@ -300,14 +427,12 @@
   width: 100vw;
   height: 100vh;
   background-color: rgba(15, 23, 42, 0.6);
-  /* ディープネイビーの透過マスク */
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 9999;
 }
 
-/* モーダルウィンドウ本体（横幅をスマホ・PC双方に最適化） */
 .c-modal-window {
   background-color: #ffffff;
   border-radius: 16px;
@@ -318,7 +443,6 @@
   animation: modalFadeIn 0.2s ease-out;
 }
 
-/* モーダルヘッダー */
 .c-modal-window__header {
   background-color: #f8fafc;
   padding: 16px 20px;
@@ -331,12 +455,11 @@
   color: #0f172a;
 }
 
-/* モーダルボディ */
 .c-modal-window__body {
   padding: 20px;
 }
 
-/* モーダル内セレクトボックス（2個横並びエリア） */
+/* モーダル内設定エリア */
 .p-modal-settings {
   display: flex;
   gap: 12px;
@@ -373,7 +496,6 @@
   border-color: #94a3b8;
 }
 
-/* モーダルフッター */
 .c-modal-window__footer {
   padding: 12px 20px;
   background-color: #f8fafc;
@@ -382,7 +504,6 @@
   justify-content: flex-end;
 }
 
-/* 閉じるボタン */
 .c-btn-close {
   background-color: #64748b;
   color: #ffffff;
@@ -397,7 +518,6 @@
   background-color: #475569;
 }
 
-/* モーダル出現時のアニメーションフェード */
 @keyframes modalFadeIn {
   from {
     opacity: 0;
@@ -410,31 +530,7 @@
   }
 }
 
-/* ==========================================
- * 金額タグ & モーダル内縦並びリスト用スタイル
- * ========================================== */
-
-/* タグバッジを複数並べるためのラッパー */
-.p-pack-card__badges {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* 🌟 金額タグ：黒っぽく落ち着いたシックなバッジ */
-.p-pack-card__price-badge {
-  font-size: 1.0rem;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 4px;
-  white-space: nowrap;
-  background-color: #838485;
-  /* ダークグレー */
-  color: #f8fafc;
-  /* オフホワイト */
-}
-
-/* 🌟 モーダル内の縦並び報酬リストコンテナ */
+/* モーダル内の縦並び報酬リスト */
 .p-modal-reward-list {
   display: flex;
   flex-direction: column;
@@ -444,7 +540,6 @@
   padding-right: 4px;
 }
 
-/* モーダル内報酬：1アイテムごとの横一行レイアウト */
 .p-modal-reward-row {
   display: flex;
   align-items: center;
@@ -455,7 +550,6 @@
   gap: 12px;
 }
 
-/* 画像 */
 .p-modal-reward-row__img {
   width: 28px;
   height: 28px;
@@ -463,135 +557,16 @@
   flex-shrink: 0;
 }
 
-/* アイテム名（左寄せで残りの幅を広く取る） */
 .p-modal-reward-row__name {
   font-size: 1.3rem;
   font-weight: 500;
   color: #1e293b;
 }
 
-/* ×個数（右端にキープ） */
-.p-modal-reward-row__count {
-  font-size: 1.3rem;
-  font-weight: 500;
-  color: #475569;
-  white-space: nowrap;
-}
-
-/* 🌟 入力不可（表示専用）の進捗フィルター枠 */
-.p-pack-column__filter.is-disabled-filter {
-  background-color: #f1f5f9;
-  /* 背景を少し暗く */
-  border-color: #cbd5e1;
-}
-
-.p-pack-column__filter.is-disabled-filter input {
-  color: #64748b;
-  /* 文字を暗めにして非活性であることを明示 */
-  cursor: not-allowed;
-  /* マウスホバー時に禁止マーク */
-}
-
+/* ==========================================
+• 
+	7. その他共通ユーティリティ
+• ========================================== */
 .c-world-selector__btn {
   left: 0.6vw;
-}
-
-/* ==========================================
- * 🎛️ ポチポチカウンター専用スタイル（追加分）
- * ========================================== */
-
-/* クエスト全体のラッパー */
-.p-pack-column__filter-quest {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  background-color: #ffffff;
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  margin-bottom: 12px;
-}
-
-/* 通常のカウンターラッパー（既存の上書きと共通化） */
-.p-pack-column__filter {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* 中央に配置 */
-  background-color: #ffffff;
-  padding: 6px;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  border: 1px solid #e2e8f0;
-}
-
-/* 章・ステージの横一行 */
-.p-pack-counter-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-/* 「章」「ステージ」の文字ラベル */
-.p-pack-counter-label {
-  font-size: 1.0rem;
-  font-weight: 700;
-  color: #64748b;
-  white-space: nowrap;
-}
-
-/* ➖ 🔢 ➕ を囲む共通の枠 */
-.p-pack-counter-field {
-  display: flex;
-  align-items: center;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  overflow: hidden;
-  background: #fff;
-}
-
-/* 増減ボタン */
-.p-pack-counter-btn {
-  width: 24px;
-  height: 24px;
-  font-weight: bold;
-  background-color: #e2e8f0;
-  color: #334155;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.1s;
-}
-
-.p-pack-counter-btn:hover {
-  background-color: #cbd5e1;
-}
-
-/* 数値入力インプット */
-.p-pack-counter-input {
-  width: 32px;
-  height: 24px;
-  text-align: center;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #1e293b;
-  border: none;
-  background: transparent;
-  outline: none;
-  -moz-appearance: textfield;
-}
-
-/* ランクや塔など、単体で置かれるカウンターの幅微調整 */
-.p-pack-counter-input--single {
-  width: 45px;
-}
-
-/* ブラウザ標準のスピンボタンを非表示化 */
-.p-pack-counter-input::-webkit-outer-spin-button,
-.p-pack-counter-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
 }
