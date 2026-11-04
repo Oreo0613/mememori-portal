@@ -364,8 +364,12 @@ function renderArcanaTable() {
     }
   });
 
+  // 🌟 初期状態で「未設定」と「LR解放済」のアコーディオンを閉じる
   if (!window.collapsedArcanaGroups) {
-    window.collapsedArcanaGroups = { "": true };
+    window.collapsedArcanaGroups = {
+      "": true,
+      LR解放済: true,
+    };
   }
 
   PRIORITY_OPTIONS.forEach((opt) => {
