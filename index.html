@@ -13,7 +13,9 @@
     <link rel="stylesheet" href="assets/css/portal.css">
     <script src="https://kit.fontawesome.com/d36bec305b.js" crossorigin="anonymous"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="assets/js/main.js" type="module"></script>
     <script src="assets/js/portal.js"></script>
 </head>
@@ -30,75 +32,32 @@
                 <div class="p-portal__content">
                     <div class="p-portal-wrapper">
 
-                        <div class="p-portal-main__left">
-
-                            <div class="p-portal-progress">
-                                <div class="p-portal-progress__box m-quest-box">
-                                    <span class="p-portal-progress__label">クエスト</span>
-                                    <div class="p-portal-quest-input-group">
-                                        <input type="number" id="js-portal-quest-chapter"
-                                            class="p-portal-input m-center" placeholder="0" min="1">
-                                        <span class="p-portal-quest-separator">-</span>
-                                        <input type="number" id="js-portal-quest-stage" class="p-portal-input m-center"
-                                            placeholder="0" min="1">
-                                    </div>
-                                </div>
-                                <div class="p-portal-progress__box">
-                                    <span class="p-portal-progress__label">無窮の塔</span>
-                                    <input type="number" id="js-portal-muguu" class="p-portal-input m-center"
-                                        placeholder="0" min="0">
-                                </div>
-                            </div>
-
-                            <div class="p-portal-towers">
-                                <div class="p-portal-towers__box m-blue">
-                                    <span class="p-portal-towers__label">藍の塔</span>
-                                    <input type="number" id="js-portal-tower-blue" class="p-portal-tower-input"
-                                        placeholder="0" min="0">
-                                </div>
-                                <div class="p-portal-towers__box m-red">
-                                    <span class="p-portal-towers__label">紅の塔</span>
-                                    <input type="number" id="js-portal-tower-red" class="p-portal-tower-input"
-                                        placeholder="0" min="0">
-                                </div>
-                                <div class="p-portal-towers__box m-green">
-                                    <span class="p-portal-towers__label">翠の塔</span>
-                                    <input type="number" id="js-portal-tower-green" class="p-portal-tower-input"
-                                        placeholder="0" min="0">
-                                </div>
-                                <div class="p-portal-towers__box m-yellow">
-                                    <span class="p-portal-towers__label">黄の塔</span>
-                                    <input type="number" id="js-portal-tower-yellow" class="p-portal-tower-input"
-                                        placeholder="0" min="0">
-                                </div>
-                            </div>
-
-                            <div class="p-portal-memo">
-                                <h4 class="p-portal-memo__title">ワールド活動メモ</h4>
-                                <textarea id="js-portal-world-memo" class="p-portal-textarea" placeholder="自由に記述できます"
-                                    rows="3"></textarea>
-                            </div>
-
+                        
+                        <div class="p-portal-memo">
+                            <h4 class="p-portal-memo__title">ワールド活動メモ</h4>
+                            <textarea id="js-portal-world-memo" class="p-portal-textarea" placeholder="自由に記述できます"
+                                rows="3"></textarea>
                         </div>
 
-                        <div class="p-portal-main__right">
-                            <div class="p-portal-party-container">
-                                <header class="p-portal-party-container__header">
-                                    <h4 class="p-portal-party-container__title">
-                                        <i class="fa-solid fa-shield-halved"></i> パーティー編成
-                                    </h4>
-                                    <button class="c-btn js-share-button"><i class="fa-solid fa-share-nodes"></i>共有</button>
-                                    <button type="button" id="js-portal-btn-add-party"
-                                        class="c-btn p-portal-party-container__add-btn">
-                                        <i class="fa-solid fa-plus"></i> 追加
-                                    </button>
-                                </header>
+                        <div class="p-portal-party-container">
+                            <header class="p-portal-party-container__header">
+                                <h4 class="p-portal-party-container__title">
+                                    <i class="fa-solid fa-shield-halved"></i> パーティー編成
+                                </h4>
 
-                                <!-- 👥 ここに登録されたパーティリストが動的にJavaScriptでレンダリングされます -->
-                                <div id="js-portal-party-list" class="p-portal-party-list"></div>
-                            </div>
+                                <button class="c-btn js-share-button"><i
+                                        class="fa-solid fa-share-nodes"></i>共有</button>
+                                <button type="button" id="js-portal-btn-add-party"
+                                    class="c-btn p-portal-party-container__add-btn">
+                                    <i class="fa-solid fa-plus"></i> 追加
+                                </button>
+                            </header>
+                            <span class="p-portal-party-container__help">※カードを長押し・ドラッグで並び替えできます</span>
+
+
+                            <!-- 👥 ここに登録されたパーティリストが動的にJavaScriptでレンダリングされます -->
+                            <div id="js-portal-party-list" class="p-portal-party-list"></div>
                         </div>
-
 
                     </div>
 

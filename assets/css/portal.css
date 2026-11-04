@@ -41,11 +41,6 @@
 }
 
 @media (min-width: 768px) {
-    .p-portal-wrapper {
-        flex-direction: row;
-        align-items: flex-start;
-    }
-
     .p-portal-main__left {
         flex: 5;
     }
@@ -567,9 +562,16 @@
 
 /* 一覧用の個別まとまりカード */
 .p-portal-party-list {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+
     gap: 12px;
+}
+
+@media (min-width:768px) {
+    .p-portal-party-list {
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        max-width: 1200px;
+    }
 }
 
 .p-portal-party-card {
@@ -668,17 +670,17 @@
     margin-top: 24px;
     padding-top: 16px;
     border-top: 1px dashed var(--theme-border-main);
-  }
-  
-  /* 警告文のテキスト */
-  .p-portal-delete-zone__alert {
+}
+
+/* 警告文のテキスト */
+.p-portal-delete-zone__alert {
     font-size: 1.1rem;
     color: #ef4444;
     margin-bottom: 8px;
-  }
-  
-  /* 物理削除ボタンのベース */
-  .p-portal-delete-zone__btn {
+}
+
+/* 物理削除ボタンのベース */
+.p-portal-delete-zone__btn {
     background-color: #ef4444;
     color: #ffffff;
     font-weight: bold;
@@ -688,34 +690,54 @@
     border: none;
     cursor: pointer;
     transition: background-color 0.2s ease;
-  }
-  
-  /* ボタンの中にあるゴミ箱アイコン（iタグ）との隙間 */
-  .p-portal-delete-zone__btn i {
+}
+
+/* ボタンの中にあるゴミ箱アイコン（iタグ）との隙間 */
+.p-portal-delete-zone__btn i {
     margin-right: 6px;
-  }
-  
-  /* ボタンにマウスを乗せたとき（ホバー時）の色の変化 */
-  .p-portal-delete-zone__btn:hover {
-    background-color: #dc2626; /* 少し暗い赤 */
-  }
-  
-  .p-portal-party-container__header {
+}
+
+/* ボタンにマウスを乗せたとき（ホバー時）の色の変化 */
+.p-portal-delete-zone__btn:hover {
+    background-color: #dc2626;
+    /* 少し暗い赤 */
+}
+
+.p-portal-party-container__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
-  }
-  
-  /* ボタン同士の間にほどよい隙間を作る（もし隣り合う場合） */
-  .js-share-button {
+}
+
+/* ボタン同士の間にほどよい隙間を作る（もし隣り合う場合） */
+.js-share-button {
     margin-left: auto;
     margin-right: 16px;
 
     color: #1d3557;
     border: 1px solid #bae6fd;
-    background: #e0f2fe; 
+    background: #e0f2fe;
     font-size: 1.1rem;
     padding: 4px 10px;
     border-radius: 6px;
+}
+
+/* ==========================================================================
+   👥 パーティカードのドラッグ＆ドロップ用スタイル (ルール7: BEMベース)
+   ========================================================================== */
+
+/* 1. 通常時のカード状態 */
+.p-portal-party-card {
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  /* 5. ヘッダーに追加する注記テキスト用のスタイル */
+  .p-portal-party-container__help {
+    display: inline-block;
+    font-size: 11px;
+    color: #888;
+    font-weight: normal;
+    margin-bottom: 4px;
+    vertical-align: middle;
   }

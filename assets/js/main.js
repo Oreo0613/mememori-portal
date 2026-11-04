@@ -858,9 +858,7 @@ function syncHeaderWorldSelector(worldNumber, worldName, characterId = null) {
   }
 }
 
-// ==========================================================================
 // 📥 【修正確定版】ポータルデータのロード・UIへのマッピング復元処理
-// ==========================================================================
 async function loadPortalDashboardData(userId, worldId) {
   try {
     console.log(`⏳ ワールド [${worldId}] のデータを読み込み中...`);
@@ -868,38 +866,10 @@ async function loadPortalDashboardData(userId, worldId) {
     const docSnap = await getDoc(worldDocRef);
     if (!docSnap.exists()) return;
 
-    // --- main.js の修正対象箇所 (修正後) ---
     const data = docSnap.data();
 
-    // クエスト章・ステージのバラバラ分解配置連動
-    const questStr = data.questProgress || ""; // 例: "13-28"
-    let chapter = "";
-    let stage = "";
-    if (questStr.includes("-")) {
-      const parts = questStr.split("-");
-      chapter = parts[0];
-      stage = parts[1];
-    }
-
-    // 💡 安全ガードを追加：要素が存在する場合のみ値をセットする
-    const inputChapter = document.getElementById("js-portal-quest-chapter");
-    const inputStage = document.getElementById("js-portal-quest-stage");
-    if (inputChapter) inputChapter.value = chapter;
-    if (inputStage) inputStage.value = stage;
-
-    // 各種塔・数値インプットの同期
-    const elMuguu = document.getElementById("js-portal-muguu");
-    const elBlue = document.getElementById("js-portal-tower-blue");
-    const elRed = document.getElementById("js-portal-tower-red");
-    const elGreen = document.getElementById("js-portal-tower-green");
-    const elYellow = document.getElementById("js-portal-tower-yellow");
+    // ワールド活動メモ・各種数値インプットの同期
     const elMemo = document.getElementById("js-portal-world-memo");
-
-    if (elMuguu) elMuguu.value = data.towerMuguu || "";
-    if (elBlue) elBlue.value = data.towerBlue || "";
-    if (elRed) elRed.value = data.towerRed || "";
-    if (elGreen) elGreen.value = data.towerGreen || "";
-    if (elYellow) elYellow.value = data.towerYellow || "";
     if (elMemo) elMemo.value = data.worldMemo || "";
 
     // 詳細設定アコーディオンパーツの同期
@@ -913,7 +883,7 @@ async function loadPortalDashboardData(userId, worldId) {
     if (elSettingDate) elSettingDate.value = data.startDate || "";
     if (elSettingLink) elSettingLink.value = data.externalLink || "";
 
-    // 💡 HTML側の id="js-portal-setting-character-id" と完全に一致させ、値を復元
+    // HTML側の id="js-portal-setting-character-id" と完全に一致させ、値を復元
     const charIdField = document.getElementById(
       "js-portal-setting-character-id",
     );
@@ -921,27 +891,23 @@ async function loadPortalDashboardData(userId, worldId) {
       charIdField.value = data.characterId || "";
     }
 
-    // 💡 ロードしたキャラクターIDに基づいて、詳細設定内のアイコン画像を最新に切り替える
+    // ロードしたキャラクターIDに基づいて、詳細設定内のアイコン画像を最新に切り替える
     const previewImg = document.getElementById(
       "js-portal-setting-icon-preview",
     );
     if (previewImg) {
-      // 💡【修正】共通関数を使って、未設定（空）の場合も自動で初期値になるよう同期
       previewImg.src = getWorldIconSrc(data.characterId);
     }
 
     const statusSelect = document.getElementById("js-portal-setting-status");
-
     if (statusSelect) {
-      // 過去データがtrue（または未設定）なら active、明示的に false の場合のみ archived を選択
       statusSelect.value = data.isActive !== false ? "active" : "archived";
     }
 
-    // 🔗 差し替え後：複数対応のパーティ配列データを復元（古いデータ構造の互換ガード付き）
+    // 🔗 複数対応のパーティ配列データを復元
     if (data.parties && Array.isArray(data.parties)) {
       currentPartiesState = data.parties;
     } else if (data.partyMembers) {
-      // 古い1パーティ仕様データがある場合の自動変換処理
       currentPartiesState = [
         {
           partyName: "メインパーティー",
@@ -967,7 +933,6 @@ async function loadPortalDashboardData(userId, worldId) {
     if (linkBtn) {
       if (data.externalLink) {
         linkBtn.href = data.externalLink;
-
         linkBtn.classList.remove("is-hidden");
 
         const faviconImg = linkBtn.querySelector("img");
@@ -975,12 +940,11 @@ async function loadPortalDashboardData(userId, worldId) {
           faviconImg.src = FAVICON_API_BASE + data.externalLink;
         }
       } else {
-        // 💡 直接スタイルを書き換えず、設計図の共通非表示クラス「is-hidden」を付与
         linkBtn.classList.add("is-hidden");
       }
     }
 
-    // 🟢すべてのマッピングが終わったこのタイミングで、左上ヘッダーセレクターへ値を同期する！
+    // 左上ヘッダーセレクターへ値を同期する
     syncHeaderWorldSelector(data.worldNumber, data.worldName, data.characterId);
 
     console.log("✅ ダッシュボードデータのUIマッピングが完了しました");
@@ -1093,33 +1057,9 @@ function initPortalDashboardEvents() {
         return;
       }
 
-      // ① メイン画面（ダッシュボード）側の入力値回収
-      const chapter = document
-        .getElementById("js-portal-quest-chapter")
-        .value.trim();
-      const stage = document
-        .getElementById("js-portal-quest-stage")
-        .value.trim();
-      const questProgressStr = chapter && stage ? `${chapter}-${stage}` : "";
-
-      const towerMuguu = document
-        .getElementById("js-portal-muguu")
-        .value.trim();
-      const towerBlue = document
-        .getElementById("js-portal-tower-blue")
-        .value.trim();
-      const towerRed = document
-        .getElementById("js-portal-tower-red")
-        .value.trim();
-      const towerGreen = document
-        .getElementById("js-portal-tower-green")
-        .value.trim();
-      const towerYellow = document
-        .getElementById("js-portal-tower-yellow")
-        .value.trim();
-      const worldMemo = document
-        .getElementById("js-portal-world-memo")
-        .value.trim();
+      // ① メメイン画面（ダッシュボード）側の入力値回収（★進捗エリアは削除されたためメモのみ回収）
+      const elMemo = document.getElementById("js-portal-world-memo");
+      const worldMemo = elMemo ? elMemo.value.trim() : null;
 
       // ② アコーディオン内（詳細設定）の入力値回収
       const worldName = document
@@ -1153,14 +1093,8 @@ function initPortalDashboardEvents() {
           currentWorldId,
         );
 
-        // Firestoreへマージ保存するデータオブジェクト
+        // Firestoreへマージ保存するデータオブジェクト（★進捗系のフィールドを完全に除外）
         const updateData = {
-          questProgress: questProgressStr,
-          towerMuguu: towerMuguu ? Number(towerMuguu) : null,
-          towerBlue: towerBlue ? Number(towerBlue) : null,
-          towerRed: towerRed ? Number(towerRed) : null,
-          towerGreen: towerGreen ? Number(towerGreen) : null,
-          towerYellow: towerYellow ? Number(towerYellow) : null,
           worldMemo: worldMemo || null,
           worldName: worldName || "名称未設定",
           startDate: startDate || null,
@@ -1171,7 +1105,7 @@ function initPortalDashboardEvents() {
           updatedAt: serverTimestamp(),
         };
 
-        // 1. Firestoreへマージ保存
+        // 1. Firestoreへマージ保存（merge: true により、除外した進捗データはクラウド側で保持されます）
         await setDoc(worldDocRef, updateData, { merge: true });
 
         // 2. ★★★【通信削減】手元のセッションストレージ（キャッシュ）を部分書き換え★★★
@@ -1200,7 +1134,7 @@ function initPortalDashboardEvents() {
               };
             }
 
-            // 書き換えた最新の配列をキャッシュに上書き保存（これ以降の loadWorldList での通信が 0回 に！）
+            // 書き換えた最新の配列をキャッシュに上書き保存
             sessionStorage.setItem(cacheKey, JSON.stringify(worldsArray));
           }
         }
@@ -1225,7 +1159,7 @@ function initPortalDashboardEvents() {
             "ワールドをアーカイブ化しました。ワールド選択から新しいワールドを選ぶか追加してください。",
           );
           window.location.reload();
-          return; // アーカイブ時はリロードが入るためここで処理を抜ける
+          return;
         }
 
         // 通常の更新成功時：最新データをダッシュボードに反映・同期
@@ -1236,23 +1170,20 @@ function initPortalDashboardEvents() {
         updateBtn.innerHTML =
           '<i class="fa-solid fa-circle-check"></i> 更新完了！';
 
-        // アラートの表示タイミングを少しずらすことで、ボタンの緑フラッシュがユーザーの目に入るように調整
         setTimeout(() => {
           alert("ワールド情報をクラウドへ正常に保存しました！");
         }, 100);
       } catch (error) {
         console.error("🚨 保存エラー:", error);
-        alert("数値の保存に失敗しました。");
+        alert("データの保存に失敗しました。");
       } finally {
-        // ⏳ ロックを解除して、一定時間後にボタンの見た目を「更新する」に戻す処理
         updateBtn.disabled = false;
 
-        // すでにアーカイブ化されてリロードが走っている場合はこの処理をスキップさせるガード
         if (isActive) {
           setTimeout(() => {
             updateBtn.classList.remove("is-success-flash");
             updateBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> 更新する';
-          }, 1500); // 1.5秒間フラッシュと完了文字を維持
+          }, 1500);
         }
       }
     });
@@ -1437,8 +1368,6 @@ onAuthStateChanged(auth, async (user) => {
           getDoc,
         );
       }
-
-      console.log("✅ [Main] すべての一本道ロードが正常に完了しました！");
     } catch (error) {
       console.error("🚨 アカウント情報の自動ロードに失敗しました:", error);
     } finally {
@@ -1887,7 +1816,9 @@ function initPartySystemEvents() {
   }
 }
 
-// 👥 メモリデータを元に、右側のパーティカード一覧を生成
+// ==========================================================================
+// 👥 メモリデータを元に、右側のパーティカード一覧を生成（クリック判定改善版）
+// ==========================================================================
 function renderPartyListUI() {
   const container = document.getElementById("js-portal-party-list");
   if (!container) return;
@@ -1903,9 +1834,10 @@ function renderPartyListUI() {
   const master = window.characterMaster || [];
 
   currentPartiesState.forEach((party, index) => {
-    const card = document.createElement("button");
-    card.type = "button";
-    card.className = "p-portal-party-card";
+    const card = document.createElement("div");
+    card.className = "p-portal-party-card js-drag-party-card";
+    card.setAttribute("draggable", "true");
+    card.dataset.partyIndex = index;
 
     const headerDiv = document.createElement("div");
     headerDiv.style.cssText =
@@ -1916,55 +1848,25 @@ function renderPartyListUI() {
     nameSpan.textContent = party.partyName;
     headerDiv.appendChild(nameSpan);
 
-    const orderBtnsDiv = document.createElement("div");
-    orderBtnsDiv.style.cssText = "display: flex; gap: 4px;";
-
-    const upBtn = document.createElement("button");
-    upBtn.type = "button";
-    upBtn.className = "js-party-order-up p-party-order-btn";
-    upBtn.textContent = "▲";
-    upBtn.disabled = index === 0;
-    upBtn.style.cssText = "font-size: 10px; padding: 2px 6px; cursor: pointer;";
-    upBtn.addEventListener("click", (e) => movePartyOrder(index, "up", e));
-
-    const downBtn = document.createElement("button");
-    downBtn.type = "button";
-    downBtn.className = "js-party-order-down p-party-order-btn";
-    downBtn.textContent = "▼";
-    downBtn.disabled = index === currentPartiesState.length - 1;
-    downBtn.style.cssText =
-      "font-size: 10px; padding: 2px 6px; cursor: pointer;";
-    downBtn.addEventListener("click", (e) => movePartyOrder(index, "down", e));
-
-    orderBtnsDiv.appendChild(upBtn);
-    orderBtnsDiv.appendChild(downBtn);
-    headerDiv.appendChild(orderBtnsDiv);
     card.appendChild(headerDiv);
 
     const slotsDiv = document.createElement("div");
     slotsDiv.className = "p-portal-party__slots";
 
-    // 💡 【完全修正版】未所持キャラクターであってもスキップせず、is-not-owned で描画するロジック
     party.members.forEach((member) => {
       const slotIcon = document.createElement("div");
       slotIcon.className = "p-portal-party__slot";
 
-      // 互換性考慮：文字列ID、またはオブジェクト形式 { charaId, rarity } に対応
       const charaId = typeof member === "string" ? member : member?.charaId;
       const rarity =
         typeof member === "object" && member?.rarity ? member.rarity : "SR";
 
-      // 💡 charaId さえ存在していれば、レアリティが「未所持」であっても描画ルートへ進ませます
       if (charaId && Array.isArray(master) && master.length > 0) {
         const found = master.find(
           (c) => String(c.id).trim() === String(charaId).trim(),
         );
         if (found) {
           slotIcon.classList.add("has-character");
-
-          // 💡 共通関数（createCharacterBadgeElement）をそのまま呼び出します。
-          // この共通関数は、rarity === "未所持" のときに自動で is-not-owned クラスを付け、
-          // 星やプラスバッジを除外した「すっぴんグレーアウト画像」を返すように既に仕上がっています！
           const badge = createCharacterBadgeElement(found, rarity);
           slotIcon.appendChild(badge);
         } else {
@@ -1977,11 +1879,118 @@ function renderPartyListUI() {
     });
 
     card.appendChild(slotsDiv);
-    card.addEventListener("click", () => {
+
+    // 💡 【超重要】ドラッグ開始時の位置を記憶し、ドラッグ操作と「ただのクリック」を完全に分離する防犯ロック
+    let startX = 0;
+    let startY = 0;
+
+    card.addEventListener("mousedown", (e) => {
+      startX = e.clientX;
+      startY = e.clientY;
+    });
+
+    // 💡 カード（.p-portal-party-card）全体のどこをクリックしてもモーダルが起動！
+    card.addEventListener("click", (e) => {
+      // マウスが押された位置から少しでも動いていたら「ドラッグ操作」とみなしてモーダル起動をガード
+      const deltaX = Math.abs(e.clientX - startX);
+      const deltaY = Math.abs(e.clientY - startY);
+      if (deltaX > 5 || deltaY > 5) return;
+
+      // ガードをすり抜けた「純粋なタップ・クリック」の瞬間にだけ安全にモーダルを展開
+      openPartyEditModal(index);
+    });
+
+    // スマホ（タッチデバイス）用の誤爆ガード
+    card.addEventListener(
+      "touchstart",
+      (e) => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+      },
+      { passive: true },
+    );
+
+    card.addEventListener("touchend", (e) => {
+      const deltaX = Math.abs(e.changedTouches[0].clientX - startX);
+      const deltaY = Math.abs(e.changedTouches[0].clientY - startY);
+      if (deltaX > 5 || deltaY > 5) return;
+
       openPartyEditModal(index);
     });
 
     container.appendChild(card);
+  });
+
+  initPartyListDragAndDrop();
+}
+
+// ==========================================================================
+// 🔄 2列グリッド対応：パーティカード全体のドラッグ＆ドロップ制御（完全版）
+// ==========================================================================
+function initPartyListDragAndDrop() {
+  const container = document.getElementById("js-portal-party-list");
+  const cards = document.querySelectorAll(".js-drag-party-card");
+  let draggedCard = null;
+
+  cards.forEach((card) => {
+    // ① ドラッグ開始
+    card.addEventListener("dragstart", (e) => {
+      draggedCard = card;
+      card.classList.add("is-dragging"); // ルール7：状態クラス(is-)
+      e.dataTransfer.effectAllowed = "move";
+    });
+
+    // ② ドラッグ終了（並び順を確定させ、システムのメモリ配列を書き換える最重要ロジック）
+    card.addEventListener("dragend", () => {
+      if (draggedCard) {
+        draggedCard.classList.remove("is-dragging");
+      }
+      cards.forEach((c) => c.classList.remove("is-drag-over"));
+      draggedCard = null;
+
+      // 💡 ドラッグが終わった瞬間の、画面上の最新のカードの並び順を回収
+      const currentCards = Array.from(
+        container.querySelectorAll(".js-drag-party-card"),
+      );
+      const newPartiesState = currentCards.map((c) => {
+        const originIndex = parseInt(c.dataset.partyIndex, 10);
+        return currentPartiesState[originIndex];
+      });
+
+      // 💡 システム側のグローバル配列（更新ボタンが参照するデータ）を最新に同期！
+      currentPartiesState = newPartiesState;
+
+      // 各カードの data-party-index を 0, 1, 2... と正しい連番にリセットするため再描画
+      renderPartyListUI();
+    });
+
+    // ③ 他のカードの上に重なったとき（1列・2列のどちらでも視覚的に滑らかに動く判定）
+    card.addEventListener("dragover", (e) => {
+      e.preventDefault(); // ドロップを受け入れるために必須
+      if (!draggedCard || draggedCard === card) return;
+
+      card.classList.add("is-drag-over");
+
+      // ターゲットカードの中心点を計算
+      const rect = card.getBoundingClientRect();
+      const targetCenterX = rect.left + rect.width / 2;
+      const targetCenterY = rect.top + rect.height / 2;
+
+      // マウス位置が中心より後ろ（右側、または下側）にあるか交差判定
+      const isAfter = e.clientX > targetCenterX || e.clientY > targetCenterY;
+
+      // リアルタイムに要素の前後関係を仮入れ替え
+      if (isAfter) {
+        container.insertBefore(draggedCard, card.nextSibling);
+      } else {
+        container.insertBefore(draggedCard, card);
+      }
+    });
+
+    // ④ 重なりから外れたとき
+    card.addEventListener("dragleave", () => {
+      card.classList.remove("is-drag-over");
+    });
   });
 }
 
@@ -2208,23 +2217,6 @@ function initPartyDragAndDrop() {
       destSelect.dispatchEvent(new Event("change", { bubbles: true }));
     });
   });
-}
-
-// 🔄 パーティの並び順を上下させる関数
-function movePartyOrder(index, direction, event) {
-  if (event) event.stopPropagation();
-  const targetIndex = direction === "up" ? index - 1 : index + 1;
-
-  // 配列の範囲外にいかないようにガード
-  if (targetIndex < 0 || targetIndex >= currentPartiesState.length) return;
-
-  // 配列内で要素を入れ替える（スワップ）
-  const temp = currentPartiesState[index];
-  currentPartiesState[index] = currentPartiesState[targetIndex];
-  currentPartiesState[targetIndex] = temp;
-
-  // 画面を再描画して新しい並び順を反映
-  renderPartyListUI();
 }
 
 /**
