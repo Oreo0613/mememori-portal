@@ -165,7 +165,7 @@
     "category": "material_gear",
     "imagePath": "assets/images/item/shizuku.webp",
     "sortOrder": 450,
-    "defaultPackPrices": "11800"
+    "defaultPackPrices": "11800,6000,3000,1500,1000,650,160"
   },
   {
     "id": "item_22",
@@ -205,7 +205,7 @@
     "category": "material_char",
     "imagePath": "assets/images/item/akadama-24h.webp",
     "sortOrder": 519,
-    "defaultPackPrices": "11800,6000"
+    "defaultPackPrices": "11800,6000,3000,1500,1000,650"
   },
   {
     "id": "item_27",
@@ -309,7 +309,7 @@
     "category": "material_char",
     "imagePath": "assets/images/item/akadama-6h.webp",
     "sortOrder": 516,
-    "defaultPackPrices": "650"
+    "defaultPackPrices": "1500,1000,650,160"
   },
   {
     "id": "item_40",
