@@ -723,24 +723,6 @@
     border-radius: 6px;
 }
 
-/* ==========================================================================
-   👥 パーティカードのドラッグ＆ドロップ用スタイル (ルール7: BEMベース)
-   ========================================================================== */
-
-/* 1. 通常時のカード状態 */
-.p-portal-party-card {
-    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-/* 5. ヘッダーに追加する注記テキスト用のスタイル */
-.p-portal-party-container__help {
-    display: inline-block;
-    font-size: 11px;
-    color: #888;
-    font-weight: normal;
-    margin-bottom: 4px;
-    vertical-align: middle;
-}
 
 /* ==========================================================================
    📱 タッチデバイス用の長押し誤動作防止ロック（選択・画像メニュー禁止）
