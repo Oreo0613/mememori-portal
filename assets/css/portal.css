@@ -730,14 +730,48 @@
 /* 1. 通常時のカード状態 */
 .p-portal-party-card {
     transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-  }
-  
-  /* 5. ヘッダーに追加する注記テキスト用のスタイル */
-  .p-portal-party-container__help {
+}
+
+/* 5. ヘッダーに追加する注記テキスト用のスタイル */
+.p-portal-party-container__help {
     display: inline-block;
     font-size: 11px;
     color: #888;
     font-weight: normal;
     margin-bottom: 4px;
     vertical-align: middle;
-  }
+}
+
+/* ==========================================================================
+   📱 タッチデバイス用の長押し誤動作防止ロック（選択・画像メニュー禁止）
+   ========================================================================== */
+
+/* パーティ編成エリア全体とモーダル内のスロットをロック */
+.p-portal-party-list,
+.p-portal-party-card,
+.p-portal-party__slots,
+.p-portal-party__slot,
+.p-portal-party__slot-col {
+    /* テキストの選択を全面的に禁止 */
+    -webkit-user-select: none;
+    /* Safari / iOS */
+    -moz-user-select: none;
+    /* Firefox */
+    -ms-user-select: none;
+    /* IE/Edge */
+    user-select: none;
+    /* 標準仕様 */
+
+    /* iOS Safari での長押しポップアップメニューを禁止 */
+    -webkit-touch-callout: none;
+}
+
+/* スロット内のキャラクター画像やバッジ画像をピンポイントでロック */
+.p-portal-party__slot img,
+.c-chara-card__img,
+.c-chara-card__plus-img {
+    /* 画像の長押し保存やドラッグ（ブラウザ標準機能）を禁止 */
+    pointer-events: none;
+    -webkit-touch-callout: none;
+    -webkit-user-drag: none;
+}
