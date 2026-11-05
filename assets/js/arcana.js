@@ -563,10 +563,13 @@ function formatEffectsText(effectsList) {
 }
 
 /**
- * 📊 合算効果マトリクスモーダルのHTMLを動的挿入
+ * 📊 合算効果マトリクスモーダルのHTMLを動的挿入（状態クラスによるクリーンなCSS制御版）
  */
 function injectArcanaTotalModal() {
   if (document.getElementById("js-arcana-total-modal")) return;
+
+  const savedLevel = localStorage.getItem("mememori_link_level") || "240";
+
   const modalHtml = `
     <div id="js-arcana-total-modal" class="c-modal c-arcana-modal" aria-hidden="true" inert>
         <div class="c-modal__overlay js-arcana-total-modal-close"></div>
@@ -575,6 +578,21 @@ function injectArcanaTotalModal() {
                 <span style="font-weight:bold; font-size:1.5rem;">📊 LR解放済みアルカナ 合算効果一覧</span>
                 <button type="button" class="c-world-modal__close-btn js-arcana-total-modal-close" style="background:none; border:none; font-size:2rem; cursor:pointer;">&times;</button>
             </header>
+            
+            <!-- 💡 直書きスタイルを完全一掃したクリーンなコントロールエリア -->
+            <div class="p-arcana-modal__calculator-control" style="display:flex; align-items:center; gap:12px; margin-bottom:16px; padding:10px; background:var(--theme-bg-input, #f1f5f9); border-radius:8px; border:1px solid var(--theme-border-main, #e2e8f0);">
+                <label class="p-arcana-modal__calc-label">
+                    <input type="checkbox" id="js-arcana-calc-toggle" class="p-arcana-modal__level-checkbox">
+                    キャラLv×の効果を計算して表示
+                </label>
+                <!-- 初期状態は is-disabled クラスをつけてCSS側で眠らせる -->
+                <div id="js-arcana-lv-input-wrap" class="p-arcana-modal__lv-input-wrap is-disabled">
+                    <span style="font-size:13px;">レベルリンク:</span>
+                    <input type="number" id="js-arcana-link-level" value="${savedLevel}" min="1" max="1000" style="width:70px; padding:4px 8px; font-size:13px; border:1px solid var(--theme-border-main, #cbd5e1); border-radius:4px; background:#fff; font-weight:bold; text-align:center;">
+                    <span style="font-size:12px; color:var(--text-sub, #64748b);">Lv</span>
+                </div>
+            </div>
+
             <div class="p-arcana-matrix-wrapper">
                 <table class="p-arcana-matrix-table">
                     <thead>
@@ -582,7 +600,7 @@ function injectArcanaTotalModal() {
                             <th style="width: 35%;">ステータス</th>
                             <th style="width: 21%;">％</th>
                             <th style="width: 22%;">固定値</th>
-                            <th style="width: 22%;">キャラLv×</th>
+                            <th style="width: 22%;" id="js-arcana-th-calc-target">キャラLv×</th>
                         </tr>
                     </thead>
                     <tbody id="js-arcana-matrix-tbody">
@@ -595,10 +613,38 @@ function injectArcanaTotalModal() {
   `;
   document.body.insertAdjacentHTML("beforeend", modalHtml);
 
-  // 💡 修正：閉じるボタンをクリックしたときにフォーカスを外してから非表示にする
+  const toggle = document.getElementById("js-arcana-calc-toggle");
+  const lvWrap = document.getElementById("js-arcana-lv-input-wrap");
+  const lvInput = document.getElementById("js-arcana-link-level");
+
+  if (toggle && lvWrap && lvInput) {
+    // 💡 JSからは直接スタイルを触らず、(is-)の状態クラスを付け替えるだけにする
+    toggle.addEventListener("change", (e) => {
+      if (e.target.checked) {
+        toggle.classList.add("is-checked"); // チェックボックスを緑＆レ点にするクラス
+        lvWrap.classList.remove("is-disabled"); // レベル入力欄のロックを解除するクラス
+      } else {
+        toggle.classList.remove("is-checked");
+        lvWrap.classList.add("is-disabled");
+      }
+      renderTotalEffectsMatrix();
+    });
+
+    lvInput.addEventListener("input", () => {
+      const currentWorldId =
+        sessionStorage.getItem("app_current_world_id") || "w1";
+      const currentStorageKey = `mememori_link_level_${currentWorldId}`;
+
+      localStorage.setItem(currentStorageKey, lvInput.value);
+
+      if (toggle.checked) {
+        renderTotalEffectsMatrix();
+      }
+    });
+  }
+
   document.querySelectorAll(".js-arcana-total-modal-close").forEach((btn) => {
     btn.addEventListener("click", () => {
-      // フォーカスがあたっている要素がモーダル内であれば強制的に外す（blur）
       const activeEl = document.activeElement;
       const modal = document.getElementById("js-arcana-total-modal");
       if (modal && modal.contains(activeEl)) {
@@ -609,7 +655,6 @@ function injectArcanaTotalModal() {
         modal.classList.remove("is-open");
         modal.setAttribute("aria-hidden", "true");
         modal.setAttribute("inert", "");
-
         document.body.classList.remove("is-modal-open");
       }
     });
@@ -617,10 +662,25 @@ function injectArcanaTotalModal() {
 }
 
 /**
- * 🧮 LR解放済みのアルカナ効果を合算してモーダルに表示する関数
+ * 🧮 LR解放済みのアルカナ効果の合算データを抽出し、テーブルの中身だけをリアルタイムに再計算・描画する関数（最新ワールドID対応）
  */
-function openTotalEffectsModal() {
-  injectArcanaTotalModal();
+function renderTotalEffectsMatrix() {
+  const isCalcEnabled =
+    document.getElementById("js-arcana-calc-toggle")?.checked || false;
+
+  // 💡 計算時も、常に画面上に今見えている最新のインプット値を引き抜くので安全です
+  const linkLevel = Math.max(
+    1,
+    parseInt(
+      document.getElementById("js-arcana-link-level")?.value || "240",
+      10,
+    ),
+  );
+
+  const thTarget = document.getElementById("js-arcana-th-calc-target");
+  if (thTarget) {
+    thTarget.textContent = isCalcEnabled ? "キャラLv×" : "キャラLv×";
+  }
 
   const lrArcanaIds = Object.keys(userArcanaStatusMap).filter(
     (id) => userArcanaStatusMap[id] === "LR解放済",
@@ -628,7 +688,7 @@ function openTotalEffectsModal() {
 
   const totals = {};
   EFFECT_TAGS_MASTER.forEach((tagName) => {
-    totals[tagName] = { percent: 0, fixed: 0, charLv: 0 };
+    totals[tagName] = { percent: 0, fixed: 0, charLv: 0, calculatedLvValue: 0 };
   });
 
   lrArcanaIds.forEach((id) => {
@@ -638,7 +698,13 @@ function openTotalEffectsModal() {
     ar.effectsList.forEach((eff) => {
       if (!eff.status || !eff.type || eff.value === undefined) return;
       if (totals[eff.status]) {
-        totals[eff.status][eff.type] += Number(eff.value) || 0;
+        const val = Number(eff.value) || 0;
+        if (eff.type === "charLv") {
+          totals[eff.status].charLv += val;
+          totals[eff.status].calculatedLvValue += val * linkLevel;
+        } else {
+          totals[eff.status][eff.type] += val;
+        }
       }
     });
   });
@@ -650,9 +716,10 @@ function openTotalEffectsModal() {
   let hasData = false;
 
   EFFECT_TAGS_MASTER.forEach((tagName) => {
-    const p = totals[tagName].percent;
-    const f = totals[tagName].fixed;
-    const c = totals[tagName].charLv;
+    let p = totals[tagName].percent;
+    let f = totals[tagName].fixed;
+    let c = totals[tagName].charLv;
+    let cv = totals[tagName].calculatedLvValue;
 
     if (p === 0 && f === 0 && c === 0) return;
 
@@ -661,7 +728,13 @@ function openTotalEffectsModal() {
 
     const pStr = p > 0 ? `${p}%` : "-";
     const fStr = f > 0 ? f.toLocaleString() : "-";
-    const cStr = c > 0 ? `キャラLv×${c}` : "-";
+
+    let cStr = "-";
+    if (!isCalcEnabled && c > 0) {
+      cStr = `キャラLv×${c}`;
+    } else if (isCalcEnabled && cv > 0) {
+      cStr = cv.toLocaleString();
+    }
 
     tr.innerHTML = `
       <td>${tagName}</td>
@@ -675,13 +748,34 @@ function openTotalEffectsModal() {
   if (!hasData) {
     tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--theme-text-muted); padding:20px;">LR解放済みに設定されたアルカナ効果がありません</td></tr>`;
   }
+}
 
+/**
+ * 🔓 ボタンが押されたときにモーダルを開くエントリーポイント（ワールド別レベル復元修正版）
+ */
+function openTotalEffectsModal() {
+  // 1. 初回のみ骨組みの流し込みとイベント登録を実行（すでに作られていればスルー）
+  injectArcanaTotalModal();
+
+  // 💡 【重要・不具合解決】モーダルを開くたびに、現在のワールドに応じた最新の値をlocalStorageからロードして画面に強制同期する！
+  const currentWorldId = sessionStorage.getItem("app_current_world_id") || "w1";
+  const storageKey = `mememori_link_level_${currentWorldId}`;
+  const savedLevel = localStorage.getItem(storageKey) || "240";
+
+  const lvInput = document.getElementById("js-arcana-link-level");
+  if (lvInput) {
+    lvInput.value = savedLevel;
+  }
+
+  // 2. 最新のデータ状態に基いて計算とマトリクスを描画
+  renderTotalEffectsMatrix();
+
+  // 3. モーダルを表示クラスで浮き上がらせる
   const modal = document.getElementById("js-arcana-total-modal");
   if (modal) {
     modal.classList.add("is-open");
     modal.removeAttribute("aria-hidden");
     modal.removeAttribute("inert");
-
     document.body.classList.add("is-modal-open");
   }
 }

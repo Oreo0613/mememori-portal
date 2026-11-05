@@ -716,3 +716,74 @@ button.slot.js-char-anchor:active {
         flex-wrap: wrap;
     }
 }
+
+/* ==========================================================================
+   ⚙️ 合計効果モーダル内・チェックボックス専用カスタム装飾（BEM ＆ 状態クラス制御）
+   ========================================================================= */
+
+/* ラベル全体の引き締め（クリック領域） */
+.p-arcana-modal__calc-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* チェックボックス本体（標準デザインを初期化して自作） */
+.p-arcana-modal__level-checkbox {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none; /* 標準のダサいチェックボックスを消去 */
+    
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    background-color: var(--theme-bg-input, #ffffff);
+    border: 1px solid var(--theme-border-main, #cbd5e1);
+    border-radius: 4px;
+    position: relative;
+    outline: none;
+    transition: all 0.15s ease;
+}
+
+/* 🖱️ ホバー時の手応え */
+.p-arcana-modal__level-checkbox:hover {
+    border-color: var(--theme-interactive, #498b6d);
+}
+
+/* 🔓 【最重要】JSから状態クラス .is-checked が付与されたときの背景変化 */
+.p-arcana-modal__level-checkbox.is-checked {
+    background-color: var(--theme-interactive, #498b6d);
+    border-color: var(--theme-interactive, #498b6d);
+}
+
+/* 🔓 状態クラス .is-checked が付与されたときに「レ点」を綺麗に出現させる */
+.p-arcana-modal__level-checkbox.is-checked::after {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 2px;
+    width: 5px;
+    height: 9px;
+    /* 白いボーダーの右と下だけを使ってL字を作り、回転させてレ点にする王道手法 */
+    border: solid #ffffff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* レベル入力欄を包むラッパーの基本スタイル */
+.p-arcana-modal__lv-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+/* 🔓 計算が無効な（is-disabled）状態の時は、CSS側で半透明化とクリック無効化を制御 */
+.p-arcana-modal__lv-input-wrap.is-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
