@@ -1817,7 +1817,7 @@ function initPartySystemEvents() {
 }
 
 // ==========================================================================
-// 👥 メモリデータを元に、右側のパーティカード一覧を生成（クリック判定改善版）
+// 👥 メモリデータを元に、右側のパーティカード一覧を生成（上下ボタン制御仕様）
 // ==========================================================================
 function renderPartyListUI() {
   const container = document.getElementById("js-portal-party-list");
@@ -1832,24 +1832,77 @@ function renderPartyListUI() {
   }
 
   const master = window.characterMaster || [];
+  const totalParties = currentPartiesState.length;
 
   currentPartiesState.forEach((party, index) => {
     const card = document.createElement("div");
-    card.className = "p-portal-party-card js-drag-party-card";
-    card.setAttribute("draggable", "true");
+    card.className = "p-portal-party-card";
     card.dataset.partyIndex = index;
 
+    // 💡 ヘッダー：左側にパーティ名、右側に操作コントロールを space-between で配置
     const headerDiv = document.createElement("div");
     headerDiv.style.cssText =
       "display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 8px;";
 
+    // 🏷️ 左側：パーティ名
     const nameSpan = document.createElement("span");
     nameSpan.className = "p-portal-party-card__name";
+    nameSpan.style.cssText =
+      "font-weight: bold; margin-right: 8px; word-break: break-all;";
     nameSpan.textContent = party.partyName;
     headerDiv.appendChild(nameSpan);
 
+    // 🔢 右側：番号タグ ＆ 上下コントロールのまとまり
+    const rightControls = document.createElement("div");
+    rightControls.style.cssText =
+      "display: flex; align-items: center; gap: 8px; flex-shrink: 0;";
+
+    // 番号タグ（例: 01）
+    const numberTag = document.createElement("span");
+    numberTag.style.cssText =
+      "background: var(--color-gray-600); color: #fff; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 4px; font-family: monospace;";
+    numberTag.textContent = String(index + 1).padStart(2, "0");
+    rightControls.appendChild(numberTag);
+
+    // 上へ移動ボタン（▲）
+    const upBtn = document.createElement("button");
+    upBtn.type = "button";
+    upBtn.style.cssText =
+      "background: #fff; border: 1px solid var(--color-gray-200); color: var(--color-gray-600); width: 24px; height: 24px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 11px;";
+    upBtn.innerHTML = '<i class="fa-solid fa-chevron-up"></i>';
+    if (index === 0) {
+      upBtn.style.opacity = "0.3";
+      upBtn.style.cursor = "not-allowed";
+    } else {
+      upBtn.addEventListener("click", (e) => {
+        e.stopPropagation(); // カード自体のクリックイベント（モーダル展開）が動かないようにガード
+        movePartyOrder(index, -1);
+      });
+    }
+    rightControls.appendChild(upBtn);
+
+    // 下へ移動ボタン（▼）
+    const downBtn = document.createElement("button");
+    downBtn.type = "button";
+    downBtn.style.cssText =
+      "background: #fff; border: 1px solid var(--color-gray-200); color: var(--color-gray-600); width: 24px; height: 24px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 11px;";
+    downBtn.innerHTML = '<i class="fa-solid fa-chevron-down"></i>';
+    if (index === totalParties - 1) {
+      downBtn.style.opacity = "0.3";
+      downBtn.style.cursor = "not-allowed";
+    } else {
+      downBtn.addEventListener("click", (e) => {
+        e.stopPropagation(); // カード自体のクリックイベント（モーダル展開）が動かないようにガード
+        movePartyOrder(index, 1);
+      });
+    }
+    rightControls.appendChild(downBtn);
+
+    // ヘッダーに右側のコントロールを統合
+    headerDiv.appendChild(rightControls);
     card.appendChild(headerDiv);
 
+    // 🔮 5連スロットエリア
     const slotsDiv = document.createElement("div");
     slotsDiv.className = "p-portal-party__slots";
 
@@ -1880,194 +1933,38 @@ function renderPartyListUI() {
 
     card.appendChild(slotsDiv);
 
-    // 💡 【超重要】ドラッグ開始時の位置を記憶し、ドラッグ操作と「ただのクリック」を完全に分離する防犯ロック
-    let startX = 0;
-    let startY = 0;
-
-    card.addEventListener("mousedown", (e) => {
-      startX = e.clientX;
-      startY = e.clientY;
-    });
-
-    // 💡 カード（.p-portal-party-card）全体のどこをクリックしてもモーダルが起動！
+    // 🌍 カード全体のタップで編集モーダルを起動
     card.addEventListener("click", (e) => {
-      // マウスが押された位置から少しでも動いていたら「ドラッグ操作」とみなしてモーダル起動をガード
-      const deltaX = Math.abs(e.clientX - startX);
-      const deltaY = Math.abs(e.clientY - startY);
-      if (deltaX > 5 || deltaY > 5) return;
-
-      // ガードをすり抜けた「純粋なタップ・クリック」の瞬間にだけ安全にモーダルを展開
-      openPartyEditModal(index);
-    });
-
-    // スマホ（タッチデバイス）用の誤爆ガード
-    card.addEventListener(
-      "touchstart",
-      (e) => {
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
-      },
-      { passive: true },
-    );
-
-    card.addEventListener("touchend", (e) => {
-      const deltaX = Math.abs(e.changedTouches[0].clientX - startX);
-      const deltaY = Math.abs(e.changedTouches[0].clientY - startY);
-      if (deltaX > 5 || deltaY > 5) return;
-
+      // ▲や▼のボタンそのものがクリックされた時はモーダルを開かない
+      if (e.target.closest("button")) return;
       openPartyEditModal(index);
     });
 
     container.appendChild(card);
   });
-
-  initPartyListDragAndDrop();
 }
 
 // ==========================================================================
-// 🔄 2列グリッド対応：パーティカード全体のドラッグ＆ドロップ制御（PC・スマホ両対応・バグ修正版）
+// 🔄 ボタン制御方式：▲▼ボタン押下による配列データの順序入れ替え
 // ==========================================================================
+function movePartyOrder(currentIndex, direction) {
+  const targetIndex = currentIndex + direction;
+
+  // 配列の境界線を越える不正な要求（1番上で▲、1番下で▼）は安全にガード
+  if (targetIndex < 0 || targetIndex >= currentPartiesState.length) return;
+
+  // 隣り合う要素を1秒で綺麗にスワップ（入れ替え）
+  const temp = currentPartiesState[currentIndex];
+  currentPartiesState[currentIndex] = currentPartiesState[targetIndex];
+  currentPartiesState[targetIndex] = temp;
+
+  // 💡 画面上のHTMLリストを一瞬で再描画して最新順に同期
+  renderPartyListUI();
+}
+
+// 💡 既存のドラッグ初期化関数の中身を空にしてエラーを防止
 function initPartyListDragAndDrop() {
-  const container = document.getElementById("js-portal-party-list");
-  const cards = document.querySelectorAll(".js-drag-party-card");
-  let draggedCard = null;
-  let isTouchDragging = false; // スマホ用：現在ドラッグ中かどうかのフラグ
-
-  cards.forEach((card) => {
-    /* ----------------------------------------------------------------------
-       💻 1. PC（マウス操作）用のネイティブドラッグイベント
-       ---------------------------------------------------------------------- */
-    card.addEventListener("dragstart", (e) => {
-      draggedCard = card;
-      card.classList.add("is-dragging"); // ルール7：状態クラス(is-)
-      e.dataTransfer.effectAllowed = "move";
-    });
-
-    card.addEventListener("dragend", () => {
-      finalizeDragAndSync();
-    });
-
-    card.addEventListener("dragover", (e) => {
-      e.preventDefault(); // ドロップを受け入れるために必須
-      if (!draggedCard || draggedCard === card) return;
-
-      handleCardSwap(e.clientX, e.clientY, card);
-    });
-
-    card.addEventListener("dragleave", () => {
-      card.classList.remove("is-drag-over");
-    });
-
-    /* ----------------------------------------------------------------------
-       📱 2. スマホ・タブレット（タッチ操作）用のシミュレートイベント
-       ---------------------------------------------------------------------- */
-    card.addEventListener(
-      "touchstart",
-      (e) => {
-        draggedCard = card;
-      },
-      { passive: true },
-    );
-
-    card.addEventListener(
-      "touchmove",
-      (e) => {
-        if (!draggedCard) return;
-
-        const touch = e.touches[0];
-
-        // 指が動いたらドラッグ中状態に移行
-        if (!isTouchDragging) {
-          isTouchDragging = true;
-          draggedCard.classList.add("is-dragging");
-        }
-
-        // ドラッグ中の画面全体の不必要なスクロールをロック
-        if (e.cancelable) e.preventDefault();
-
-        // 現在の指の座標（XY）の下にあるHTML要素をリアルタイムに特定
-        const elementAtPoint = document.elementFromPoint(
-          touch.clientX,
-          touch.clientY,
-        );
-        if (!elementAtPoint) return;
-
-        // 特定した要素の親にあるカード要素を探す
-        const targetCard = elementAtPoint.closest(".js-drag-party-card");
-
-        // 自分以外の有効なカードの上に重なっていたら入れ替え処理を実行
-        if (targetCard && targetCard !== draggedCard) {
-          handleCardSwap(touch.clientX, touch.clientY, targetCard);
-        }
-      },
-      { passive: false },
-    );
-
-    card.addEventListener("touchend", () => {
-      if (isTouchDragging) {
-        finalizeDragAndSync();
-      }
-      isTouchDragging = false;
-      draggedCard = null;
-    });
-  });
-
-  /**
-   * 📦 内部共通関数A：座標情報からカードの前後関係を安全に仮入れ替えする
-   */
-  function handleCardSwap(clientX, clientY, targetCard) {
-    // 他のカードのホバー表示を一回大掃除
-    cards.forEach((c) => {
-      if (c !== targetCard) c.classList.remove("is-drag-over");
-    });
-    targetCard.classList.add("is-drag-over");
-
-    // ターゲットカードの領域と中心点を計算
-    const rect = targetCard.getBoundingClientRect();
-    const targetCenterX = rect.left + rect.width / 2;
-    const targetCenterY = rect.top + rect.height / 2;
-
-    // 1列配置・2列配置のどちらでも綺麗に反応するよう交差判定
-    const isAfter = clientX > targetCenterX || clientY > targetCenterY;
-
-    // 正確なDOMの仮挿入処理
-    if (isAfter) {
-      container.insertBefore(draggedCard, targetCard.nextSibling);
-    } else {
-      container.insertBefore(draggedCard, targetCard);
-    }
-  }
-
-  /**
-   * 📦 内部共通関数B：ドラッグ終了時にクラスを掃除し、システム配列のインデックスを完全に同期する
-   */
-  function finalizeDragAndSync() {
-    // 状態クラスのクリーンアップ
-    cards.forEach((c) => {
-      c.classList.remove("is-dragging");
-      c.classList.remove("is-drag-over");
-    });
-    if (draggedCard) {
-      draggedCard.classList.remove("is-dragging");
-    }
-
-    // 💡 画面上の最新のカード並び順（DOM順）を1列に全回収
-    const currentCards = Array.from(
-      container.querySelectorAll(".js-drag-party-card"),
-    );
-
-    // 現在の並び順を元にグローバル配列の状態を生成
-    const newPartiesState = currentCards.map((c) => {
-      const originIndex = parseInt(c.dataset.partyIndex, 10);
-      return currentPartiesState[originIndex];
-    });
-
-    // 💡 システムのデータステートを完全同期！
-    currentPartiesState = newPartiesState;
-
-    // 各カードの持つ data-party-index を 0,1,2... と正しい順番にリセットするため再描画
-    renderPartyListUI();
-  }
+  // ボタン方式へ移行したため何もしない
 }
 
 // 🔓 編集モーダルを開き、データをインプットへ流し込む
