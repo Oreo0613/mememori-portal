@@ -613,9 +613,11 @@
 }
 
 .p-billing-footer__notice {
-  font-size: 11px;
+  font-size: 1.1rem;
   color: #888888;
   line-height: 1.5;
+  text-align: left;
+  margin-top: 4px;
 }
 
 .p-billing-footer__link {
