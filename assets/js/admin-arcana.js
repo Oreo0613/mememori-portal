@@ -32,8 +32,8 @@ var curEditingArcana = null;
 var curSlotIdx = null;
 
 /* =========================================================================
-     🧙‍♀️ ログイン成功後の初期化処理
-     ========================================================================= */
+       🧙‍♀️ ログイン成功後の初期化処理
+       ========================================================================= */
 window.onAdminAuthSuccess = function (user) {
   console.log(
     "admin.js からの通知：ローカルJSONによるアルカナページの描画を開始します。",
@@ -60,10 +60,6 @@ window.onAdminAuthSuccess = function (user) {
       characterMaster = charData;
       arcanaMaster = arcanaData;
 
-      arcanaMaster.sort(function (a, b) {
-        return Number(a.id) - Number(b.id);
-      });
-
       drawTable();
     })
     .catch(function (error) {
@@ -76,9 +72,8 @@ window.onAdminAuthSuccess = function (user) {
 };
 
 /* -------------------------------------------------------------------------
-       アプリケーション起動 ＆ メインテーブル（一覧）描画
-       ------------------------------------------------------------------------- */
-// 💡 effectsList から表示用テキストを動的生成するヘルパー
+         アプリケーション起動 ＆ メインテーブル（一覧）描画
+         ------------------------------------------------------------------------- */
 function formatEffectsText(effectsList) {
   if (!Array.isArray(effectsList) || effectsList.length === 0) {
     return '<span style="color: var(--text-muted); font-style: italic;">効果なし</span>';
@@ -110,41 +105,62 @@ function drawTable() {
 
   if (arcanaMaster.length === 0) {
     tbody.innerHTML =
-      '<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-sub);">表示可能なデータがありません</td></tr>';
+      '<tr><td colspan="5" class="ar-table__loading">表示可能なデータがありません</td></tr>';
     return;
   }
 
-  arcanaMaster.forEach(function (ar) {
+  arcanaMaster.forEach(function (ar, idx) {
     var row = document.createElement("tr");
     row.id = "ar-row-" + ar.id;
 
-    // 💡 変更後：「未定」と「空欄（非表示）」を正しく区別して描画する
-    var makeS = function (idx) {
-      var cId = ar["charId" + idx];
+    var makeS = function (slotIdx) {
+      var cId = ar["charId" + slotIdx];
       if (!cId) {
-        // 空欄の場合は非表示（スロット自体を隠す）
         return '<div class="slot slot--hide">-</div>';
       }
       if (cId === "未定") {
-        // 「未定」の場合は専用の表示
-        return '<div class="slot" style="font-size: 10px; color: var(--text-sub); font-weight: bold; background: var(--input-bg-sub); border: 1px dashed var(--border-light);" title="未定">未定</div>';
+        return '<div class="slot slot--unassigned" title="未定">未定</div>';
       }
       var c = characterMaster.find(function (ch) {
         return String(ch.id).trim() === String(cId).trim();
       });
       var inner = c
         ? '<img src="' + c.iconUrl + '" title="' + c.name + '">'
-        : '<div style="font-size:10px;">' + cId + "</div>";
+        : '<div class="slot__fallback-id">' + cId + "</div>";
       return '<div class="slot">' + inner + "</div>";
     };
 
-    // 💡 ar.effect の代わりに effectsList から動的生成したテキストを表示
     var effectTextDisplay = formatEffectsText(ar.effectsList);
 
+    var upBtnClass = idx === 0 ? "ar-order-btn is-hidden" : "ar-order-btn";
+    var downBtnClass =
+      idx === arcanaMaster.length - 1
+        ? "ar-order-btn is-hidden"
+        : "ar-order-btn";
+
+    var orderCellHtml =
+      '<td class="ar-table__td-order">' +
+      '<div class="ar-order-container">' +
+      '<span class="ar-order-num">' +
+      (idx + 1) +
+      "</span>" +
+      '<div class="ar-order-control">' +
+      '<button class="' +
+      upBtnClass +
+      '" onclick="moveArcana(' +
+      idx +
+      ', -1)"><i class="fa-solid fa-chevron-up"></i></button>' +
+      '<button class="' +
+      downBtnClass +
+      '" onclick="moveArcana(' +
+      idx +
+      ', 1)"><i class="fa-solid fa-chevron-down"></i></button>' +
+      "</div>" +
+      "</div>" +
+      "</td>";
+
     row.innerHTML =
-      '<td style="text-align:center; font-weight:bold; color:var(--text-sub);">' +
-      ar.id +
-      "</td>" +
+      orderCellHtml +
       "<td><strong>" +
       ar.name +
       "</strong></td>" +
@@ -157,7 +173,7 @@ function drawTable() {
       "<td>" +
       effectTextDisplay +
       "</td>" +
-      '<td style="text-align:center;"><button class="ar-btn" onclick="openCard(' +
+      '<td class="ar-table__td-action"><button class="ar-btn" onclick="openCard(' +
       ar.id +
       ')"><i class="fa-regular fa-pen-to-square"></i> 編集</button></td>';
     tbody.appendChild(row);
@@ -165,9 +181,7 @@ function drawTable() {
 }
 
 function exportUpdatedJsonFile() {
-  const outputData = [].concat(arcanaMaster).sort(function (a, b) {
-    return Number(a.id) - Number(b.id);
-  });
+  const outputData = [].concat(arcanaMaster);
 
   const jsonString = JSON.stringify(outputData, null, 4);
   const blob = new Blob([jsonString], { type: "application/json" });
@@ -183,8 +197,8 @@ function exportUpdatedJsonFile() {
 }
 
 /* -------------------------------------------------------------------------
-       3. モーダルウィンドウの制御
-       ------------------------------------------------------------------------- */
+         3. モーダルウィンドウの制御
+         ------------------------------------------------------------------------- */
 function openCard(id) {
   var ar = arcanaMaster.find(function (a) {
     return String(a.id) === String(id);
@@ -225,7 +239,7 @@ function openCardForNew() {
     charId2: "",
     charId3: "",
     charId4: "",
-    effectsList: [], // 💡 effect プロパティを持たせない
+    effectsList: [],
   };
 
   document.getElementById("mdTitleInput").value = "";
@@ -337,7 +351,6 @@ function flt(elm, btn) {
   if (!grid) return;
   grid.innerHTML = "";
 
-  // 💡 先頭に「未定」にするための特殊カードを配置
   var unassignedCard = document.createElement("div");
   unassignedCard.className = "pk-card";
   unassignedCard.style.cssText =
@@ -345,11 +358,10 @@ function flt(elm, btn) {
   unassignedCard.title = "未定にする";
   unassignedCard.innerHTML = "未定";
   unassignedCard.onclick = function () {
-    executePickCharacter({ id: "未定" }); // 👈 "未定"という文字列を渡す
+    executePickCharacter({ id: "未定" });
   };
   grid.appendChild(unassignedCard);
 
-  // 通常のキャラクターカードを描画
   characterMaster.forEach(function (c) {
     if (elm !== "all" && String(c.attr).trim() !== elm) return;
     var card = document.createElement("div");
@@ -512,7 +524,6 @@ function toggleCardStatus() {
 
   curEditingArcana.name = inputName;
 
-  // 💡 effect プロパティへの保存処理を完全に削除し、不必要なキーを残さないようにする
   if (curEditingArcana.effect !== undefined) {
     delete curEditingArcana.effect;
   }
@@ -533,10 +544,6 @@ function toggleCardStatus() {
     arcanaMaster.push(curEditingArcana);
     alertMessage = "🎉 新規アルカナ「" + inputName + "」を登録しました！";
   }
-
-  arcanaMaster.sort(function (a, b) {
-    return Number(a.id) - Number(b.id);
-  });
 
   closeCard();
   drawTable();
@@ -572,6 +579,19 @@ function deleteCard() {
   );
 }
 
+/* 💡 新設：配列内の要素順を入れ替えてテーブルを再描画する関数 */
+window.moveArcana = function (index, direction) {
+  var targetIndex = index + direction;
+
+  if (targetIndex < 0 || targetIndex >= arcanaMaster.length) return;
+
+  var temp = arcanaMaster[index];
+  arcanaMaster[index] = arcanaMaster[targetIndex];
+  arcanaMaster[targetIndex] = temp;
+
+  drawTable();
+};
+
 /* =========================================================================
      🌐 外部公開用ハンドラ
      ========================================================================= */
@@ -583,3 +603,5 @@ window.closeCardOutside = closeCardOutside;
 window.flt = flt;
 window.clearSlot = clearSlot;
 window.deleteCard = deleteCard;
+window.moveArcana = moveArcana;
+window.exportUpdatedJsonFile = exportUpdatedJsonFile; 

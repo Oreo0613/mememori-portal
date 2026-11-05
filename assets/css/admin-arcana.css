@@ -123,3 +123,109 @@
   border-radius: 4px;
   margin: 4px 0 8px 0;
 }
+
+/* 順序ヘッダーおよびセルの横幅・配置制御 */
+.ar-table__th-order {
+  text-align: center;
+  width: 80px;
+}
+
+/* 順序セル内のレイアウト（番号と上下ボタンの並び） */
+.ar-table__td-order {
+  text-align: center;
+}
+
+.ar-order-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ar-order-num {
+  font-weight: bold;
+  color: var(--text-sub);
+}
+
+.ar-order-control {
+  display: flex;
+  gap: 8px;
+}
+
+/* 上下移動ボタンの基本デザイン */
+.ar-order-btn {
+  background: none;
+  border: none;
+  color: var(--text-sub);
+  cursor: pointer;
+  padding: 2px;
+  font-size: 11px;
+  transition: color 0.15s, transform 0.15s;
+}
+
+.ar-order-btn:hover {
+  color: var(--accent);
+  transform: scale(1.2);
+}
+
+/* 先頭の🔼や末尾の🔽を非表示にするための状態クラス */
+.ar-order-btn.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 💡 順序セルの構成と上下ボタンのモダンデザイン化 */
+.ar-table__td-order {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.ar-order-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 4px 8px;
+}
+
+.ar-order-num {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-main);
+  min-width: 20px;
+  text-align: right;
+}
+
+.ar-order-control {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* 小さく洗練されたサイバー調の矢印ボタン */
+.ar-order-btn {
+  background: var(--input-bg-sub);
+  border: 1px solid var(--border);
+  color: var(--text-sub);
+  cursor: pointer;
+  width: 22px;
+  height: 18px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  transition: all 0.15s ease;
+}
+
+.ar-order-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+/* 先頭・末尾のボタンを完全に非表示にせず、綺麗に空間を維持して無効化 */
+.ar-order-btn.is-hidden {
+  visibility: hidden;
+  pointer-events: none;
+}

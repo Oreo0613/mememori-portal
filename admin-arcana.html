@@ -41,13 +41,17 @@
   <div class="ar-box">
     <div class="header-controls">
       <h2>アルカナマスタ</h2>
+      <button class="ar-btn btn-primary" onclick="exportUpdatedJsonFile()">
+        <i class="fa-solid fa-download"></i> JSON出力
+      </button>
     </div>
+
 
     <div class="ar-wrapper">
       <table class="ar-table">
         <thead>
           <tr>
-            <th class="ar-table__th-id">ID</th>
+            <th class="ar-table__th-order">順序</th>
             <th class="ar-table__th-name">アルカナ名</th>
             <th class="ar-table__th-chars">キャラ</th>
             <th>効果</th>
@@ -91,13 +95,16 @@
           <div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
               <label style="margin-bottom: 0;">■ 発動効果（構造化エディタ）</label>
-              <button type="button" class="ar-btn" style="padding: 2px 8px; font-size: 11px;" onclick="addEffectRow()">+ 効果を追加</button>
+              <button type="button" class="ar-btn" style="padding: 2px 8px; font-size: 11px;" onclick="addEffectRow()">+
+                効果を追加</button>
             </div>
             <!-- プレビュー表示用ボックス -->
-            <div style="margin-bottom: 6px; font-size: 12px; color: var(--text-sub); background: var(--input-bg-sub); padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border);">
+            <div
+              style="margin-bottom: 6px; font-size: 12px; color: var(--text-sub); background: var(--input-bg-sub); padding: 6px 10px; border-radius: 4px; border: 1px solid var(--border);">
               プレビュー: <span id="mdEffectPreviewText" style="color: #38bdf8; font-weight: bold;">(未設定)</span>
             </div>
-            <div id="mdEffectsEditorList" style="display: flex; flex-direction: column; gap: 8px; max-height: 160px; overflow-y: auto; padding: 4px; background: var(--input-bg); border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
+            <div id="mdEffectsEditorList"
+              style="display: flex; flex-direction: column; gap: 8px; max-height: 160px; overflow-y: auto; padding: 4px; background: var(--input-bg); border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
               <!-- 動的に効果行が追加されます -->
             </div>
           </div>
