@@ -1925,73 +1925,149 @@ function renderPartyListUI() {
 }
 
 // ==========================================================================
-// 🔄 2列グリッド対応：パーティカード全体のドラッグ＆ドロップ制御（完全版）
+// 🔄 2列グリッド対応：パーティカード全体のドラッグ＆ドロップ制御（PC・スマホ両対応・バグ修正版）
 // ==========================================================================
 function initPartyListDragAndDrop() {
   const container = document.getElementById("js-portal-party-list");
   const cards = document.querySelectorAll(".js-drag-party-card");
   let draggedCard = null;
+  let isTouchDragging = false; // スマホ用：現在ドラッグ中かどうかのフラグ
 
   cards.forEach((card) => {
-    // ① ドラッグ開始
+    /* ----------------------------------------------------------------------
+       💻 1. PC（マウス操作）用のネイティブドラッグイベント
+       ---------------------------------------------------------------------- */
     card.addEventListener("dragstart", (e) => {
       draggedCard = card;
       card.classList.add("is-dragging"); // ルール7：状態クラス(is-)
       e.dataTransfer.effectAllowed = "move";
     });
 
-    // ② ドラッグ終了（並び順を確定させ、システムのメモリ配列を書き換える最重要ロジック）
     card.addEventListener("dragend", () => {
-      if (draggedCard) {
-        draggedCard.classList.remove("is-dragging");
-      }
-      cards.forEach((c) => c.classList.remove("is-drag-over"));
-      draggedCard = null;
-
-      // 💡 ドラッグが終わった瞬間の、画面上の最新のカードの並び順を回収
-      const currentCards = Array.from(
-        container.querySelectorAll(".js-drag-party-card"),
-      );
-      const newPartiesState = currentCards.map((c) => {
-        const originIndex = parseInt(c.dataset.partyIndex, 10);
-        return currentPartiesState[originIndex];
-      });
-
-      // 💡 システム側のグローバル配列（更新ボタンが参照するデータ）を最新に同期！
-      currentPartiesState = newPartiesState;
-
-      // 各カードの data-party-index を 0, 1, 2... と正しい連番にリセットするため再描画
-      renderPartyListUI();
+      finalizeDragAndSync();
     });
 
-    // ③ 他のカードの上に重なったとき（1列・2列のどちらでも視覚的に滑らかに動く判定）
     card.addEventListener("dragover", (e) => {
       e.preventDefault(); // ドロップを受け入れるために必須
       if (!draggedCard || draggedCard === card) return;
 
-      card.classList.add("is-drag-over");
-
-      // ターゲットカードの中心点を計算
-      const rect = card.getBoundingClientRect();
-      const targetCenterX = rect.left + rect.width / 2;
-      const targetCenterY = rect.top + rect.height / 2;
-
-      // マウス位置が中心より後ろ（右側、または下側）にあるか交差判定
-      const isAfter = e.clientX > targetCenterX || e.clientY > targetCenterY;
-
-      // リアルタイムに要素の前後関係を仮入れ替え
-      if (isAfter) {
-        container.insertBefore(draggedCard, card.nextSibling);
-      } else {
-        container.insertBefore(draggedCard, card);
-      }
+      handleCardSwap(e.clientX, e.clientY, card);
     });
 
-    // ④ 重なりから外れたとき
     card.addEventListener("dragleave", () => {
       card.classList.remove("is-drag-over");
     });
+
+    /* ----------------------------------------------------------------------
+       📱 2. スマホ・タブレット（タッチ操作）用のシミュレートイベント
+       ---------------------------------------------------------------------- */
+    card.addEventListener(
+      "touchstart",
+      (e) => {
+        draggedCard = card;
+      },
+      { passive: true },
+    );
+
+    card.addEventListener(
+      "touchmove",
+      (e) => {
+        if (!draggedCard) return;
+
+        const touch = e.touches[0];
+
+        // 指が動いたらドラッグ中状態に移行
+        if (!isTouchDragging) {
+          isTouchDragging = true;
+          draggedCard.classList.add("is-dragging");
+        }
+
+        // ドラッグ中の画面全体の不必要なスクロールをロック
+        if (e.cancelable) e.preventDefault();
+
+        // 現在の指の座標（XY）の下にあるHTML要素をリアルタイムに特定
+        const elementAtPoint = document.elementFromPoint(
+          touch.clientX,
+          touch.clientY,
+        );
+        if (!elementAtPoint) return;
+
+        // 特定した要素の親にあるカード要素を探す
+        const targetCard = elementAtPoint.closest(".js-drag-party-card");
+
+        // 自分以外の有効なカードの上に重なっていたら入れ替え処理を実行
+        if (targetCard && targetCard !== draggedCard) {
+          handleCardSwap(touch.clientX, touch.clientY, targetCard);
+        }
+      },
+      { passive: false },
+    );
+
+    card.addEventListener("touchend", () => {
+      if (isTouchDragging) {
+        finalizeDragAndSync();
+      }
+      isTouchDragging = false;
+      draggedCard = null;
+    });
   });
+
+  /**
+   * 📦 内部共通関数A：座標情報からカードの前後関係を安全に仮入れ替えする
+   */
+  function handleCardSwap(clientX, clientY, targetCard) {
+    // 他のカードのホバー表示を一回大掃除
+    cards.forEach((c) => {
+      if (c !== targetCard) c.classList.remove("is-drag-over");
+    });
+    targetCard.classList.add("is-drag-over");
+
+    // ターゲットカードの領域と中心点を計算
+    const rect = targetCard.getBoundingClientRect();
+    const targetCenterX = rect.left + rect.width / 2;
+    const targetCenterY = rect.top + rect.height / 2;
+
+    // 1列配置・2列配置のどちらでも綺麗に反応するよう交差判定
+    const isAfter = clientX > targetCenterX || clientY > targetCenterY;
+
+    // 正確なDOMの仮挿入処理
+    if (isAfter) {
+      container.insertBefore(draggedCard, targetCard.nextSibling);
+    } else {
+      container.insertBefore(draggedCard, targetCard);
+    }
+  }
+
+  /**
+   * 📦 内部共通関数B：ドラッグ終了時にクラスを掃除し、システム配列のインデックスを完全に同期する
+   */
+  function finalizeDragAndSync() {
+    // 状態クラスのクリーンアップ
+    cards.forEach((c) => {
+      c.classList.remove("is-dragging");
+      c.classList.remove("is-drag-over");
+    });
+    if (draggedCard) {
+      draggedCard.classList.remove("is-dragging");
+    }
+
+    // 💡 画面上の最新のカード並び順（DOM順）を1列に全回収
+    const currentCards = Array.from(
+      container.querySelectorAll(".js-drag-party-card"),
+    );
+
+    // 現在の並び順を元にグローバル配列の状態を生成
+    const newPartiesState = currentCards.map((c) => {
+      const originIndex = parseInt(c.dataset.partyIndex, 10);
+      return currentPartiesState[originIndex];
+    });
+
+    // 💡 システムのデータステートを完全同期！
+    currentPartiesState = newPartiesState;
+
+    // 各カードの持つ data-party-index を 0,1,2... と正しい順番にリセットするため再描画
+    renderPartyListUI();
+  }
 }
 
 // 🔓 編集モーダルを開き、データをインプットへ流し込む
