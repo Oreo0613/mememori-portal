@@ -3489,7 +3489,7 @@
   },
   {
     "id": "p_quest_29-40",
-    "lastUpdated": "2026-11-03 11:08:10",
+    "lastUpdated": "2026-11-05 13:59:13",
     "category": "quest",
     "milestone": "29-40",
     "packs": [
@@ -3501,16 +3501,16 @@
             "count": 5900
           },
           {
-            "item": "item_32",
-            "count": 500
+            "item": "item_06",
+            "count": 60
           },
           {
-            "item": "item_38",
-            "count": 40
+            "item": "item_08",
+            "count": 60
           },
           {
-            "item": "item_17",
-            "count": 120
+            "item": "item_19",
+            "count": 30
           }
         ],
         "isChecked": true
@@ -3523,16 +3523,16 @@
             "count": 3000
           },
           {
-            "item": "item_32",
-            "count": 200
+            "item": "item_06",
+            "count": 30
           },
           {
-            "item": "item_38",
-            "count": 20
+            "item": "item_08",
+            "count": 30
           },
           {
-            "item": "item_17",
-            "count": 60
+            "item": "item_19",
+            "count": 15
           }
         ],
         "isChecked": true
@@ -3545,16 +3545,16 @@
             "count": 1500
           },
           {
-            "item": "item_32",
-            "count": 200
+            "item": "item_06",
+            "count": 15
           },
           {
-            "item": "item_37",
-            "count": 10
+            "item": "item_08",
+            "count": 15
           },
           {
-            "item": "item_17",
-            "count": 30
+            "item": "item_19",
+            "count": 7
           }
         ],
         "isChecked": true
@@ -3567,16 +3567,16 @@
             "count": 750
           },
           {
-            "item": "item_32",
-            "count": 60
+            "item": "item_06",
+            "count": 5
           },
           {
-            "item": "item_36",
+            "item": "item_08",
             "count": 10
           },
           {
-            "item": "item_17",
-            "count": 30
+            "item": "item_20",
+            "count": 12
           }
         ],
         "isChecked": true
@@ -3589,16 +3589,12 @@
             "count": 500
           },
           {
-            "item": "item_32",
-            "count": 100
+            "item": "item_06",
+            "count": 5
           },
           {
-            "item": "item_35",
-            "count": 10
-          },
-          {
-            "item": "item_17",
-            "count": 20
+            "item": "item_20",
+            "count": 7
           }
         ],
         "isChecked": true
@@ -3611,16 +3607,12 @@
             "count": 325
           },
           {
-            "item": "item_32",
-            "count": 50
+            "item": "item_06",
+            "count": 5
           },
           {
-            "item": "item_34",
-            "count": 10
-          },
-          {
-            "item": "item_17",
-            "count": 10
+            "item": "item_20",
+            "count": 5
           }
         ],
         "isChecked": true
