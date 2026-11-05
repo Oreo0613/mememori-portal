@@ -2077,32 +2077,32 @@ function openPartyEditModal(index) {
   }
 }
 
-// ⚔️ モーダル編集枠専用のドラッグ＆ドロップ入れ替え（スワップ）機能【完全修正版】
+// ==========================================================================
+// ⚔️ モーダル内専用：5連スロット枠のドラッグ＆ドロップ制御（PC・スマホ両対応完全版）
+// ==========================================================================
 function initPartyDragAndDrop() {
-  // 💡 対象を button ではなく、親の列要素（.p-portal-party__slot-col）に変更
   const slots = document.querySelectorAll(
     ".js-party-modal-slots .p-portal-party__slot-col",
   );
   let draggedSlot = null;
+  let isTouchDragging = false;
 
   slots.forEach((slot) => {
     slot.setAttribute("draggable", "true");
 
-    // ① ドラッグ開始
+    /* ----------------------------------------------------------------------
+       💻 1. PC（マウス操作）用イベント
+       ---------------------------------------------------------------------- */
     slot.addEventListener("dragstart", (e) => {
       draggedSlot = slot;
       slot.classList.add("is-dragging");
       e.dataTransfer.effectAllowed = "move";
     });
 
-    // ② ドラッグ終了
     slot.addEventListener("dragend", () => {
-      slot.classList.remove("is-dragging");
-      slots.forEach((s) => s.classList.remove("is-drag-over"));
-      draggedSlot = null;
+      cleanupModalDragStyles();
     });
 
-    // ③ 他の枠の上に重なったとき
     slot.addEventListener("dragover", (e) => {
       e.preventDefault();
       if (draggedSlot && slot !== draggedSlot) {
@@ -2110,86 +2110,164 @@ function initPartyDragAndDrop() {
       }
     });
 
-    // ④ 重なりから外れたとき
     slot.addEventListener("dragleave", () => {
       slot.classList.remove("is-drag-over");
     });
 
-    // ⑤ ドロップされたとき（データ及びUIの完全スワップ）
     slot.addEventListener("drop", (e) => {
       e.preventDefault();
-      slot.classList.remove("is-drag-over");
       if (!draggedSlot || draggedSlot === slot) return;
+      executeSlotSwap(draggedSlot, slot);
+      cleanupModalDragStyles();
+    });
 
-      // 💡 お互いの列の内部要素を正確にキャッチ
-      const srcBtn = draggedSlot.querySelector(".p-portal-party__slot");
-      const destBtn = slot.querySelector(".p-portal-party__slot");
-      const srcSelect = draggedSlot.querySelector(".js-portal-modal-rarity");
-      const destSelect = slot.querySelector(".js-portal-modal-rarity");
+    /* ----------------------------------------------------------------------
+       📱 2. スマホ・タブレット（タッチ操作）用イベント
+       ---------------------------------------------------------------------- */
+    slot.addEventListener(
+      "touchstart",
+      (e) => {
+        draggedSlot = slot;
+        isTouchDragging = false;
+      },
+      { passive: true },
+    );
 
-      if (!srcBtn || !destBtn || !srcSelect || !destSelect) return;
+    slot.addEventListener(
+      "touchmove",
+      (e) => {
+        if (!draggedSlot) return;
 
-      const srcInput = document.getElementById(srcBtn.dataset.targetInput);
-      const srcImg = document.getElementById(srcBtn.dataset.targetPreview);
-      const destInput = document.getElementById(destBtn.dataset.targetInput);
-      const destImg = document.getElementById(destBtn.dataset.targetPreview);
+        const touch = e.touches[0];
 
-      if (!srcInput || !destInput || !srcImg || !destImg) return;
+        if (!isTouchDragging) {
+          isTouchDragging = true;
+          draggedSlot.classList.add("is-dragging");
+        }
 
-      // 1. キャラクターID（hidden input）の入れ替え
-      const tempValue = srcInput.value;
-      srcInput.value = destInput.value;
-      destInput.value = tempValue;
+        if (e.cancelable) e.preventDefault();
 
-      // 2. レアリティ（select）の入れ替え
-      const tempRarity = srcSelect.value;
-      srcSelect.value = destSelect.value;
-      destSelect.value = tempRarity;
+        const elementAtPoint = document.elementFromPoint(
+          touch.clientX,
+          touch.clientY,
+        );
+        if (!elementAtPoint) return;
 
-      // 3. 既存の動的バッジ（c-chara-card）やプラスマーク等の表示状態を丸ごと入れ替える
-      const srcBadge = srcBtn.querySelector(".c-chara-card");
-      const destBadge = destBtn.querySelector(".c-chara-card");
-      const srcPlus = srcBtn.querySelector(".p-portal-party__plus-mark");
-      const destPlus = destBtn.querySelector(".p-portal-party__plus-mark");
+        const targetSlot = elementAtPoint.closest(".p-portal-party__slot-col");
 
-      // プレビュー画像のsrcと隠しクラスのスワップ
-      const tempImgSrc = srcImg.src;
-      const tempImgHidden = srcImg.classList.contains("is-hidden");
+        slots.forEach((s) => {
+          if (s !== targetSlot) s.classList.remove("is-drag-over");
+        });
 
-      if (destImg.classList.contains("is-hidden")) {
-        srcImg.classList.add("is-hidden");
-      } else {
-        srcImg.classList.remove("is-hidden");
+        if (targetSlot && targetSlot !== draggedSlot) {
+          targetSlot.classList.add("is-drag-over");
+        }
+      },
+      { passive: false },
+    );
+
+    slot.addEventListener("touchend", (e) => {
+      if (isTouchDragging && draggedSlot) {
+        const touch = e.changedTouches[0];
+        const elementAtPoint = document.elementFromPoint(
+          touch.clientX,
+          touch.clientY,
+        );
+
+        if (elementAtPoint) {
+          const targetSlot = elementAtPoint.closest(
+            ".p-portal-party__slot-col",
+          );
+          if (targetSlot && targetSlot !== draggedSlot) {
+            executeSlotSwap(draggedSlot, targetSlot);
+          }
+        }
       }
-      srcImg.src = destImg.src;
-
-      if (tempImgHidden) {
-        destImg.classList.add("is-hidden");
-      } else {
-        destImg.classList.remove("is-hidden");
-      }
-      destImg.src = tempImgSrc;
-
-      // プラスマーク（＋）の表示・非表示の同期
-      if (srcPlus && destPlus) {
-        const tempPlusDisplay = srcPlus.style.display;
-        srcPlus.style.display = destPlus.style.display;
-        destPlus.style.display = tempPlusDisplay;
-      }
-
-      // 動的バッジ要素（星や枠線など）が存在すれば要素ごとスワップ
-      if (srcBadge) srcBadge.remove();
-      if (destBadge) destBadge.remove();
-      if (srcBadge) destBtn.appendChild(srcBadge);
-      if (destBadge) srcBtn.appendChild(destBadge);
-
-      // 4. 変更をシステムにリアルタイム通知
-      srcInput.dispatchEvent(new Event("change", { bubbles: true }));
-      destInput.dispatchEvent(new Event("change", { bubbles: true }));
-      srcSelect.dispatchEvent(new Event("change", { bubbles: true }));
-      destSelect.dispatchEvent(new Event("change", { bubbles: true }));
+      cleanupModalDragStyles();
+      isTouchDragging = false;
+      draggedSlot = null;
     });
   });
+
+  /**
+   * 📦 内部共通処理A：データ・HTMLバッジ・セレクトボックスの完全交換
+   */
+  function executeSlotSwap(srcSlot, destSlot) {
+    const srcBtn = srcSlot.querySelector(".p-portal-party__slot");
+    const destBtn = destSlot.querySelector(".p-portal-party__slot");
+    const srcSelect = srcSlot.querySelector(".js-portal-modal-rarity");
+    const destSelect = destSlot.querySelector(".js-portal-modal-rarity");
+
+    if (!srcBtn || !destBtn || !srcSelect || !destSelect) return;
+
+    const srcInput = document.getElementById(srcBtn.dataset.targetInput);
+    const srcImg = document.getElementById(srcBtn.dataset.targetPreview);
+    const destInput = document.getElementById(destBtn.dataset.targetInput);
+    const destImg = document.getElementById(destBtn.dataset.targetPreview);
+
+    if (!srcInput || !destInput || !srcImg || !destImg) return;
+
+    // 1. キャラクターIDの交換
+    const tempValue = srcInput.value;
+    srcInput.value = destInput.value;
+    destInput.value = tempValue;
+
+    // 2. レアリティ選択値の交換
+    const tempRarity = srcSelect.value;
+    srcSelect.value = destSelect.value;
+    destSelect.value = tempRarity;
+
+    // 3. プレビュー画像のsrcと隠し状態の交換
+    const tempImgSrc = srcImg.src;
+    const tempImgHidden = srcImg.classList.contains("is-hidden");
+
+    if (destImg.classList.contains("is-hidden")) {
+      srcImg.classList.add("is-hidden");
+    } else {
+      srcImg.classList.remove("is-hidden");
+    }
+    srcImg.src = destImg.src;
+
+    if (tempImgHidden) {
+      destImg.classList.add("is-hidden");
+    } else {
+      destImg.classList.remove("is-hidden");
+    }
+    destImg.src = tempImgSrc;
+
+    // 4. プラスマーク（＋文字）の同期
+    const srcPlus = srcBtn.querySelector(".p-portal-party__plus-mark");
+    const destPlus = destBtn.querySelector(".p-portal-party__plus-mark");
+    if (srcPlus && destPlus) {
+      const tempPlusDisplay = srcPlus.style.display;
+      srcPlus.style.display = destPlus.style.display;
+      destPlus.style.display = tempPlusDisplay;
+    }
+
+    // 5. 魔女バッジ（星や外枠線）の物理スワップ
+    const srcBadge = srcBtn.querySelector(".c-chara-card");
+    const destBadge = destBtn.querySelector(".c-chara-card");
+    if (srcBadge) srcBadge.remove();
+    if (destBadge) destBadge.remove();
+    if (srcBadge) destBtn.appendChild(srcBadge);
+    if (destBadge) srcBtn.appendChild(destBadge);
+
+    // 6. システムへのリアルタイム変更通知
+    srcInput.dispatchEvent(new Event("change", { bubbles: true }));
+    destInput.dispatchEvent(new Event("change", { bubbles: true }));
+    srcSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    destSelect.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  /**
+   * 📦 内部共通処理B：スタイルクラスの一斉掃除
+   */
+  function cleanupModalDragStyles() {
+    slots.forEach((s) => {
+      s.classList.remove("is-dragging");
+      s.classList.remove("is-drag-over");
+    });
+  }
 }
 
 /**
