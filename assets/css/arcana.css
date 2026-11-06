@@ -787,3 +787,27 @@ button.slot.js-char-anchor:active {
     opacity: 0.5;
     pointer-events: none;
 }
+
+.p-credit-footer {
+    margin-top: 2rem;
+    padding: 1rem;
+    text-align: center;
+  }
+  
+  .p-credit-footer__notice {
+    font-size: 1.1rem;
+    color: #888888;
+    line-height: 1.5;
+    text-align: left;
+    margin-top: 4px;
+  }
+  
+  .p-credit-footer__link {
+    color: #4a90e2;
+    text-decoration: underline;
+  }
+  
+  .p-credit-footer__link:hover {
+    text-decoration: none;
+  }
+  
