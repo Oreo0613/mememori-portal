@@ -727,6 +727,21 @@
   text-align: center;
 }
 
+/* ==========================================
+   🔒 本日非開催の属性塔カラム全体の暗転（グレースケール版）
+   ========================================== */
+.p-pack-column.is-tower-closed {
+  /* 🌟 正しい構文：1つのfilterプロパティにまとめて記述 */
+  filter: grayscale(100%) brightness(0.90);
+  transition: filter 0.3s ease;
+}
+
+/* 💡 ホバー時は白黒を少し解除して、タップ可能であることを伝える */
+.p-pack-column.is-tower-closed:hover {
+  filter: grayscale(30%) brightness(0.98);
+}
+
+
 
 
 /* ==========================================

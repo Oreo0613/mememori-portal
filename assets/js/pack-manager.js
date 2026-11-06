@@ -67,6 +67,30 @@ const BASE_PRICE_OPTIONS = [
 ];
 
 // ==========================================
+// 📅 属性塔 開催曜日スケジュール定数 (0:日, 1:月, 2:火, 3:水, 4:木, 5:金, 6:土)
+// ==========================================
+const TOWER_SCHEDULE = {
+  // 各曜日に「開催されている」属性キーを配列で定義
+  1: ["tower-blue"],
+  2: ["tower-red"],
+  3: ["tower-green"],
+  4: ["tower-yellow"],
+  5: ["tower-blue", "tower-red"],
+  6: ["tower-green", "tower-yellow"],
+  0: ["tower-blue", "tower-red", "tower-green", "tower-yellow"], // 日曜は全開放
+};
+
+/**
+ * ⏰ ゲーム内の「午前4:00更新」を考慮した現在の曜日（0〜6）を取得する
+ */
+function getGameCurrentDay() {
+  const now = new Date();
+  // 現在時刻から4時間を引いた時点の曜日を返すことで、AM 0:00〜3:59 までは前日扱いにする
+  const gameTime = new Date(now.getTime() - 4 * 60 * 60 * 1000);
+  return gameTime.getDay();
+}
+
+// ==========================================
 // 📄 2. CLOUD FIRESTORE 連動通信ロジック
 // ==========================================
 
@@ -485,13 +509,29 @@ function renderPackPortalFullStructure() {
 
   syncTowerAllMilestone();
 
+  // 🌟 ゲーム内の現在の曜日を取得
+  const currentDay = getGameCurrentDay();
+  const openTowers = TOWER_SCHEDULE[currentDay] || [];
+
   const generateSkeleton = (isAccordion) => {
     return PACK_CATEGORIES.map((cat) => {
       const isTowerAll = cat.key === "tower-all";
 
+      // 🌟 属性塔（blue, red, green, yellow）かつ、本日の開催リストに含まれていない場合は「非開催（暗転）」
+      const isAttributeTower = [
+        "tower-blue",
+        "tower-red",
+        "tower-green",
+        "tower-yellow",
+      ].includes(cat.key);
+      const isTodayClosed = isAttributeTower && !openTowers.includes(cat.key);
+
+      // 🌟 カラムごと暗転させるための状態クラス（is-tower-closed）を確定
+      const columnStatusClass = isTodayClosed ? "is-tower-closed" : "";
+
       if (isAccordion) {
         return `
-          <div class="p-pack-column p-pack-column--${cat.key}">
+          <div class="p-pack-column p-pack-column--${cat.key} ${columnStatusClass}">
             <h4 class="p-pack-column__title">${cat.name}</h4>
             <div class="p-pack-gallery js-pack-gallery-space" data-cat-key="${cat.key}"></div>
           </div>`;
@@ -500,52 +540,49 @@ function renderPackPortalFullStructure() {
       let inputHtml = "";
 
       if (cat.key === "quest") {
-        // 🎯 左右横並び・独立型カプセルデザイン（両方とも完璧にポチポチ可能）
         const chVal = userSaveData.currentMilestones["quest-chapter"] || "0";
         const stVal = userSaveData.currentMilestones["quest-stage"] || "0";
 
         inputHtml = `
           <div class="p-pack-column__filter-quest">
             <div class="p-pack-quest-row">
-              
-              <!-- 🔢 章のポチポチブロック -->
               <div class="p-pack-mini-counter js-progress-item">
                 <button type="button" class="p-pack-mini-counter__btn js-counter-minus">−</button>
                 <input type="number" class="p-pack-mini-counter__input js-milestone-input-quest" data-cat-key="quest-chapter" value="${chVal}" inputmode="numeric" min="0">
                 <button type="button" class="p-pack-mini-counter__btn js-counter-plus">+</button>
               </div>
-              
               <span class="p-pack-quest-separator">-</span>
-              
-              <!-- 🔢 ステージのポチポチブロック -->
               <div class="p-pack-mini-counter js-progress-item">
                 <button type="button" class="p-pack-mini-counter__btn js-counter-minus">−</button>
                 <input type="number" class="p-pack-mini-counter__input js-milestone-input-quest" data-cat-key="quest-stage" value="${stVal}" inputmode="numeric" min="0">
                 <button type="button" class="p-pack-mini-counter__btn js-counter-plus">+</button>
               </div>
-              
             </div>
             <input type="hidden" class="js-milestone-input" data-cat-key="quest" value="${userSaveData.currentMilestones["quest"] || "0-0"}">
           </div>`;
       } else {
+        // 🌟 【修正】isTodayClosed による readonly 制限を完全撤廃。「属性塔(全)」のみを readonly に制限します。
+        const isReadOnly = isTowerAll;
+
         inputHtml = `
-          <div class="p-pack-column__filter ${isTowerAll ? "is-disabled-filter" : ""} js-progress-item">
+          <div class="p-pack-column__filter ${isReadOnly ? "is-disabled-filter" : ""} js-progress-item">
             <div class="p-pack-counter-field">
-              ${isTowerAll ? "" : `<button type="button" class="p-pack-counter-btn js-counter-minus">−</button>`}
+              ${isReadOnly ? "" : `<button type="button" class="p-pack-counter-btn js-counter-minus">−</button>`}
               <input type="number" 
                      class="p-pack-counter-input p-pack-counter-input--single js-milestone-input" 
                      data-cat-key="${cat.key}" 
                      value="${userSaveData.currentMilestones[cat.key] || "0"}" 
                      inputmode="numeric"
                      min="0"
-                     ${isTowerAll ? "readonly tabindex='-1'" : ""}>
-              ${isTowerAll ? "" : `<button type="button" class="p-pack-counter-btn js-counter-plus">+</button>`}
+                     ${isReadOnly ? "readonly tabindex='-1'" : ""}>
+              ${isReadOnly ? "" : `<button type="button" class="p-pack-counter-btn js-counter-plus">+</button>`}
             </div>
           </div>`;
       }
 
+      // 🌟 各カラムの最外枠
       return `
-        <div class="p-pack-column p-pack-column--${cat.key}">
+        <div class="p-pack-column p-pack-column--${cat.key} ${columnStatusClass}">
           <h4 class="p-pack-column__title">${cat.name}</h4>
           ${inputHtml}
           <div class="p-pack-gallery js-pack-gallery-space" data-cat-key="${cat.key}"></div>
