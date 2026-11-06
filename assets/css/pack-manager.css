@@ -723,7 +723,7 @@
 
 .p-pack-empty-text--full-width {
   grid-column: 1 / -1;
-  padding: 40px;
+  font-size: 1.1rem;
   text-align: center;
 }
 

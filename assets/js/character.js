@@ -141,7 +141,7 @@ async function loadAndRenderCharacterGrid() {
 
   if (!_worldId) {
     gridEl.innerHTML =
-      '<div class="character-grid__loading">ヘッダーからワールドを選択すると魔女一覧が表示されます。</div>';
+      '<div class="character-grid__loading">ヘッダーからワールドを選択するとキャラ一覧が表示されます。</div>';
     return;
   }
 
