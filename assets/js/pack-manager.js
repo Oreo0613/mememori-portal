@@ -54,6 +54,19 @@ function catConfigMatches(key, jsonCategory) {
 }
 
 // ==========================================
+// ⚙️ ベース課金額定数
+// ==========================================
+const BASE_PRICE_OPTIONS = [
+  { value: "160", label: "160円" },
+  { value: "650", label: "650円" },
+  { value: "1000", label: "1000円" },
+  { value: "1500", label: "1500円" },
+  { value: "3000", label: "3,000円" },
+  { value: "6000", label: "6,000円" },
+  { value: "11800", label: "11,800" },
+];
+
+// ==========================================
 // 📄 2. CLOUD FIRESTORE 連動通信ロジック
 // ==========================================
 
@@ -83,6 +96,10 @@ async function loadUserPackDataFromFirestore(userId, worldId) {
     if (docSnap.exists()) {
       const data = docSnap.data();
 
+      // 🌟 ベース課金帯の復元（なければ11800）
+      userSaveData.basePrice = String(data.basePrice || "11800");
+      syncBasePriceSelectorUI();
+
       // ① 進捗情報 (currentMilestones) の復元
       if (data.currentMilestones) {
         Object.keys(data.currentMilestones).forEach((dbKey) => {
@@ -91,28 +108,8 @@ async function loadUserPackDataFromFirestore(userId, worldId) {
             data.currentMilestones[dbKey] || "0",
           );
         });
-      } else {
-        // メイン側データからの自動コンバート救済
-        userSaveData.currentMilestones["rank"] = "0";
-        userSaveData.currentMilestones["quest"] = data.questProgress || "0-0";
-        userSaveData.currentMilestones["tower"] = String(
-          data.towerMuguu || "0",
-        );
-        userSaveData.currentMilestones["tower-blue"] = String(
-          data.towerBlue || "0",
-        );
-        userSaveData.currentMilestones["tower-red"] = String(
-          data.towerRed || "0",
-        );
-        userSaveData.currentMilestones["tower-green"] = String(
-          data.towerGreen || "0",
-        );
-        userSaveData.currentMilestones["tower-yellow"] = String(
-          data.towerYellow || "0",
-        );
       }
 
-      // 🎯 【バグ完全修正】配列のインデックス[0], [1]を確実に割り当て、2桁以上の章番号を完全維持
       const qVal = userSaveData.currentMilestones["quest"] || "0-0";
       const qParts = qVal.split("-");
       userSaveData.currentMilestones["quest-chapter"] = String(
@@ -124,13 +121,13 @@ async function loadUserPackDataFromFirestore(userId, worldId) {
       if (data.packSettings) {
         Object.keys(data.packSettings).forEach((packId) => {
           userSaveData.packSettings[packId] = {
-            price: String(data.packSettings[packId].price || "11800"),
-            status: data.packSettings[packId].status || "planned",
+            price: String(data.packSettings[packId].price),
+            status: data.packSettings[packId].status || "unconfigured",
           };
         });
       }
       console.log(
-        "✅ Firestoreからのパックデータ復元が完了しました。",
+        "✅ パックデータの復元が完了しました。",
         userSaveData.packSettings,
       );
     }
@@ -147,7 +144,6 @@ async function saveUserPackDataToFirestore(userId, worldId) {
 
   const firestoreMilestones = {};
   Object.keys(userSaveData.currentMilestones).forEach((key) => {
-    // 🌟 【超重要】Firestoreへ送る直前に、不要な作業用項目を完全にシャットアウト！
     if (
       key === "quest-chapter" ||
       key === "quest-stage" ||
@@ -155,16 +151,23 @@ async function saveUserPackDataToFirestore(userId, worldId) {
       key === "quest_stage"
     )
       return;
-
     const dbKey = key.replace(/-/g, "_");
     firestoreMilestones[dbKey] = userSaveData.currentMilestones[key];
   });
 
+  // 🌟 更新ボタンで保存するのは「未設定（unconfigured）ではないもの」に完全に限定
   const firestorePackSettings = {};
   Object.keys(userSaveData.packSettings).forEach((packId) => {
+    const setting = userSaveData.packSettings[packId];
+    if (!setting) return;
+
+    if (setting.status === "unconfigured") {
+      return;
+    }
+
     firestorePackSettings[packId] = {
-      price: userSaveData.packSettings[packId].price,
-      status: userSaveData.packSettings[packId].status,
+      price: setting.price,
+      status: setting.status,
     };
   });
 
@@ -180,13 +183,14 @@ async function saveUserPackDataToFirestore(userId, worldId) {
       worldDocRef,
       {
         currentMilestones: firestoreMilestones,
+        basePrice: userSaveData.basePrice,
         packSettings: firestorePackSettings,
         updatedAt: serverTimestamp(),
       },
       { merge: true },
     );
     console.log(
-      `🎯 ワールド [${worldId}] のパックデータをクラウドへコミットしました。`,
+      `🎯 クラウドへ保存完了。保存された有効設定数: ${Object.keys(firestorePackSettings).length}`,
     );
   } catch (error) {
     console.error("🚨 Firestoreへの保存に失敗しました:", error);
@@ -234,15 +238,30 @@ async function loadPortalData() {
 
     packMasterData = rawPackData.map((group) => {
       const userSetting = userSaveData.packSettings[group.id] || {};
-
-      const defaultPrice =
-        group.packs && group.packs.length > 0
-          ? String(group.packs[0].price)
-          : "11800";
-      const selectedPrice = userSetting.price
-        ? String(userSetting.price)
-        : defaultPrice;
       const currentStatus = userSetting.status || "unconfigured";
+
+      let selectedPrice = "11800";
+
+      // 🌟 ステータスが「未設定」なら表示金額を無条件にベース金額に置き換える
+      if (currentStatus === "unconfigured") {
+        const hasBasePriceInMaster = group.packs?.some(
+          (p) => String(p.price) === userSaveData.basePrice,
+        );
+        const fallbackPrice =
+          group.packs && group.packs.length > 0
+            ? String(group.packs[0].price)
+            : "11800";
+        selectedPrice = hasBasePriceInMaster
+          ? userSaveData.basePrice
+          : fallbackPrice;
+      } else {
+        // 未設定以外は過去の個別設定（なければマスタの初期値）
+        selectedPrice = userSetting.price
+          ? String(userSetting.price)
+          : group.packs && group.packs.length > 0
+            ? String(group.packs[0].price)
+            : "11800";
+      }
 
       let targetPack = group.packs.find(
         (p) => String(p.price) === selectedPrice,
@@ -278,11 +297,6 @@ async function loadPortalData() {
         selectedPrice: selectedPrice,
       };
     });
-
-    console.log(
-      "🎯 4択ステータスをローカルマスタへ完全同期しました。",
-      packMasterData,
-    );
   } catch (error) {
     console.error("マスタデータのパースに失敗しました:", error);
   }
@@ -774,14 +788,16 @@ onAuthStateChanged(auth, async (user) => {
 
     if (activeWorldId) {
       await loadUserPackDataFromFirestore(user.uid, activeWorldId);
+      initBasePriceSelector(); // 🌟 ベースセレクターの監視初期化
       await loadPortalData();
       renderPackPortalFullStructure();
       initAccordion();
       bindUpdateTrigger(user.uid, activeWorldId);
     } else {
       const urgentBoard = document.querySelector(".js-pack-urgent-board");
-      if (urgentBoard)
-        urgentBoard.innerHTML = `<p class="p-pack-empty-text" style="grid-column: 1/-1; padding: 40px;">ヘッダーのワールド選択から、管理するワールドを選んでください。</p>`;
+      if (urgentBoard) {
+        urgentBoard.innerHTML = `<p class="p-pack-empty-text p-pack-empty-text--full-width">ヘッダーのワールド選択から、管理するワールドを選んでください。</p>`;
+      }
     }
   } else {
     window.location.href = "login.html";
@@ -883,3 +899,49 @@ document.addEventListener("click", (event) => {
   // リアルタイムにパックの達成・未達成判定を回して再描画
   renderPackPortalOnlyCards();
 });
+
+// 🌟 画面上のベース課金帯セレクターの値の同期
+function syncBasePriceSelectorUI() {
+  const selector = document.getElementById("js-base-price-select");
+  if (selector) {
+    selector.value = userSaveData.basePrice;
+  }
+}
+
+// 🌟 基準課金帯セレクターの動的生成 ＆ イベント初期化
+function initBasePriceSelector() {
+  const container = document.querySelector(".js-base-price-container");
+  if (!container) return;
+
+  // 冒頭の定数配列（BASE_PRICE_OPTIONS）を元にBEM準拠のHTMLを組み立てる
+  const optionsHtml = BASE_PRICE_OPTIONS.map((opt) => {
+    const isSelected =
+      String(opt.value) === String(userSaveData.basePrice) ? "selected" : "";
+    return `<option value="${opt.value}" ${isSelected}>${opt.label}</option>`;
+  }).join("");
+
+  container.innerHTML = `
+    <div class="p-pack-base-filter">
+      <label for="js-base-price-select" class="p-pack-base-filter__label">ベースの課金額：</label>
+      <div class="p-pack-base-filter__select-wrap">
+        <select id="js-base-price-select" class="p-pack-base-filter__select">
+          ${optionsHtml}
+        </select>
+      </div>
+       <span class="p-pack-base-filter__note">※ステータスが「未設定」の項目のみ、ここで選んだ金額の内容に一括で置き換わります。</span>
+    </div>
+  `;
+
+  // 生成したセレクターに対してチェンジイベントを付与
+  const selector = document.getElementById("js-base-price-select");
+  if (!selector) return;
+
+  selector.addEventListener("change", async (e) => {
+    userSaveData.basePrice = e.target.value;
+    console.log(`💎 基準課金帯が変更されました: ${userSaveData.basePrice}円帯`);
+
+    // マスタデータの初期金額の再マッピングを行って一括リフレッシュ
+    await loadPortalData();
+    renderPackPortalOnlyCards();
+  });
+}
