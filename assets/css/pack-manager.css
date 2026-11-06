@@ -636,32 +636,89 @@
 .p-pack-base-filter {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   margin-bottom: 24px;
-  padding: 16px;
-  background-color: #aaaaaa;
+  padding: 16px 20px;
+  /* 蒼みを完全に排除し、洗練されたライトグレーのグラデーションへ変更 */
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #cbd5e1;
+  /* 左側に黒（墨色）のアクセントラインを配置してシックに引き締める */
+  border-left: 5px solid #1e293b;
   border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .p-pack-base-filter__label {
-  font-size: 14px;
-  font-weight: bold;
-  color: var(--text-color, #ffffff);
+  font-size: 1.3rem;
+  font-weight: 700;
+  /* 深みのある黒（ダークネイビー・墨色） */
+  color: #0f172a;
+  flex-shrink: 0;
 }
 
+/* 🌟 右端にカスタムの矢印（▼）を配置するラッパー */
 .p-pack-base-filter__select-wrap {
   position: relative;
+  display: inline-block;
+}
+
+/* 疑似要素でスマートな▼マークを実装（グレー） */
+.p-pack-base-filter__select-wrap::after {
+  content: "▼";
+  font-size: 0.8rem;
+  color: #64748b;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  /* 矢印の上をタップしてもセレクトボックスが開くようにする */
 }
 
 .p-pack-base-filter__select {
+  /* 右側に矢印が被らないよう、右の余白（32px）を確保 */
   padding: 8px 32px 8px 12px;
-  font-size: 14px;
-  color: var(--theme-input-main);
-  background-color: #fff;
-  border: 1px solid var(--border-color, #444444);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #334155;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
   border-radius: 6px;
+  /* ブラウザ標準の野暮ったい矢印を確実に消去 */
+  -webkit-appearance: none;
+  -moz-appearance: none;
   appearance: none;
   cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* フォーカス時は全体のトーンに合わせてダークグレーに */
+.p-pack-base-filter__select:focus {
+  outline: none;
+  border-color: #64748b;
+  box-shadow: 0 0 0 3px rgba(30, 41, 59, 0.08);
+}
+
+.p-pack-base-filter__note {
+  font-size: 1.1rem;
+  font-weight: 500;
+  /* 文字色は落ち着いたダークグレー */
+  color: #64748b;
+  line-height: 1.4;
+}
+
+/* 画面幅が狭いスマホ表示のときは、注記をセレクターの下に改行させるための調整 */
+@media (max-width: 768px) {
+  .p-pack-base-filter {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .p-pack-base-filter__note {
+    margin-left: 0;
+    margin-top: 2px;
+  }
 }
 
 .p-pack-empty-text--full-width {
@@ -670,25 +727,6 @@
   text-align: center;
 }
 
-.p-pack-base-filter__note {
-  font-size: 12px;
-  color: #fff;
-  margin-left: 12px;
-}
-
-/* 画面幅が狭いスマホ表示のときは、注記をセレクターの下に改行させるための調整 */
-@media (max-width: 768px) {
-  .p-pack-base-filter {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .p-pack-base-filter__note {
-    margin-left: 0;
-    margin-top: 4px;
-  }
-}
 
 
 /* ==========================================
