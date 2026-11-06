@@ -639,9 +639,8 @@
   gap: 12px;
   margin-bottom: 24px;
   padding: 16px;
-  background-color: var(--bg-card, #2a2a2a);
+  background-color: #aaaaaa;
   border-radius: 8px;
-  border: 1px solid var(--border-color, #3a3a3a);
 }
 
 .p-pack-base-filter__label {
@@ -657,8 +656,8 @@
 .p-pack-base-filter__select {
   padding: 8px 32px 8px 12px;
   font-size: 14px;
-  color: var(--text-color, #ffffff);
-  background-color: var(--bg-input, #1a1a1a);
+  color: var(--theme-input-main);
+  background-color: #fff;
   border: 1px solid var(--border-color, #444444);
   border-radius: 6px;
   appearance: none;
@@ -673,7 +672,7 @@
 
 .p-pack-base-filter__note {
   font-size: 12px;
-  color: var(--text-muted, #aaaaaa);
+  color: var(--theme-text-main);
   margin-left: 12px;
 }
 
