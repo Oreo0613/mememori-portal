@@ -5,25 +5,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ログイン | メメモリ</title>
-    <!-- 既存のスタイルシートを適用してデザインを統一 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/destyle.css@4.0.0/destyle.min.css" />
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/login.css">
     <script src="https://kit.fontawesome.com/d36bec305b.js" crossorigin="anonymous"></script>
-
-    <!-- 💡 ログイン処理専用のJavaScriptをモジュールとして読み込みます -->
     <script src="assets/js/login.js" type="module"></script>
 </head>
 
 <body class="p-login-page">
     <div class="c-login-card">
-        <h1 class="c-login-card__title">ユーザーポータル</h1>
-        <p class="c-login-card__text">ご利用いただくにはGoogleアカウントでのログインが必要です。</p>
+        <h1 class="c-login-card__title">🌐 メメモリポータルへ<br>ようこそ！</h1>
+        <p class="c-login-card__text">コルディパックやアルカナの管理ができます。</p>
 
-        <!-- 🔴 Googleログインボタン -->
-        <button id="js-btn-login" class="c-btn-google">
-            <i class="fab fa-google"></i>Googleアカウントでログイン
-        </button>
+        <div class="c-login-card__actions">
+            <button class="c-btn-google js-btn-google-login">
+                <i class="fab fa-google"></i>Googleアカウントでログイン
+            </button>
+            <button class="c-btn-demo js-btn-demo-login">
+                <i class="fas fa-flask"></i>
+                デモを試す
+                <span class="c-btn-demo__sub">（ログイン不要です）</span>
+            </button>
+        </div>
+
+        <div class="c-login-card__footer">
+            <a href="https://lime-raisin-f58.notion.site/PORTAL-40fba36becc08087aa56cce74cf572c5?pvs=143"
+                class="c-login-card__link" target="_blank" rel="noopener noreferrer">
+                <i class="fas fa-info-circle"></i> メメモリPORTALとは？（機能紹介・はじめ方）
+            </a>
+        </div>
     </div>
 </body>
 

@@ -23,26 +23,41 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 document.addEventListener("DOMContentLoaded", () => {
-  const loginBtn = document.getElementById("js-btn-login");
+  const googleLoginBtn = document.querySelector(".js-btn-google-login");
+  const demoLoginBtn = document.querySelector(".js-btn-demo-login");
 
-  if (loginBtn) {
-    loginBtn.addEventListener("click", async () => {
+  // 1. Googleアカウントでの通常ログイン処理
+  if (googleLoginBtn) {
+    googleLoginBtn.addEventListener("click", async () => {
       const provider = new GoogleAuthProvider();
       try {
-        loginBtn.classList.add("is-loading");
-        loginBtn.disabled = true;
+        googleLoginBtn.classList.add("is-loading");
+        googleLoginBtn.disabled = true;
         await signInWithPopup(auth, provider);
       } catch (error) {
         console.error("❌ ログインに失敗しました。", error);
-        loginBtn.classList.remove("is-loading");
-        loginBtn.disabled = false;
+        googleLoginBtn.classList.remove("is-loading");
+        googleLoginBtn.disabled = false;
         alert("ログインに失敗しました。アカウントを確認してください。");
       }
     });
   }
 
+  // 2. ログインなしでデモを試す処理
+  if (demoLoginBtn) {
+    demoLoginBtn.addEventListener("click", () => {
+      // セッションストレージにデモモード用のフラグをセット
+      sessionStorage.setItem("mememori_portal_demo", "true");
+      // ポータルメイン画面へ遷移
+      window.location.href = "index.html";
+    });
+  }
+
+  // 3. ログイン状態の監視（認証済みユーザーは自動でindex.htmlへ）
   onAuthStateChanged(auth, (user) => {
     if (user) {
+      // ログインが成功した場合はデモフラグをクリアしておく
+      sessionStorage.removeItem("mememori_portal_demo");
       window.location.href = "index.html";
     }
   });

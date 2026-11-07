@@ -1,76 +1,155 @@
 @charset "UTF-8";
 
+/* ==========================================================================
+   p-login-page (ログイン全体の背景・レイアウト)
+   ========================================================================== */
 .p-login-page {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #1e1e2f 0%, #111119 100%);
-    font-family: "Helvetica Neue", Arial, sans-serif;
-    color: #ffffff;
-    padding: 20px;
-    box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  /* 🌟 白〜淡いグレージュの優しく上品なグラデーション */
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+  color: #334155; /* 文字色をマイルドなダークグレーに */
+  padding: 16px;
+}
+
+/* ==========================================================================
+   c-login-card (中央のカードコンポーネント)
+   ========================================================================== */
+.c-login-card {
+  width: 100%;
+  max-width: 440px;
+  background-color: #ffffff; /* 🌟 清潔感のある白 */
+  border: 1px solid #e2e8f0; /* 優しいプレーンな境界線 */
+  border-radius: 16px; /* 角を少し丸くして柔らかい印象に */
+  padding: 40px 32px;
+  box-shadow: 0 10px 30px rgba(51, 65, 85, 0.06); /* 影を淡く優しく */
+  text-align: center;
+}
+
+.c-login-card__title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #1e293b; /* 締まりのある濃いグレー */
+  letter-spacing: 0.03em;
+}
+
+.c-login-card__text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #64748b; /* 落ち着いたアッシュグレー */
+  margin-bottom: 32px;
+}
+
+.c-login-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ==========================================================================
+   共通ボタンベース ＆ 各種ボタン（Google / デモ）
+   ========================================================================== */
+.c-button,
+.c-btn-google,
+.c-btn-demo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 10px; /* ボタンの角も少し丸めて優しく */
+  font-size: 15px;
+  font-weight: 600;
+  transition: background-color 0.2s, transform 0.1s, opacity 0.2s, border-color 0.2s;
+  cursor: pointer;
+}
+
+.c-btn-google:hover,
+.c-btn-demo:hover {
+  transform: translateY(-1px);
+}
+
+.c-btn-google:active,
+.c-btn-demo:active {
+  transform: translateY(1px);
+}
+
+/* --- 🔴 Googleログインボタン --- */
+.c-btn-google {
+  background-color: #4285f4;
+  color: #ffffff;
+  flex-direction: row;
+  gap: 10px;
+  box-shadow: 0 2px 4px rgba(66, 133, 244, 0.2);
+}
+
+.c-btn-google:hover {
+  background-color: #357ae8;
+}
+
+.c-btn-google i {
+  font-size: 18px;
+}
+
+.c-btn-google.is-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* --- 🧪 デモを試すボタン --- */
+.c-btn-demo {
+  background-color: #f8fafc; /* 🌟 カードより一段淡い背景 */
+  color: #475569; /* 落ち着いたダークトーン */
+  border: 1px solid #cbd5e1; /* 🌟 優しいグレーの枠線 */
+  gap: 4px;
+}
+
+.c-btn-demo:hover {
+  background-color: #f1f5f9; /* ホバーで少しだけ暗く */
+  border-color: #94a3b8; /* 枠線も少しハッキリ */
+  color: #1e293b;
+}
+
+.c-btn-demo i {
+  color: #64748b; /* アイコンの色味をマイルドに */
+  margin-bottom: 2px;
+}
+
+.c-btn-demo__sub {
+  font-size: 11px;
+  font-weight: 400;
+  color: #64748b; /* 🌟 白背景でもしっかり読める親切な濃さに調整 */
+}
+
+/* ==========================================================================
+   c-login-card__footer (カード下部の補助リンクエリア)
+   ========================================================================== */
+   .c-login-card__footer {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1px dashed #e2e8f0; /* 上のボタン群と優しく区切る点線 */
   }
   
-  .c-login-card {
-    background-color: rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 40px 30px;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    text-align: center;
-    max-width: 400px;
-    width: 100%;
-  }
-  
-  .c-login-card__title {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 16px;
-    background: linear-gradient(90deg, #8a2be2, #4a90e2);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  
-  .c-login-card__text {
-    font-size: 14px;
-    color: #b0b0c5;
-    line-height: 1.6;
-    margin-bottom: 32px;
-  }
-  
-  .c-btn-google {
+  .c-login-card__link {
     display: inline-flex;
-    justify-content: center;
     align-items: center;
-    gap: 10px;
-    width: 100%;
-    background-color: #ffffff;
-    color: #1e1e2f;
-    font-size: 15px;
-    font-weight: 600;
-    padding: 14px 24px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    gap: 6px;
+    font-size: 13px;
+    color: #64748b;
+    text-decoration: none;
+    transition: color 0.2s;
   }
   
-  .c-btn-google:hover {
-    background-color: #f1f1f5;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  .c-login-card__link:hover {
+    color: #4285f4; /* ホバー時にGoogleカラーの青にして、リンクであることを分かりやすく */
+    text-decoration: underline;
   }
   
-  .c-btn-google:active {
-    transform: scale(0.98);
-  }
-  
-  .c-btn-google:disabled {
-    background-color: #cccccc;
-    color: #666666;
-    cursor: not-allowed;
-    opacity: 0.7;
+  .c-login-card__link i {
+    font-size: 14px;
   }
   
