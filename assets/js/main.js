@@ -1338,14 +1338,14 @@ document.addEventListener("click", async (e) => {
 let isMainAppLoading = false;
 let demoDataCache = null; // 💡 フェッチしたデモデータをメモリに一時保存する変数
 
-// 🧪 【クリーン化】外部JSONからデモデータをロードしてマッピングする関数
+// 🧪 【クリーン化】外部JSONからデモデータをロードしてマッピングする関数（ワールド切替・リロード完全同期版）
 async function initDemoMode() {
   console.log("🧪 [Demo] デモモード用のJSONデータを読み込みます...");
 
   const modalHeaderName = document.getElementById("js-modal-user-text");
   const modalUidText = document.getElementById("js-modal-uid-text");
 
-  // 🌟【超シンプル版】デモ終了ボタンの処理
+  // 🌟【超シンプル版】デモ終了ボタンの表示・イベントバインド処理
   const exitBtn = document.getElementById("js-demo-exit-btn");
   if (exitBtn) {
     exitBtn.classList.remove("is-hidden");
@@ -1353,8 +1353,8 @@ async function initDemoMode() {
     if (!exitBtn.dataset.hasListener) {
       exitBtn.dataset.hasListener = "true";
       exitBtn.addEventListener("click", () => {
-        sessionStorage.clear(); // デモフラグをクリア
-        window.location.href = "login.html"; // 即座にログインページへ！
+        sessionStorage.clear(); // デモフラグ・ワールド選択キャッシュを全消去
+        window.location.href = "login.html"; // 即座にログインページへリダイレクト
       });
     }
   }
@@ -1457,6 +1457,57 @@ async function initDemoMode() {
     // パーティリスト一覧UIをレンダリング
     renderPartyListUI();
     checkAccountRegistrationStatus();
+
+    // ==========================================================================
+    // 🌟【最重要解決ブリッジ】各タブ画面でのリアルタイムワールド切り替え連動
+    // ==========================================================================
+    const currentPath = window.location.pathname.toLowerCase();
+
+    // 👥 A. キャラクターページ（character.html）に今いる場合のデモ切り替え連動
+    if (
+      currentPath.includes("character.html") &&
+      typeof window.initUserCharacterTab === "function"
+    ) {
+      console.log(
+        "🚀 [Demo Switch: Character] 新しいデモワールドの図館を直接再起動します。",
+      );
+      await window.initUserCharacterTab(
+        characterMaster,
+        db,
+        auth,
+        "demo_user",
+        activeWorldId,
+        collection,
+        getDocs,
+        doc,
+        setDoc,
+        serverTimestamp,
+        getDoc,
+      );
+    }
+
+    // 🔮 B. アルカナページ（arcana.html）に今いる場合のデモ切り替え連動
+    if (
+      currentPath.includes("arcana.html") &&
+      typeof window.initAndRenderArcana === "function"
+    ) {
+      console.log(
+        "🚀 [Demo Switch: Arcana] 新しいデモワールドのアルカナ進捗を直接再計算・起動します。",
+      );
+      // arcana.js側の本番通信ブロック内蔵関数を直接トリガーして瞬時に同期
+      await window.initAndRenderArcana();
+    }
+
+    // 🪙 C. 🌟【新規追加】課金パックページ（pack.html）に今いる場合のデモ切り替え連動
+    if (
+      currentPath.includes("pack.html") &&
+      typeof window.initAndRenderPackPortal === "function"
+    ) {
+      console.log(
+        "🚀 [Demo Switch: Packs] 新しいデモワールドのパック達成・未達成マイルストーンを直接再起動します。",
+      );
+      await window.initAndRenderPackPortal();
+    }
 
     console.log("✅ [Demo] 外部JSONによるデモマッピングが美しく完了しました！");
   } catch (error) {

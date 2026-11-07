@@ -53,7 +53,7 @@ let currentWorldId = null;
 let selectedFilters = []; // 選択中のフィルター配列
 
 /**
- * 🔮 アルカナページの初期化エントリーポイント（非同期ズレ完全修正版）
+ * 🔮 アルカナページの初期化エントリーポイント（デモモード＆再読み込み完全同期版）
  */
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("⏳ [Arcana] アルカナページの初期化を開始します...");
@@ -67,13 +67,54 @@ document.addEventListener("DOMContentLoaded", async () => {
   injectArcanaTotalModal();
   injectCharacterArcanaModalSkeleton();
 
+  // 🌟【最優先解決ゲート】セッションにデモフラグがある場合はFirebaseの初期化・ログインチェックをすべてスキップして、爆速でデモ用アルカナを直接起動！
+  if (sessionStorage.getItem("mememori_portal_demo") === "true") {
+    console.log(
+      "🧪 [Demo Gate: Arcana] デモフラグを確認。認証をパスしてアルカナ図鑑を起動します。",
+    );
+
+    currentWorldId =
+      sessionStorage.getItem("app_current_world_id") || "demo_w175";
+    currentUserId = "demo_user"; // デモ用ダミーUIDをセット
+
+    // main.js側でロード済みのグローバルキャッシュを参照、無ければ新しくfetch
+    let demoSource = window.demoDataCache;
+    if (!demoSource) {
+      try {
+        const response = await fetch("assets/json/demo-play.json");
+        demoSource = await response.json();
+        window.demoDataCache = demoSource;
+      } catch (e) {
+        console.error("🚨 デモJSONのロード失敗:", e);
+      }
+    }
+
+    // 💡【重要連動】キャラクターページと同じ「demo-play.json」の「characterStatus」マップをアルカナ側の魔女マップへ強制同期！
+    if (demoSource) {
+      const targetWorld = demoSource.worlds.find(
+        (w) => w.id === currentWorldId,
+      );
+      if (targetWorld && targetWorld.characterStatus) {
+        userCharactersMap = {};
+        Object.keys(targetWorld.characterStatus).forEach((charId) => {
+          userCharactersMap[charId] = {
+            rarity: targetWorld.characterStatus[charId] || "未所持",
+          };
+        });
+      }
+    }
+
+    // デモ用アルカナ進捗ロード ➔ テーブル描画
+    await fetchUserArcanaStatus();
+    renderArcanaTable();
+    initUpdateEvent();
+    return; // 🛑 FirebaseのonAuthStateChangedには絶対に進ませずにここで終了！
+  }
+
   // 3. main.js が Firebase(window.auth) を初期化するのを安全に待つための関数
   function waitForAuth() {
     return new Promise((resolve) => {
-      // すでに存在すれば即終了
       if (window.auth) return resolve(window.auth);
-
-      // まだ無ければ、main.jsがwindow.authを生やすのを10ms刻みで静かに待つ（通信は発生しない）
       const timer = setInterval(() => {
         if (window.auth) {
           clearInterval(timer);
@@ -83,11 +124,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // インフラの準備を待つ
+  // インフラの準備を待つ（本番ユーザー用）
   const authInstance = await waitForAuth();
 
   // 4. Firebase Authのログイン状態を監視（ここでの多重発火を防ぐ）
-  let isFirstLoad = true; // 初回トリガーを1回だけに縛るための防波堤フラグ
+  let isFirstLoad = true;
 
   authInstance.onAuthStateChanged(async (user) => {
     if (!user) {
@@ -96,36 +137,56 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    // すでに1度ロード済みの場合は、Auth経由の重複発火を無視する
     if (!isFirstLoad) return;
     isFirstLoad = false;
 
     currentUserId = user.uid;
     console.log("👤 [Arcana] ログイン確認完了。データを順番にロードします。");
 
-    // 初回ロード＆描画の実行（await をつけて確実に取得を待つ）
     await initAndRenderArcana();
-
-    // 5. 画面が完全に構築された後に「更新する」ボタンのイベントを設定
     initUpdateEvent();
   });
 
-  // 6. ワールド切り替えイベントを監視（main.jsのセッション書き込みが完了した後に1度だけ走る）
+  // 6. ワールド切り替えイベントを監視（デモモード完全同期・合算マトリクス修正版）
   window.addEventListener("appWorldChanged", async (e) => {
-    if (!currentUserId) return;
+    const isDemo = sessionStorage.getItem("mememori_portal_demo") === "true";
+    if (!currentUserId && !isDemo) return;
 
-    // イベントから渡された新しいワールドID、またはセッションから最新値を取得
     const newWorldId =
       e.detail?.worldId || sessionStorage.getItem("app_current_world_id");
-    if (currentWorldId === newWorldId) return; // すでに同じワールドが選択されていれば通信をスキップ
+    if (currentWorldId === newWorldId) return;
 
     console.log(
       `🔄 [Arcana] ワールド切り替えを検知しました (新: ${newWorldId})`,
     );
     currentWorldId = newWorldId;
 
-    // 確実にawaitして再描画
-    await initAndRenderArcana();
+    if (isDemo && window.demoDataCache) {
+      // 🧪 デモモード：新しいデモサーバーの魔女のレアリティ所持状況をJSONから引き直す
+      const targetWorld = window.demoDataCache.worlds.find(
+        (w) => w.id === currentWorldId,
+      );
+      if (targetWorld && targetWorld.characterStatus) {
+        userCharactersMap = {};
+        Object.keys(targetWorld.characterStatus).forEach((charId) => {
+          userCharactersMap[charId] = {
+            rarity: targetWorld.characterStatus[charId] || "未所持",
+          };
+        });
+      }
+
+      // 🧪 アルカナ進捗を引き直す
+      await fetchUserArcanaStatus();
+
+      // 🧪 🌟【最重要修正】ワールド切り替え時に合算効果マトリクス（モーダルの中身）も最新サーバーの進捗で再計算して同期する！
+      renderTotalEffectsMatrix();
+
+      // メインのテーブルを描画
+      renderArcanaTable();
+    } else {
+      // 通常ユーザーはFirestoreからロード
+      await initAndRenderArcana();
+    }
   });
 });
 
@@ -180,10 +241,10 @@ function initFilterClearEvent() {
 let isArcanaLoading = false; // 👈 ファイル上部の変数定義エリアに追加してください
 
 /**
- * 🌍 ワールドごとの進捗データをFirestoreから取得し、テーブルを構築・再描画する共通関数
+ * 🌍 ワールドごとの進捗データをロードし、テーブルを構築・再描画する共通関数（デモワールド切替・完全リアルタイム同期版）
  */
 async function initAndRenderArcana() {
-  // すでに通信が走っている場合は、重複してFirestoreを叩かせない
+  // すでに通信・処理が走っている場合は重複発火をブロック
   if (isArcanaLoading) {
     console.warn("⏳ [Arcana] 現在データ取得中のため、処理をスキップします。");
     return;
@@ -192,15 +253,54 @@ async function initAndRenderArcana() {
   try {
     isArcanaLoading = true; // ロックをかける
 
-    currentWorldId = sessionStorage.getItem("app_current_world_id") || "w1";
+    // 🌟 常にセッションストレージから今選択されたばかりの最新のワールドIDを最優先で回収！
+    currentWorldId =
+      sessionStorage.getItem("app_current_world_id") || "demo_w175";
     userArcanaStatusMap = {};
     userCharactersMap = {};
 
+    // 🧪 【デモモード最優先ガード】Firestore通信を完全にバイパスして、切り替わった最新サーバーのJSONをその場で強制展開！
+    if (sessionStorage.getItem("mememori_portal_demo") === "true") {
+      console.log(
+        `🧪 [Arcana: Pipeline] デモモードでのリアルタイムワールド切り替えを検知。W${currentWorldId}のデータを展開します。`,
+      );
+
+      let demoSource = window.demoDataCache;
+      if (!demoSource) {
+        const response = await fetch("assets/json/demo-play.json");
+        demoSource = await response.json();
+        window.demoDataCache = demoSource;
+      }
+
+      // 🌟【最重要修正：魔女マップの再同期】ワールドIDに紐づく新しいキャラクターのレアリティ状況をJSONから100%その場で引き直す！
+      if (demoSource) {
+        const targetWorld = demoSource.worlds.find(
+          (w) => w.id === currentWorldId,
+        );
+        if (targetWorld && targetWorld.characterStatus) {
+          Object.keys(targetWorld.characterStatus).forEach((charId) => {
+            userCharactersMap[charId] = {
+              rarity: targetWorld.characterStatus[charId] || "未所持",
+            };
+          });
+        }
+      }
+
+      // 🌟【アルカナ進捗の再同期】ワールドIDに紐づく新しいアルカナ優先度をJSONから100%引き直す！
+      await fetchUserArcanaStatus();
+
+      // 🌟【マトリクスの再計算】新サーバーの進捗に基づいて、合算モーダルの中身をその場で再計算！
+      renderTotalEffectsMatrix();
+
+      // 🌟【メインテーブル描画】
+      renderArcanaTable();
+      return; // 🛑 本番用の Firestore 通信（Promise.all）には絶対に進ませずここで安全にエスケープ！
+    }
+
+    // 💡 以下、通常のFirebase本番並列ロード処理（変更なし）
     console.log(
       `📡 [Arcana] Firestoreから通信データを並列取得します... (${currentWorldId})`,
     );
-
-    // アルカナステータスとキャラクターのレアリティ双方を取得する（完全に終わるまで待つ）
     await Promise.all([fetchUserArcanaStatus(), fetchUserCharactersStatus()]);
 
     console.log(
@@ -289,9 +389,47 @@ async function loadMasters() {
 }
 
 /**
- * 📥 Firestoreからユーザーのアルカナ進捗を取得
+ * 📥 Firestoreまたはデモ用JSONからユーザーのアルカナ進捗を取得
  */
 async function fetchUserArcanaStatus() {
+  // 🧪 【デモモード用分岐】Firestore通信を完全にバイパスして、外部JSONからダイレクト展開！
+  if (sessionStorage.getItem("mememori_portal_demo") === "true") {
+    console.log(
+      "🧪 [Demo: Arcana] JSONのarcanaStatusからダイレクトに優先度マップを復元します（通信 0回）",
+    );
+    try {
+      userArcanaStatusMap = {};
+
+      // main.js側でロード済みのグローバルキャッシュを参照、無ければ新しくfetch
+      let demoSource = window.demoDataCache;
+      if (!demoSource) {
+        const response = await fetch("assets/json/demo-play.json");
+        demoSource = await response.json();
+        window.demoDataCache = demoSource;
+      }
+
+      // 現在アクティブなデモワールドを検索
+      const targetWorld = demoSource.worlds.find(
+        (w) => w.id === currentWorldId,
+      );
+
+      if (targetWorld && targetWorld.arcanaStatus) {
+        // 🌟【最重要】JSON内の arcanaStatus 配下オブジェクト（例: {"1": "LR解放済", "2": "★5"...}）を
+        // システムの共通メモリ（userArcanaStatusMap）へそのままダイレクトにマッピング！
+        userArcanaStatusMap = targetWorld.arcanaStatus;
+      } else {
+        userArcanaStatusMap = {};
+      }
+
+      return; // 🛑 デモ用の復元処理はここで綺麗にエスケープ終了！
+    } catch (e) {
+      console.error("🚨 デモ用アルカナデータの展開エラー:", e);
+      userArcanaStatusMap = {};
+      return;
+    }
+  }
+
+  // 💡 以下、通常のFirebase本番ロード処理（変更なし）
   if (!currentUserId || !currentWorldId || !window.db) return;
   try {
     const statusDocRef = doc(
@@ -787,7 +925,7 @@ window.handlePrioritySelectChange = function (selectElement) {
 };
 
 /**
- * 💾 「更新する」ボタンが押されたときの一括保存
+ * 💾 「更新する」ボタンが押されたときの一括保存（デモガード対応版）
  */
 function initUpdateEvent() {
   const updateBtn = document.getElementById("js-arcana-btn-update");
@@ -796,7 +934,38 @@ function initUpdateEvent() {
   updateBtn.addEventListener("click", async () => {
     const currentWorldId = sessionStorage.getItem("app_current_world_id");
 
-    // 🛑 【ガード追加】ワールドが選択されていない、または未登録の場合のブロック
+    // 🧪 【デモ用ガード】クラウドへの無駄な通信をここで完璧にシャットアウト
+    if (sessionStorage.getItem("mememori_portal_demo") === "true") {
+      updateBtn.disabled = true;
+      updateBtn.innerHTML =
+        '<i class="fa-solid fa-spinner fa-spin"></i> 保存中...';
+
+      // 画面上の現在のセレクトボックスの値をすべて回収してメモリに反映
+      document.querySelectorAll(".p-arcana-priority-select").forEach((sel) => {
+        const arcanaId = sel.getAttribute("data-arcana-id");
+        userArcanaStatusMap[arcanaId] = sel.value;
+      });
+
+      setTimeout(() => {
+        renderArcanaTable(); // 優先度グループの仕分けを反映してUI再描画
+        updateBtn.disabled = false;
+        updateBtn.classList.add("is-success-flash");
+        updateBtn.innerHTML =
+          '<i class="fa-solid fa-circle-check"></i> 更新完了！';
+
+        alert(
+          "【デモモード】画面上のアルカナ優先度を一時保存しました！\n（クラウドデータベースへの通信は行われません）",
+        );
+
+        setTimeout(() => {
+          updateBtn.classList.remove("is-success-flash");
+          updateBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> 更新する';
+        }, 1500);
+      }, 600);
+      return; // 🛑 処理を終了させてFirestore通信を防ぐ
+    }
+
+    // 💡 以下、通常のFirestore本番一括コミット保存処理
     if (!currentUserId || !currentWorldId || !window.db) {
       alert(
         "ワールドが選択されていません。「ワールド選択」から有効なワールドを選んでから更新してください。",
@@ -846,6 +1015,7 @@ function initUpdateEvent() {
       updateBtn.classList.remove("is-loading");
       setTimeout(() => {
         updateBtn.classList.remove("is-success-flash");
+        updateBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> 更新する';
       }, 1500);
     }
   });
@@ -1112,3 +1282,9 @@ function openCharacterArcanaModal(characterId) {
     document.body.classList.add("is-modal-open");
   }
 }
+
+// ==========================================================================
+// 🌐 グローバル公開エリア（main.js から呼び出せるように window へ接続）
+// ==========================================================================
+window.initAndRenderArcana = initAndRenderArcana;
+window.handlePrioritySelectChange = handlePrioritySelectChange;

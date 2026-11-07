@@ -39,7 +39,7 @@ let _db, _uid, _worldId;
 let _collection, _doc, _getDoc, _setDoc, _serverTimestamp;
 
 /**
- * 1. メインインフラ（main.js）のロード完了後に直接呼び出される初期化関数
+ * 1. メインインフラ（main.js）のロード完了後に直接呼び出される初期化関数（再読み込み完全同期版）
  */
 window.initUserCharacterTab = async function (
   masterData,
@@ -54,43 +54,18 @@ window.initUserCharacterTab = async function (
   fbServerTimestamp,
   fbGetDoc,
 ) {
-  console.log("👥 [CharacterTab] 起動トリガーを検知しました（マップ構造版）。");
+  // 🌟【重要解決策】引数、またはセッションストレージのどちらにもまだワールドIDが無い場合は、インフラ側の復元を50msごとに待つ
+  const currentActiveWorldId =
+    worldId || sessionStorage.getItem("app_current_world_id");
 
-  // インフラ参照を保存
-  _db = db;
-  _uid = uid;
-  _worldId = worldId;
-
-  _collection =
-    fbCollection ||
-    window.collection ||
-    (window.FirebaseBundle ? window.FirebaseBundle.collection : null);
-  _doc =
-    fbDoc ||
-    window.doc ||
-    (window.FirebaseBundle ? window.FirebaseBundle.doc : null);
-  _setDoc =
-    fbSetDoc ||
-    window.setDoc ||
-    (window.FirebaseBundle ? window.FirebaseBundle.setDoc : null);
-  _serverTimestamp =
-    fbServerTimestamp ||
-    window.serverTimestamp ||
-    (window.FirebaseBundle ? window.FirebaseBundle.serverTimestamp : null);
-
-  // getDoc関数をセット
-  _getDoc =
-    fbGetDoc || // 💡 main.js から渡された関数を最優先にします
-    window.getDoc ||
-    (window.FirebaseBundle ? window.FirebaseBundle.getDoc : null);
-
-  // マスタデータを確実に格納
-  if (masterData && masterData.length > 0) {
-    characterMasterList = masterData;
-  } else if (window.characterMaster && window.characterMaster.length > 0) {
-    characterMasterList = window.characterMaster;
-  } else {
-    console.warn("⚠️ マスタデータが空のため、100ms後に再実行します。");
+  if (
+    ((!masterData || masterData.length === 0) &&
+      (!window.characterMaster || window.characterMaster.length === 0)) ||
+    !currentActiveWorldId
+  ) {
+    console.warn(
+      "⏳ [CharacterTab] マスタのロード、またはワールドIDの確定を待っています... (50ms後に再チェック)",
+    );
     setTimeout(
       () =>
         window.initUserCharacterTab(
@@ -98,7 +73,7 @@ window.initUserCharacterTab = async function (
           db,
           auth,
           uid,
-          worldId,
+          currentActiveWorldId, // 確定したIDを次に引き継ぐ
           fbCollection,
           fbGetDocs,
           fbDoc,
@@ -106,15 +81,34 @@ window.initUserCharacterTab = async function (
           fbServerTimestamp,
           fbGetDoc,
         ),
-      100,
+      50,
     );
-    return;
+    return; // 🛑 準備が整うまで以降の処理（通信や描画）を絶対に走らせずエスケープ
   }
+
+  console.log(
+    "👥 [CharacterTab] インフラとワールドIDが確定しました。グリッドを生成します。",
+  );
+
+  // インフラ参照および確定したワールドIDをスコープ変数に保存
+  _db = db;
+  _uid = uid;
+  _worldId = currentActiveWorldId; // 🌟 確実に確定IDを格納
+
+  _collection = fbCollection || window.collection;
+  _doc = fbDoc || window.doc;
+  _setDoc = fbSetDoc || window.setDoc;
+  _serverTimestamp = fbServerTimestamp || window.serverTimestamp;
+  _getDoc = fbGetDoc || window.getDoc;
+
+  // window側に同期されている最新のマスタデータを確実に格納
+  characterMasterList =
+    masterData && masterData.length > 0 ? masterData : window.characterMaster;
 
   // ① 静的HTML画像フィルターのイベント登録
   bindUserFilterEvents();
 
-  // ② クラウドからセーブデータを同期ロードして一覧を生成
+  // ② クラウドまたはデモ用JSONからデータを同期ロードして一覧を生成
   await loadAndRenderCharacterGrid();
 
   // ③ 性能確認モーダルの開閉・タブ切り替えイベントを登録
@@ -130,7 +124,7 @@ window.initUserCharacterTab = async function (
 };
 
 /**
- * 2. Firestoreからマップ構造の所持状況を同期ロード
+ * 2. Firestoreまたはデモ用JSONから所持状況を同期ロード
  */
 async function loadAndRenderCharacterGrid() {
   const gridEl = document.getElementById("userCharGrid");
@@ -145,18 +139,49 @@ async function loadAndRenderCharacterGrid() {
     return;
   }
 
-  // 💡【安全ガード修正版】getDocを確実にフォールバック回収します
-  if (!_getDoc) {
-    _getDoc =
-      window.getDoc ||
-      (window.FirebaseBundle ? window.FirebaseBundle.getDoc : null);
-  }
-  if (!_doc) {
-    _doc =
-      window.doc || (window.FirebaseBundle ? window.FirebaseBundle.doc : null);
+  // 🧪 【デモモード用分岐】外部JSONの「characterStatus」からそのままダイレクト展開
+  if (sessionStorage.getItem("mememori_portal_demo") === "true") {
+    console.log(
+      "🧪 [Demo: Character] JSONのcharacterStatusから一覧を即時復元（通信 0回）",
+    );
+    try {
+      userOwnedMap = {};
+
+      let demoSource = window.demoDataCache;
+      if (!demoSource) {
+        const response = await fetch("assets/json/demo-play.json");
+        demoSource = await response.json();
+        window.demoDataCache = demoSource;
+      }
+
+      const targetWorld = demoSource.worlds.find((w) => w.id === _worldId);
+      if (targetWorld && targetWorld.characterStatus) {
+        const statusMap = targetWorld.characterStatus;
+
+        Object.keys(statusMap).forEach((charId) => {
+          const rawRarity = statusMap[charId] || "未所持";
+          userOwnedMap[charId] = {
+            rarity: rawRarity,
+            originalRarity: rawRarity,
+            isDirty: false,
+          };
+        });
+      }
+
+      renderCharacterGrid();
+      return;
+    } catch (e) {
+      console.error("🚨 デモ用キャラクターデータの展開エラー:", e);
+      gridEl.innerHTML =
+        '<div class="character-grid__loading">デモデータのロードに失敗しました。</div>';
+      return;
+    }
   }
 
-  // 最終チェック
+  // 💡 以下、通常のFirebase本番ロード処理（変更なし）
+  if (!_getDoc) _getDoc = window.getDoc;
+  if (!_doc) _doc = window.doc;
+
   if (!_doc || !_getDoc) {
     if (window.FirebaseMeme) {
       _doc = window.FirebaseMeme.doc;
@@ -172,7 +197,6 @@ async function loadAndRenderCharacterGrid() {
   try {
     userOwnedMap = {};
 
-    // 💡 特定のドキュメント1件のみを取得するように変更
     const statusDocRef = _doc(
       _db,
       "users",
@@ -196,7 +220,6 @@ async function loadAndRenderCharacterGrid() {
       });
     }
 
-    // グリッドを描画
     renderCharacterGrid();
   } catch (error) {
     console.error(
@@ -569,6 +592,54 @@ async function saveAllCharacterRarityData() {
   if (!updateBtn) return;
 
   const currentWorldId = sessionStorage.getItem("app_current_world_id");
+
+  // 🧪 【デモ用ガード】クラウドへの無駄な通信をここで完璧にシャットアウト
+  if (sessionStorage.getItem("mememori_portal_demo") === "true") {
+    const dirtyCharIds = Object.keys(userOwnedMap).filter(
+      (id) => userOwnedMap[id].isDirty === true,
+    );
+
+    if (dirtyCharIds.length === 0) {
+      alert("変更されたデータはありません。");
+      return;
+    }
+
+    const updatedCharNames = dirtyCharIds.map((id) => {
+      const match = characterMasterList.find(
+        (c) => String(c.id) === String(id),
+      );
+      return match ? match.name : "不明な魔女";
+    });
+
+    updateBtn.disabled = true;
+    updateBtn.innerHTML =
+      '<i class="fa-solid fa-spinner fa-spin"></i> 保存中...';
+
+    setTimeout(() => {
+      // メモリ上のステートを確定させてDirtyをリセット（お試し中の画面切替でも状態を維持）
+      dirtyCharIds.forEach((charId) => {
+        userOwnedMap[charId].originalRarity = userOwnedMap[charId].rarity;
+        userOwnedMap[charId].isDirty = false;
+      });
+
+      updateBtn.disabled = false;
+      updateBtn.classList.add("is-success-flash");
+      updateBtn.innerHTML =
+        '<i class="fa-solid fa-circle-check"></i> 更新完了！';
+
+      alert(
+        `【デモモード】\n画面上のキャラクター所持状況を一時更新しました！\n（クラウドデータベースへの通信は行われません）\n\n対象: ${updatedCharNames.join("、")}`,
+      );
+
+      setTimeout(() => {
+        updateBtn.classList.remove("is-success-flash");
+        updateBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> 更新する';
+      }, 1500);
+    }, 600);
+    return; // 🛑 処理終了
+  }
+
+  // 💡 以下、通常のFirestore本番マージコミット処理
   if (!_db || !_uid || !currentWorldId || !_doc || !_setDoc) {
     alert(
       "ワールドが選択されていません。「ワールド選択」から有効なワールドを選んでから更新してください。",
@@ -595,7 +666,7 @@ async function saveAllCharacterRarityData() {
     updateBtn.innerHTML =
       '<i class="fa-solid fa-spinner fa-spin"></i> 保存中...';
 
-    // 💡【マージ処理】これまでの保存データを1度取得してマージのベースにする
+    // 【マージ処理】これまでの保存データを1度取得してマージのベースにする
     const statusDocRef = _doc(
       _db,
       "users",
@@ -624,7 +695,7 @@ async function saveAllCharacterRarityData() {
       }
     });
 
-    // 💡【マップ書き込み】ループ処理を完全廃止し、ドキュメント1件のみに全員分を凝縮保存
+    // 【マップ書き込み】ドキュメント1件のみに全員分を凝縮保存
     await _setDoc(
       statusDocRef,
       {

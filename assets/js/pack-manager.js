@@ -63,7 +63,7 @@ const BASE_PRICE_OPTIONS = [
   { value: "1500", label: "1500円" },
   { value: "3000", label: "3,000円" },
   { value: "6000", label: "6,000円" },
-  { value: "11800", label: "11,800" },
+  { value: "11800", label: "11,800円" },
 ];
 
 // ==========================================
@@ -95,9 +95,66 @@ function getGameCurrentDay() {
 // ==========================================
 
 /**
- * 📥 Firestoreから選択中ワールドの進行度・パック設定を読み込む
+ * 📥 Firestoreまたはデモ用JSONから選択中ワールドの進行度・パック設定を読み込む
  */
 async function loadUserPackDataFromFirestore(userId, worldId) {
+  // 🧪 【デモモード用分岐】Firestore通信を完全にバイパスして外部JSONから一元復元
+  if (sessionStorage.getItem("mememori_portal_demo") === "true") {
+    console.log(
+      `🧪 [Demo: Packs] JSONからワールド [${worldId}] の課金設定を同期復元（通信 0回）`,
+    );
+    try {
+      resetUserSaveData();
+
+      let demoSource = window.demoDataCache;
+      if (!demoSource) {
+        const response = await fetch("assets/json/demo-play.json");
+        demoSource = await response.json();
+        window.demoDataCache = demoSource;
+      }
+
+      const targetWorld = demoSource.worlds.find((w) => w.id === worldId);
+      if (targetWorld) {
+        // ベース課金金額の復元
+        userSaveData.basePrice = String(targetWorld.basePrice || "11800");
+        syncBasePriceSelectorUI();
+
+        // 進行度マイルストーンの復元
+        if (targetWorld.currentMilestones) {
+          Object.keys(targetWorld.currentMilestones).forEach((key) => {
+            userSaveData.currentMilestones[key] = String(
+              targetWorld.currentMilestones[key] || "0",
+            );
+          });
+        }
+
+        const qVal = userSaveData.currentMilestones["quest"] || "0-0";
+        const qParts = qVal.split("-");
+        userSaveData.currentMilestones["quest-chapter"] = String(
+          qParts[0] || "0",
+        );
+        userSaveData.currentMilestones["quest-stage"] = String(
+          qParts[1] || "0",
+        );
+
+        // 各パック個別設定の復元（JS側への決め打ち初期値の記載は一切なし！）
+        if (targetWorld.packSettings) {
+          Object.keys(targetWorld.packSettings).forEach((packId) => {
+            userSaveData.packSettings[packId] = {
+              price: String(targetWorld.packSettings[packId].price),
+              status: targetWorld.packSettings[packId].status || "unconfigured",
+            };
+          });
+        }
+      }
+      return; // 🛑 処理終了
+    } catch (e) {
+      console.error("🚨 デモ用パックデータの展開エラー:", e);
+      return;
+    }
+  }
+
+  // 💡 以下、通常のFirebase本番ロード処理（変更なし）
   if (!window.db) {
     console.error("🚨 Firestoreインスタンスが利用できません。");
     return;
@@ -119,12 +176,9 @@ async function loadUserPackDataFromFirestore(userId, worldId) {
 
     if (docSnap.exists()) {
       const data = docSnap.data();
-
-      // 🌟 ベース課金帯の復元（なければ11800）
       userSaveData.basePrice = String(data.basePrice || "11800");
       syncBasePriceSelectorUI();
 
-      // ① 進捗情報 (currentMilestones) の復元
       if (data.currentMilestones) {
         Object.keys(data.currentMilestones).forEach((dbKey) => {
           const appKey = dbKey.replace(/_/g, "-");
@@ -141,7 +195,6 @@ async function loadUserPackDataFromFirestore(userId, worldId) {
       );
       userSaveData.currentMilestones["quest-stage"] = String(qParts[1] || "0");
 
-      // ② 各パックの個別カスタム設定 (packSettings) の復元
       if (data.packSettings) {
         Object.keys(data.packSettings).forEach((packId) => {
           userSaveData.packSettings[packId] = {
@@ -150,10 +203,6 @@ async function loadUserPackDataFromFirestore(userId, worldId) {
           };
         });
       }
-      console.log(
-        "✅ パックデータの復元が完了しました。",
-        userSaveData.packSettings,
-      );
     }
   } catch (error) {
     console.error("🚨 Firestoreからのデータ読み込みに失敗しました:", error);
@@ -161,9 +210,18 @@ async function loadUserPackDataFromFirestore(userId, worldId) {
 }
 
 /**
- * 💾 現在の画面入力・設定（userSaveData）をFirestoreへマージ保存する
+ * 💾 パック設定をFirestoreへ保存（デモモード安全ガード内蔵版）
  */
 async function saveUserPackDataToFirestore(userId, worldId) {
+  // 🧪 【デモ用ガード】クラウドへの無駄な通信をここで完璧にシャットアウト
+  if (sessionStorage.getItem("mememori_portal_demo") === "true") {
+    console.log(
+      "🧪 [Demo Guard] デモ用の保存要求を検知。クラウドへの通信をバイパスしてメモリをクリーンに確定します。",
+    );
+    return; // 🛑 処理終了
+  }
+
+  // 💡 以下、通常のFirestore本番コミット一括保存処理（変更なし）
   if (!window.db) return;
 
   const firestoreMilestones = {};
@@ -179,16 +237,10 @@ async function saveUserPackDataToFirestore(userId, worldId) {
     firestoreMilestones[dbKey] = userSaveData.currentMilestones[key];
   });
 
-  // 🌟 更新ボタンで保存するのは「未設定（unconfigured）ではないもの」に完全に限定
   const firestorePackSettings = {};
   Object.keys(userSaveData.packSettings).forEach((packId) => {
     const setting = userSaveData.packSettings[packId];
-    if (!setting) return;
-
-    if (setting.status === "unconfigured") {
-      return;
-    }
-
+    if (!setting || setting.status === "unconfigured") return;
     firestorePackSettings[packId] = {
       price: setting.price,
       status: setting.status,
@@ -212,9 +264,6 @@ async function saveUserPackDataToFirestore(userId, worldId) {
         updatedAt: serverTimestamp(),
       },
       { merge: true },
-    );
-    console.log(
-      `🎯 クラウドへ保存完了。保存された有効設定数: ${Object.keys(firestorePackSettings).length}`,
     );
   } catch (error) {
     console.error("🚨 Firestoreへの保存に失敗しました:", error);
@@ -814,18 +863,37 @@ function bindUpdateTrigger(userId, worldId) {
 }
 
 // ==========================================
-// 🔒 7. リアルタイム認証ゲート監視
+// 🔒 7. リアルタイム認証ゲート監視（デモモード＆リアルタイムワールド切替完全連動版）
 // ==========================================
 const auth = getAuth();
 
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    console.log(`👤 [Packs] ログイン確認 (UID: ${user.uid})`);
-    const activeWorldId = sessionStorage.getItem("app_current_world_id");
+/**
+ * 🌍 デモモード時、および通常ユーザー時のデータロードからUI構築までを一括管理する総本山パイプライン関数
+ */
+async function initAndRenderPackPortal() {
+  const activeWorldId =
+    sessionStorage.getItem("app_current_world_id") || "demo_w175";
+  const isDemo = sessionStorage.getItem("mememori_portal_demo") === "true";
 
+  if (isDemo) {
+    console.log(
+      `🚀 [Demo Switch: Packs] 外部JSONからワールド [${activeWorldId}] の課金情報を抽出し、リアルタイム再描画します。`,
+    );
+    await loadUserPackDataFromFirestore("demo_user", activeWorldId);
+    initBasePriceSelector(); // ベース価格フィルターの描画
+    await loadPortalData(); // pack-masterと吸い出した進捗のガッチャンコ
+    renderPackPortalFullStructure(); // カードおよび入力エリアの全生成
+    initAccordion(); // アコーディオン初期化
+    bindUpdateTrigger("demo_user", activeWorldId); // 更新ボタンイベント再バインド
+    return; // 🛑 デモモードは通信を完璧に遮断してここで安全に終了！
+  }
+
+  // 💡 通常ログインユーザー用のFirestore処理ルート
+  const user = auth.currentUser;
+  if (user) {
     if (activeWorldId) {
       await loadUserPackDataFromFirestore(user.uid, activeWorldId);
-      initBasePriceSelector(); // 🌟 ベースセレクターの監視初期化
+      initBasePriceSelector();
       await loadPortalData();
       renderPackPortalFullStructure();
       initAccordion();
@@ -839,17 +907,31 @@ onAuthStateChanged(auth, async (user) => {
   } else {
     window.location.href = "login.html";
   }
+}
+
+// 🅰️ 初回ロード、およびF5再読み込み（リロード）時の認証監視
+onAuthStateChanged(auth, async (user) => {
+  // セッションにデモフラグがある場合は、Firebase認証のすれ違いを完全にバイパスして即座にデモ描画を走らせる
+  if (sessionStorage.getItem("mememori_portal_demo") === "true") {
+    await initAndRenderPackPortal();
+    return;
+  }
+
+  if (user) {
+    console.log(`👤 [Packs] ログイン確認 (UID: ${user.uid})`);
+    await initAndRenderPackPortal();
+  } else {
+    window.location.href = "login.html";
+  }
 });
 
+// 🅱️ 左上ワールドセレクターを「F5リロードなし」でポチポチ切り替えた瞬間のリアルタイム連動
 window.addEventListener("appWorldChanged", async (e) => {
-  const newWorldId = e.detail.worldId;
-  const user = auth.currentUser;
-  if (user && newWorldId) {
-    await loadUserPackDataFromFirestore(user.uid, newWorldId);
-    await loadPortalData();
-    renderPackPortalFullStructure();
-    bindUpdateTrigger(user.uid, newWorldId);
-  }
+  console.log(
+    `🔄 [Packs] インフラからのワールド切り替えイベントを検知しました (新ワールド: ${e.detail.worldId})`,
+  );
+  // 競合・残像バグを100%シャットアウトしながら、新サーバーの課金状況でUIをパッと着せ替える
+  await initAndRenderPackPortal();
 });
 
 // ==========================================
@@ -982,3 +1064,8 @@ function initBasePriceSelector() {
     renderPackPortalOnlyCards();
   });
 }
+
+// ==========================================
+// 🌐 グローバル公開エリア（main.js のデモ切り替えブリッジから直接叩き起こせるように window へ接続）
+// ==========================================
+window.initAndRenderPackPortal = initAndRenderPackPortal;
