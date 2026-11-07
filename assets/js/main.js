@@ -1345,6 +1345,20 @@ async function initDemoMode() {
   const modalHeaderName = document.getElementById("js-modal-user-text");
   const modalUidText = document.getElementById("js-modal-uid-text");
 
+  // 🌟【超シンプル版】デモ終了ボタンの処理
+  const exitBtn = document.getElementById("js-demo-exit-btn");
+  if (exitBtn) {
+    exitBtn.classList.remove("is-hidden");
+
+    if (!exitBtn.dataset.hasListener) {
+      exitBtn.dataset.hasListener = "true";
+      exitBtn.addEventListener("click", () => {
+        sessionStorage.clear(); // デモフラグをクリア
+        window.location.href = "login.html"; // 即座にログインページへ！
+      });
+    }
+  }
+
   if (modalUidText) modalUidText.textContent = "ID: DEMO_USER_MODE";
 
   try {

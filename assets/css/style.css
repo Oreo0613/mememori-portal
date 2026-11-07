@@ -981,7 +981,7 @@ body.is-modal-open {
 }
 
 .c-update-btn__wrap--wide {
-    max-width: 1980px;    
+    max-width: 1980px;
 }
 
 
@@ -1462,4 +1462,33 @@ body.is-modal-open {
     svg {
         margin-right: 4px;
     }
+}
+
+.c-btn-demo-exit {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #fee2e2;
+    /* 淡い赤系で「抜ける」イメージ */
+    color: #ef4444;
+    border: 1px solid #fca5a5;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    
+    position: absolute;
+    right: 4vw;
+    top: 5vh;
+}
+
+.c-btn-demo-exit:hover {
+    background-color: #ffeeee;
+}
+
+/* 通常時は隠しておきます */
+.c-btn-demo-exit.is-hidden {
+    display: none !important;
 }
