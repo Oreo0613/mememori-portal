@@ -228,8 +228,13 @@ async function loadWorldList(userId) {
 
         sessionStorage.setItem("app_current_world_id", worldId);
 
-        // ワールド切替時にポータルの入力数値をFirestoreから同期ロードする
-        await loadPortalDashboardData(userId, worldId);
+        // 🌟【ここを修正】デモモードならFirestoreを叩かずに、JSONデータから即時再マッピングする！
+        if (sessionStorage.getItem("mememori_portal_demo") === "true") {
+          await initDemoMode(); // 内部で自動的にセッションからIDを読んで再描画してくれます
+        } else {
+          // 本物のログインユーザーは通常通りFirestoreから同期ロード
+          await loadPortalDashboardData(userId, worldId);
+        }
 
         // 💡 ワールドが切り替わったことを他のページやスクリプトに通知するカスタムイベントを発火
         window.dispatchEvent(
@@ -237,7 +242,7 @@ async function loadWorldList(userId) {
         );
 
         // ==========================================================================
-        // 🔮 【追記】キャラクターページでのリアルタイムワールド切り替え連動ガード
+        // 🔮 キャラクターページでのリアルタイムワールド切り替え連動ガード
         // ==========================================================================
         const currentPath = window.location.pathname.toLowerCase();
         if (
@@ -248,12 +253,18 @@ async function loadWorldList(userId) {
             "🔄 [World Switch] キャラクターページ内でのワールド変更を検知。最新の再展開します。",
           );
 
+          // 🌟デモモード時はダミーのUID（demo_user）を渡してキャラクター画面のバグを防ぐ
+          const currentUid =
+            sessionStorage.getItem("mememori_portal_demo") === "true"
+              ? "demo_user"
+              : userId;
+
           window.initUserCharacterTab(
-            characterMaster, // main.jsでロード済みのマスタ
+            characterMaster,
             db,
             auth,
-            userId, // ➔ 決定ボタンが保持している現在のユーザーID
-            worldId, // ➔ いま新しくクリックして選択したワールドID
+            currentUid,
+            worldId,
             collection,
             getDocs,
             doc,
@@ -745,6 +756,12 @@ function initWorldSelectorEvent() {
   const syncBtn = document.getElementById("js-world-cache-sync");
   if (syncBtn) {
     syncBtn.addEventListener("click", async () => {
+      // 🌟【デモ用ガード】
+      if (sessionStorage.getItem("mememori_portal_demo") === "true") {
+        alert("【デモモード】デモデータは常に最新状態です！");
+        return;
+      }
+
       const user = auth.currentUser;
       if (!user) return;
 
@@ -1049,6 +1066,27 @@ function initPortalDashboardEvents() {
   const updateBtn = document.getElementById("js-portal-btn-update");
   if (updateBtn) {
     updateBtn.addEventListener("click", async () => {
+      // 🌟 【デモ用ガード】
+      if (sessionStorage.getItem("mememori_portal_demo") === "true") {
+        updateBtn.disabled = true;
+        updateBtn.innerHTML =
+          '<i class="fa-solid fa-spinner fa-spin"></i> 保存中...';
+
+        setTimeout(() => {
+          updateBtn.disabled = false;
+          updateBtn.classList.add("is-success-flash");
+          updateBtn.innerHTML =
+            '<i class="fa-solid fa-circle-check"></i> 更新完了！';
+          alert(
+            "【デモモード】画面上の変更を一時保存しました！\n（クラウドデータベースへの通信は行われません）",
+          );
+          setTimeout(() => {
+            updateBtn.classList.remove("is-success-flash");
+            updateBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> 更新する';
+          }, 1500);
+        }, 600);
+        return; // 🛑 ここで処理を終了させてFirestore通信を防ぐ
+      }
       const user = auth.currentUser;
       const currentWorldId = sessionStorage.getItem("app_current_world_id");
 
@@ -1195,6 +1233,13 @@ function initPortalDashboardEvents() {
   const deleteWorldBtn = document.getElementById("js-portal-btn-delete-world");
   if (deleteWorldBtn) {
     deleteWorldBtn.addEventListener("click", async () => {
+      // 🌟 【デモ用ガード】
+      if (sessionStorage.getItem("mememori_portal_demo") === "true") {
+        alert(
+          "【デモモード】デモ用の固定ワールドは削除できません。アプリの仕様確認をお楽しみください！",
+        );
+        return;
+      }
       const user = auth.currentUser;
       const currentWorldId = sessionStorage.getItem("app_current_world_id");
 
@@ -1275,14 +1320,14 @@ document.addEventListener("click", async (e) => {
   if (e.target.closest("#js-btn-logout")) {
     if (confirm("ログアウトしますか？")) {
       try {
-        console.log("⏳ Googleからサインアウト中...");
+        console.log("⏳ サインアウト中...");
+        sessionStorage.clear(); // すべてのキャッシュを完全消去して安全にリロード
 
-        // ----------- 💡 ここを変更（一括クリア） -----------
-        sessionStorage.clear(); // すべてのキャッシュ（カスタム名、アクティブID、ワールドリスト）を完全消去
-        // -------------------------------------------------
-
-        await signOut(auth);
-        console.log("👋 ログアウトが成功しました。");
+        // デモモードでない場合のみFirebaseのサインアウトを実行
+        if (sessionStorage.getItem("mememori_portal_demo") !== "true") {
+          await signOut(auth);
+        }
+        window.location.href = "login.html";
       } catch (error) {
         console.error("❌ ログアウトに失敗しました。原因:", error);
       }
@@ -1291,12 +1336,134 @@ document.addEventListener("click", async (e) => {
 });
 
 let isMainAppLoading = false;
+let demoDataCache = null; // 💡 フェッチしたデモデータをメモリに一時保存する変数
 
+// 🧪 【クリーン化】外部JSONからデモデータをロードしてマッピングする関数
+async function initDemoMode() {
+  console.log("🧪 [Demo] デモモード用のJSONデータを読み込みます...");
+
+  const modalHeaderName = document.getElementById("js-modal-user-text");
+  const modalUidText = document.getElementById("js-modal-uid-text");
+
+  if (modalUidText) modalUidText.textContent = "ID: DEMO_USER_MODE";
+
+  try {
+    // 1. 最初の一度だけJSONファイルをフェッチしてキャッシュする
+    if (!demoDataCache) {
+      const response = await fetch("assets/json/demo-play.json");
+      if (!response.ok) throw new Error("デモデータのフェッチに失敗しました");
+      demoDataCache = await response.json();
+    }
+
+    if (modalHeaderName)
+      modalHeaderName.textContent = demoDataCache.accountName;
+    sessionStorage.setItem("app_custom_username", demoDataCache.accountName);
+
+    // 2. ワールド一覧（セレクター用）の型抜き配列を作ってキャッシュへ注入
+    const cacheKey = "mememori_world_list";
+    const demoWorlds = demoDataCache.worlds.map((w) => ({
+      id: w.id,
+      worldNumber: w.worldNumber,
+      worldName: w.worldName,
+      characterId: w.characterId,
+      isActive: w.isActive,
+    }));
+    sessionStorage.setItem(cacheKey, JSON.stringify(demoWorlds));
+
+    // 3. UIのワールド一覧を即座にレンダリング（通信0回）
+    await loadWorldList("demo_user");
+
+    // 4. セッションに現在選択ワールドが無ければ、1つ目のデモワールドを自動セット
+    let activeWorldId = sessionStorage.getItem("app_current_world_id");
+    const foundDemo = demoDataCache.worlds.find((w) => w.id === activeWorldId);
+
+    if (!activeWorldId || !foundDemo) {
+      activeWorldId = demoDataCache.worlds[0].id;
+      sessionStorage.setItem("app_current_world_id", activeWorldId);
+    }
+
+    // 5. 選択されたワールドの、詳細なJSONデータをダッシュボードへ流し込む
+    const targetWorld = demoDataCache.worlds.find(
+      (w) => w.id === activeWorldId,
+    );
+    if (targetWorld) {
+      // 記述メモ・詳細設定入力フォームの同期
+      const elMemo = document.getElementById("js-portal-world-memo");
+      if (elMemo) elMemo.value = targetWorld.worldMemo || "";
+
+      const elSettingName = document.getElementById("js-portal-setting-name");
+      if (elSettingName) elSettingName.value = targetWorld.worldName || "";
+
+      const elSettingDate = document.getElementById(
+        "js-portal-setting-start-date",
+      );
+      if (elSettingDate) elSettingDate.value = targetWorld.startDate || "";
+
+      const elSettingLink = document.getElementById("js-portal-setting-link");
+      if (elSettingLink) elSettingLink.value = targetWorld.externalLink || "";
+
+      const charIdField = document.getElementById(
+        "js-portal-setting-character-id",
+      );
+      if (charIdField) charIdField.value = targetWorld.characterId || "";
+
+      const previewImg = document.getElementById(
+        "js-portal-setting-icon-preview",
+      );
+      if (previewImg) previewImg.src = getWorldIconSrc(targetWorld.characterId);
+
+      // パーティ配列データをステートメモリに流し込み
+      currentPartiesState = targetWorld.parties || [];
+
+      // 外部リンクボタンの即時制御
+      const linkBtn = document.getElementById("js-portal-external-link");
+      if (linkBtn) {
+        if (targetWorld.externalLink) {
+          linkBtn.href = targetWorld.externalLink;
+          linkBtn.classList.remove("is-hidden");
+          const faviconImg = linkBtn.querySelector("img");
+          if (faviconImg)
+            faviconImg.src = FAVICON_API_BASE + targetWorld.externalLink;
+        } else {
+          linkBtn.classList.add("is-hidden");
+        }
+      }
+
+      // 左上ヘッダーセレクターへ同期
+      syncHeaderWorldSelector(
+        targetWorld.worldNumber,
+        targetWorld.worldName,
+        targetWorld.characterId,
+      );
+    }
+
+    const updatedEl = document.getElementById("js-portal-world-updated");
+    if (updatedEl) updatedEl.textContent = "最終更新: デモモード検証中";
+
+    // パーティリスト一覧UIをレンダリング
+    renderPartyListUI();
+    checkAccountRegistrationStatus();
+
+    console.log("✅ [Demo] 外部JSONによるデモマッピングが美しく完了しました！");
+  } catch (error) {
+    console.error(
+      "🚨 [Demo] デモ用JSONデータの展開中にエラーが発生しました:",
+      error,
+    );
+  }
+}
+
+// 🟢 メインの認証状態・デモ状態の総合受付ゲート
 onAuthStateChanged(auth, async (user) => {
+  // 🌟【最優先チェック】セッションストレージにデモフラグがある場合はFirebaseをスキップして爆速起動！
+  if (sessionStorage.getItem("mememori_portal_demo") === "true") {
+    await initDemoMode();
+    return;
+  }
+
   if (user) {
     console.log(`👤 ログイン監視中... (UID: ${user.uid})`);
 
-    // 【超重要】すでに初期化の通信が走っている場合は、連打（多重発火）による大渋滞を防ぐためにブロック
     if (isMainAppLoading) {
       console.warn(
         "⏳ [Main] すでに初期化通信が実行中のため、重複処理をブロックします。",
@@ -1305,7 +1472,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     try {
-      isMainAppLoading = true; // 🚧 通信ロック開始（防波堤を立てる）
+      isMainAppLoading = true;
 
       const modalHeaderName = document.getElementById("js-modal-user-text");
       const modalUidText = document.getElementById("js-modal-uid-text");
@@ -1327,33 +1494,26 @@ onAuthStateChanged(auth, async (user) => {
       }
 
       console.log("⏳ [Main: Step 2] ワールド一覧をロード中...");
-      // ➔ 完了するまできちんと待つ（await）
       await loadWorldList(user.uid);
 
-      // セッションに「選択中ワールド」が残っていれば自動でデータをダッシュボードに復元ロードする
       const activeWorldId = sessionStorage.getItem("app_current_world_id");
       if (activeWorldId) {
         console.log(
           `⏳ [Main: Step 3] 選択中ワールド[${activeWorldId}]のデータをロード中...`,
         );
-        // ➔ 完了するまできちんと待つ（await）
         await loadPortalDashboardData(user.uid, activeWorldId);
       }
 
-      // アカウント登録状況チェック
       checkAccountRegistrationStatus();
 
-      // 💡 【バグ修正】キャラクターページの初期化処理を、確実にuserが確定した「ここ（ifの中）」に移動
       const currentPath = window.location.pathname.toLowerCase();
       if (
         currentPath.includes("character.html") &&
         typeof window.initUserCharacterTab === "function"
       ) {
         console.log(
-          "🚀 [Main Bridge] キャラクターページへのアクセスを確認。専用マップを安全に一列に並べてロードします。",
+          "🚀 [Main Bridge] キャラクターページへのアクセスを確認。安全に一列に並べてロードします。",
         );
-
-        // ➔ 完了するまできちんと待つ（await）
         await window.initUserCharacterTab(
           characterMaster,
           db,
@@ -1371,7 +1531,7 @@ onAuthStateChanged(auth, async (user) => {
     } catch (error) {
       console.error("🚨 アカウント情報の自動ロードに失敗しました:", error);
     } finally {
-      isMainAppLoading = false; // 🔓 すべての処理が終わったらロックを解除
+      isMainAppLoading = false;
     }
   } else {
     console.log(

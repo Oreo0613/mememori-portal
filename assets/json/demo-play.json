@@ -1,0 +1,60 @@
+{
+    "accountName": "デモアカウント",
+    "worlds": [
+      {
+        "id": "demo_w175",
+        "worldNumber": 175,
+        "worldName": "メインワールド",
+        "characterId": "137",
+        "worldMemo": "これはお試し用のデモ画面です！\n自由にキャラクターを選んだり、パーティを追加・並び替えしたりして連動感を試せます。",
+        "startDate": "2024-04-01",
+        "externalLink": "https://notion.site",
+        "isActive": true,
+        "parties": [
+          {
+            "partyName": "現在",
+            "members": [
+              { "charaId": "137", "rarity": "LR_5" },
+              { "charaId": "113", "rarity": "LR_2" },
+              { "charaId": "89", "rarity": "LR" },
+              { "charaId": "74", "rarity": "UR" },
+              { "charaId": "101", "rarity": "UR+" }
+            ]
+          },
+          {
+            "partyName": "目標",
+            "members": [
+                { "charaId": "137", "rarity": "LR_5" },
+                { "charaId": "113", "rarity": "LR_5" },
+                { "charaId": "89", "rarity": "LR" },
+                { "charaId": "74", "rarity": "LR" },
+                { "charaId": "129", "rarity": "LR_5" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "demo_w176",
+        "worldNumber": 176,
+        "worldName": "サブワールド",
+        "characterId": "12",
+        "worldMemo": "2つ目のデモサーバーです。ワールド切り替えの動作検証用にお使いください。",
+        "startDate": "2024-10-01",
+        "externalLink": "",
+        "isActive": true,
+        "parties": [
+          {
+            "partyName": "バトルリーグ防衛用",
+            "members": [
+              { "charaId": "12", "rarity": "LR" },
+              { "charaId": "13", "rarity": "SSR+" },
+              null,
+              null,
+              null
+            ]
+          }
+        ]
+      }
+    ]
+  }
+  
