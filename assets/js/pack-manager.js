@@ -375,12 +375,21 @@ async function loadPortalData() {
   }
 }
 
-// 🎯 【バグ修正】matchへのインデックス指定を追加してクラッシュを完全に排除
+// 🎯 【バグ修正】通常の数値とクエストの「章-ステージ」を正しく比較できるように分離
 function extractNumber(str) {
   if (!str) return 0;
-  const match = str.match(/\d+([-.]\d+)?/);
+  // クエスト（例: "36-7" や "36-30"）の判定
+  if (String(str).includes("-")) {
+    const parts = String(str).split("-");
+    const chapter = parseInt(parts[0], 10) || 0;
+    const stage = parseInt(parts[1], 10) || 0;
+    // 章を100倍にしてステージを足すことで、36-7 ➔ 3607、36-30 ➔ 3630 となり正しく比較可能に
+    return chapter * 100 + stage;
+  }
+  // 通常の数値（ランクや塔の階数）の判定
+  const match = str.match(/\d+/);
   if (!match) return 0;
-  return parseFloat(match[0].replace("-", "."));
+  return parseFloat(match[0]);
 }
 
 function syncTowerAllMilestone() {
@@ -660,7 +669,10 @@ function renderPackPortalOnlyCards() {
   let uncollectedPacks = [];
 
   packMasterData.forEach((pack) => {
+    // ユーザーの現在の入力進行度
     const userProgress = userSaveData.currentMilestones[pack.category] || "0";
+
+    // 🛠️ 【バグ修正】新しくなった extractNumber により、36-30(3630) や 36-60(3660) が 36-7(3607) の完了に巻き込まれなくなります
     if (extractNumber(pack.milestone) <= extractNumber(userProgress)) {
       completedPacks.push(pack);
     } else {
@@ -676,6 +688,7 @@ function renderPackPortalOnlyCards() {
     const catUncollected = uncollectedPacks.filter((p) =>
       catConfigMatches(cat.key, p.category),
     );
+    // 🛠️ 【バグ修正】ソート時もクエスト形式が正しく昇順に並ぶように修正
     catUncollected.sort(
       (a, b) => extractNumber(a.milestone) - extractNumber(b.milestone),
     );
