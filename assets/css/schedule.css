@@ -88,7 +88,7 @@
     font-weight: bold;
     color: #475569;
     margin-bottom: 6px;
-    letter-spacing: 0.03em;
+    letter-spacing: 0e = "p-.03em;
 }
 
 .p-schedule__summary-value {
@@ -251,8 +251,8 @@
     transition: transform 0.15s ease, box-shadow 0.15s ease;
     cursor: pointer;
 
-    width: 60px;
-    height: 60px;
+    width: 48px;
+    height: 48px;
     overflow: hidden;  
 }
 
@@ -311,6 +311,10 @@
 
 .p-schedule-table__cost-value--alert {
     color: #2563eb;
+}
+
+.p-schedule-table__row--body td {
+    padding: 6px 12px;
 }
 
 /* 完了済グループ行の薄色化 */

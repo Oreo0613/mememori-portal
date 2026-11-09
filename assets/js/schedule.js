@@ -259,7 +259,7 @@ function renderScheduleTable() {
         (scoresObj.raid || 1);
 
       const tr = document.createElement("tr");
-      tr.className = "p-schedule-table__row";
+      tr.className = "p-schedule-table__row p-schedule-table__row--body";
 
       // 👑 魔女アイコン列
       const charaCell = document.createElement("td");
