@@ -1,0 +1,853 @@
+@charset "UTF-8";
+
+/* ==========================================================================
+   🧱 LOADING GUARD & MAIN LAYOUT
+   ========================================================================== */
+.p-schedule-body.is-loading {
+    display: none !important;
+}
+
+.p-schedule {
+    padding: 20px 15px 100px;
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.p-schedule__title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #1e293b;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* サマリーカード（新・2軸グループ分割デザイン） */
+.p-schedule__summary {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.p-schedule__summary-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+/* 各グループの共通枠（文字なし背景色での差分化） */
+.p-schedule__summary-group {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+}
+
+/* 📜 履歴グループ：過去の実績を表現するシックな微無彩色調 */
+.p-schedule__summary-group--history {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    border-color: #cbd5e1;
+}
+
+.p-schedule__summary-group--history .p-schedule__summary-card {
+    background: rgba(255, 255, 255, 0.7);
+}
+
+/* 🎯 目標グループ：未来の投資を予感させる洗練された爽やかブルー調 */
+.p-schedule__summary-group--target {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border-color: #bfdbfe;
+}
+
+.p-schedule__summary-group--target .p-schedule__summary-card {
+    background: rgba(255, 255, 255, 0.75);
+}
+
+.p-schedule__summary-group--target .p-schedule__summary-value {
+    color: #1d4ed8;
+    /* これからの必要ダイヤを目立たせる */
+}
+
+/* カード単体 */
+.p-schedule__summary-card {
+    border-radius: 8px;
+    padding: 12px 16px;
+    text-align: center;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.p-schedule__summary-label {
+    display: block;
+    font-size: 11px;
+    font-weight: bold;
+    color: #475569;
+    margin-bottom: 6px;
+    letter-spacing: 0.03em;
+}
+
+.p-schedule__summary-value {
+    font-size: 22px;
+    font-weight: bold;
+    color: #0f172a;
+    font-family: monospace;
+}
+
+.p-schedule__summary-value small {
+    font-size: 13px;
+    color: #64748b;
+    margin-left: 2px;
+}
+
+
+/* コントロールバー ＆ 2軸スイッチ */
+.p-schedule__controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    gap: 15px;
+}
+
+.p-schedule__btn--add {
+    background: #2563eb;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 10px 16px;
+    border-radius: 6px;
+}
+
+.p-schedule__switcher {
+    display: flex;
+    background: #e2e8f0;
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.p-schedule__switcher-label {
+    cursor: pointer;
+}
+
+.p-schedule__switcher-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.p-schedule__switcher-text {
+    display: block;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #475569;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.p-schedule__switcher-input:checked+.p-schedule__switcher-text {
+    background: #ffffff;
+    color: #2563eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.p-schedule__sort {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.p-schedule__select {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   📊 DATA TABLE SYSTEM (状態グループ・表示専用設計)
+   ========================================================================== */
+.p-schedule__table-wrapper {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+.p-schedule-table {
+    width: 100%;
+    min-width: 1100px;
+    text-align: left;
+    border-collapse: collapse;
+}
+
+.p-schedule-table__row--head {
+    background: #f1f5f9;
+    border-bottom: 2px solid #cbd5e1;
+}
+
+.p-schedule-table__cell {
+    padding: 12px;
+    vertical-align: middle;
+    font-size: 13px;
+    color: #334155;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.p-schedule-table__cell--head {
+    font-weight: bold;
+    color: #475569;
+}
+
+.p-schedule-table__cell--center {
+    text-align: center;
+}
+
+/* 🛡️ 2軸表示の切替制御 */
+.js-table-container.is-mode-evaluation .p-schedule-table__cell--gacha {
+    display: none !important;
+}
+
+.js-table-container.is-mode-gacha .p-schedule-table__cell--evaluation {
+    display: none !important;
+}
+
+/* 🔷 ✅ 物理状態グループセクションのヘッダー仕切り */
+.p-schedule-table__row-group-title {
+    background: #f8fafc;
+}
+
+.p-schedule-table__group-title-cell {
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #1e293b;
+    border-bottom: 2px solid #e2e8f0;
+    border-top: 1px solid #e2e8f0;
+}
+
+/* ☰ 優先順位（並び替え列）のインジケータ */
+.p-schedule-table__drag-handle {
+    color: #94a3b8;
+    font-size: 14px;
+    cursor: grab;
+    user-select: none;
+}
+
+/* 🦊 新仕様：魔女アイコンのボタン・ホバー化設計 */
+.p-schedule-table__chara-btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    cursor: pointer;
+
+    width: 60px;
+}
+
+.p-schedule-table__chara-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+/* 各種バッジ・テキスト表示 */
+.p-schedule-table__arcana-effect {
+    font-weight: bold;
+    color: #1e293b;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.p-schedule-table__arcana-members {
+    display: block;
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.p-schedule-table__score-num {
+    font-size: 14px;
+    font-family: monospace;
+    font-weight: bold;
+}
+
+.p-schedule-table__total-score {
+    font-size: 15px;
+    font-weight: bold;
+    color: #2563eb;
+    font-family: monospace;
+}
+
+.p-schedule-table__days {
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.p-schedule-table__days.is-active-gacha {
+    color: #ef4444;
+}
+
+.p-schedule-table__cost-flex {
+    font-size: 13px;
+    font-family: monospace;
+    color: #334155;
+}
+
+.p-schedule-table__cost-value {
+    font-weight: bold;
+    color: #0f172a;
+}
+
+.p-schedule-table__cost-value--alert {
+    color: #2563eb;
+}
+
+/* 完了済グループ行の薄色化 */
+/* #js-schedule-table-body-completed .p-schedule-table__row {
+    background: #fcfdfe;
+    opacity: 0.65;
+} */
+
+/* ==========================================================================
+   📋 DETAIL MODAL WINDOW (財務サマリー最上部・3エリア再編設計)
+   ========================================================================== */
+.p-schedule-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.p-schedule-modal.is-active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.p-schedule-modal__overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(2px);
+}
+
+.p-schedule-modal__content {
+    position: relative;
+    background: #ffffff;
+    width: 100%;
+    max-width: 580px;
+    max-height: 80vh;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    z-index: 1001;
+
+    margin-top: 10vh;
+}
+
+.p-schedule-modal__header {
+    padding: 16px 20px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.p-schedule-modal__title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.p-schedule-modal__title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #0f172a;
+}
+
+.p-schedule-modal__close-btn {
+    font-size: 20px;
+    color: #94a3b8;
+}
+
+.p-schedule-modal__tabs {
+    display: flex;
+    background: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.p-schedule-modal__tab-btn {
+    flex: 1;
+    padding: 12px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #64748b;
+    text-align: center;
+}
+
+.p-schedule-modal__tab-btn.is-active {
+    color: #2563eb;
+    background: #ffffff;
+    border-bottom: 2px solid #2563eb;
+}
+
+.p-schedule-modal__body {
+    padding: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.p-schedule-modal__tab-content {
+    display: none;
+}
+
+.p-schedule-modal__tab-content.is-active {
+    display: block;
+}
+
+/* 各設定グループボックス */
+.p-schedule-modal__group {
+    margin-bottom: 18px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px;
+}
+
+.p-schedule-modal__group-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #475569;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 👑 新設計：財務サマリー結論トップ配置の特製ボックススタリング */
+.p-schedule-modal__top-summary-box {
+    background: #eff6ff;
+    border: 2px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 18px;
+}
+
+.p-schedule-modal__summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: #1e40af;
+    margin-bottom: 8px;
+}
+
+.p-schedule-modal__summary-row:last-child {
+    margin-bottom: 0;
+    border-top: 1px dashed #bfdbfe;
+    padding-top: 6px;
+}
+
+.p-schedule-modal__summary-val {
+    font-size: 16px;
+    font-weight: bold;
+    font-family: monospace;
+}
+
+.p-schedule-modal__summary-val--alert {
+    color: #ef4444;
+}
+
+/* フォームフィールド */
+.p-schedule-modal__field {
+    margin-bottom: 12px;
+}
+
+.p-schedule-modal__field:last-child {
+    margin-bottom: 0;
+}
+
+.p-schedule-modal__label {
+    display: block;
+    font-size: 12px;
+    font-weight: bold;
+    color: #475569;
+    margin-bottom: 6px;
+}
+
+.p-schedule-modal__input {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+.p-schedule-modal__radio-flex {
+    display: flex;
+    gap: 20px;
+}
+
+.p-schedule-modal__radio-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* 評価スコア配置 */
+.p-schedule-modal__grid-scores {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.p-schedule-modal__score-field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    padding: 6px 10px;
+    border-radius: 6px;
+}
+
+.p-schedule-modal__score-label {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.p-schedule-modal__select-num {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+/* モーダルフッター（削除） */
+.p-schedule-modal__footer {
+    padding: 12px 20px;
+    background: #fff5f5;
+    border-top: 1px solid #fee2e2;
+    display: flex;
+    justify-content: center;
+}
+
+.p-schedule-modal__delete-btn {
+    color: #dc2626;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    border-radius: 6px;
+}
+
+.p-schedule-modal__delete-btn:hover {
+    background: #fee2e2;
+}
+
+/* ==========================================================================
+   🔮 投資計画ページ用・アルカナ相方スロット ＆ レアリティ枠装飾
+   ========================================================================= */
+
+/* 修正：js-schedule-slots-wrap を全体の共通親コンテナとしてスタイルが当たるように調整 */
+.p-schedule-table__arcana-wrapper,
+.js-schedule-slots-wrap {
+    display: flex;
+    gap: 6px;
+    padding: 4px 0;
+    justify-content: center;
+    /* テーブル内でのセンタリング */
+}
+
+/* 相方キャラスロットの横並びコンテナ */
+.p-schedule-table__arcana-wrapper .slots,
+.js-schedule-slots-wrap .slots {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+/* 👥 キャラクタースロット（公式図鑑風・コンテナ準拠） */
+.p-schedule-table__arcana-wrapper .slot,
+.js-schedule-slots-wrap .slot {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background-color: var(--bg-slot, #f1f5f9);
+    border: 1px solid var(--border-color, #cbd5e1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    container-type: inline-size;
+}
+
+.p-schedule-table__arcana-wrapper .slot img,
+.js-schedule-slots-wrap .slot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* 未所持状態のグレーアウト */
+.p-schedule-table__arcana-wrapper .slot.is-not-owned,
+.js-schedule-slots-wrap .slot.is-not-owned {
+    filter: grayscale(0.55);
+    opacity: 0.85;
+    box-shadow: none;
+}
+
+/* スロット非表示枠 */
+.p-schedule-table__arcana-wrapper .slot.slot--hide,
+.js-schedule-slots-wrap .slot.slot--hide {
+    color: var(--text-sub, #94a3b8);
+    font-size: 1.1rem;
+    border-color: transparent;
+    background-color: unset;
+}
+
+/* 🖼️ レアリティ連動・絶対配置の最前面レイヤー枠線 */
+.p-schedule-table__arcana-wrapper .slot__border,
+.js-schedule-slots-wrap .slot__border {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 2px solid #cbd5e1;
+    /* 確実に表示させるため、テーブル内は固定px指定を推奨（または 5cqw） */
+    border-radius: 6px;
+    box-sizing: border-box;
+    pointer-events: none;
+}
+
+/* 🎨 各レアリティ固有カラー（メインマスタと完全連動） */
+.p-schedule-table__arcana-wrapper .slot.rarity--sr .slot__border,
+.p-schedule-table__arcana-wrapper .slot.rarity--sr-plus .slot__border,
+.js-schedule-slots-wrap .slot.rarity--sr .slot__border,
+.js-schedule-slots-wrap .slot.rarity--sr-plus .slot__border {
+    border-color: var(--color-sr, #a78bfa);
+    /* 紫 */
+}
+
+.p-schedule-table__arcana-wrapper .slot.rarity--ssr .slot__border,
+.p-schedule-table__arcana-wrapper .slot.rarity--ssr-plus .slot__border,
+.js-schedule-slots-wrap .slot.rarity--ssr .slot__border,
+.js-schedule-slots-wrap .slot.rarity--ssr-plus .slot__border {
+    border-color: var(--color-ssr, #fbbf24);
+    /* 黄・金 */
+}
+
+.p-schedule-table__arcana-wrapper .slot.rarity--ur .slot__border,
+.p-schedule-table__arcana-wrapper .slot.rarity--ur-plus .slot__border,
+.js-schedule-slots-wrap .slot.rarity--ur .slot__border,
+.js-schedule-slots-wrap .slot.rarity--ur-plus .slot__border {
+    border-color: var(--color-ur, #f87171);
+    /* 赤 */
+}
+
+/* LR〜LR+10までを一括でLRカラー（虹・ピンク系）に強制適用 */
+.p-schedule-table__arcana-wrapper .slot[class*="rarity--lr"] .slot__border,
+.js-schedule-slots-wrap .slot[class*="rarity--lr"] .slot__border {
+    border-color: var(--color-lr, #ec4899);
+    /* 濃いピンク */
+}
+
+/* ⭐ 進化の星マーク（絶対配置） */
+.p-schedule-table__arcana-wrapper .slot__stars,
+.js-schedule-slots-wrap .slot__stars {
+    position: absolute;
+    bottom: 1px;
+    left: 4%;
+    display: flex;
+    pointer-events: none;
+    gap: 0.5px;
+}
+
+.p-schedule-table__arcana-wrapper .slot__stars i,
+.p-schedule-table__arcana-wrapper .slot__stars span,
+.js-schedule-slots-wrap .slot__stars i,
+.js-schedule-slots-wrap .slot__stars span {
+    font-size: 4px;
+    color: #fde047;
+    /* ゴールド */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* ➕ 進化プラス画像バッジ（絶対配置） */
+.p-schedule-table__arcana-wrapper .slot__plus,
+.js-schedule-slots-wrap .slot__plus {
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    width: 10px;
+    /* テーブル内用に固定サイズ推奨（または 25cqw） */
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.p-schedule-table__arcana-wrapper .slot__plus img,
+.js-schedule-slots-wrap .slot__plus img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+/* スマホ対応：横並びを確実にキープしてスクロールアウト可能に */
+@media screen and (max-width: 768px) {
+
+    .p-schedule-table__arcana-wrapper .slots,
+    .js-schedule-slots-wrap .slots {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 2px;
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .p-schedule-table__arcana-wrapper .slot,
+    .js-schedule-slots-wrap .slot {
+        width: 36px;
+        /* スマホ画面用に少し縮小 */
+        height: 36px;
+        flex-shrink: 0;
+    }
+}
+
+
+/* 新設されたスケジュール表内のスロット配置用ラッパー */
+.js-schedule-slots-wrap {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* アルカナ未編成時のハイフン表示 */
+.p-schedule-table__arcana-empty {
+    color: var(--text-sub, #94a3b8);
+    font-size: 14px;
+}
+
+/* 効果テキスト単体の微調整 */
+.p-schedule-table__arcana-effect {
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--text-main, #1e293b);
+}
+
+/* ==========================================================================
+   🔄 複数アルカナ対応：セル内の縦並び・区切り線設計
+   ========================================================================== */
+
+/* アルカナ構成・効果のセルを縦並びのフレックスコンテナにする */
+.p-schedule-table__cell--evaluation {
+    vertical-align: top;
+    /* 複数行になったときに上揃えにして美しく見せる */
+}
+
+/* 1つのアルカナ情報を包むブロック要素（JS側でこのクラスで囲んで出力させる） */
+.p-schedule-table__arcana-item {
+    display: flex;
+    align-items: center;
+    min-height: 30px;
+    /* スロット(40px)＋上下余白分の高さを確保 */
+    padding: 4px 0;
+    box-sizing: border-box;
+}
+
+/* 2つ目以降のアルカナがある場合、上に薄い境界線を入れて区切る */
+.p-schedule-table__arcana-item+.p-schedule-table__arcana-item {
+    border-top: 1px dashed #e2e8f0;
+}
+
+/* アルカナ効果テキスト専用の調整（アイテム単体と高さを揃える） */
+.p-schedule-table__arcana-effect-item {
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 4px 0;
+    box-sizing: border-box;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--text-main, #1e293b);
+}
+
+.p-schedule-table__arcana-effect-item+.p-schedule-table__arcana-effect-item {
+    border-top: 1px dashed #e2e8f0;
+}
+
+/* スロット配置用ラッパーの余白リセット（アイテム側で制御するため） */
+.js-schedule-slots-wrap {
+    padding: 0 !important;
+    justify-content: flex-start;
+    /* 左揃えにしてテキスト側と位置を同期 */
+}
+
+.p-schedule-modal .c-chara-card {
+    width: 60px;
+}
+
+
+/* 📜 ガチャ履歴エリアの横並びコンテナ */
+.p-schedule-modal__history-row-flex {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    /* 子要素間の隙間（お好みで調整してください） */
+    width: 100%;
+}
+
+/* 1番目の子要素（一番左の入力欄入力 input） */
+.p-schedule-modal__history-row-flex>*:nth-child(1) {
+    flex: 0 0 180px;
+    /* 伸縮させず、180pxで完全に固定 */
+    width: 180px;
+    /* 確実な幅の確保 */
+}
+
+/* 2番目と3番目の子要素（「× 500 ＝」と「小計」のテキスト span） */
+.p-schedule-modal__history-row-flex>*:nth-child(2),
+.p-schedule-modal__history-row-flex>*:nth-child(3) {
+    flex: 1 1 0%;
+    /* 残りのスペースを均等に分け合う */
+    text-align: center;
+    /* 必要に応じてテキストを中央寄せに */
+}
+
+.p-schedule-modal__history-total-wrapper {
+    padding-top: 8px;
+    border-top: 1px dashed var(--theme-border-main);
+    display: flex;
+    justify-content: space-between;
+}

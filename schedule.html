@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>スケジュール｜メメモリ</title>
+
+    <!-- リセットCSS & Googleフォントやアイコンなど -->
+    <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/destyle.css@4.0.0/destyle.min.css" />
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/schedule.css">
+    <script src="https://kit.fontawesome.com/d36bec305b.js" crossorigin="anonymous"></script>
+
+    <script src="assets/js/main.js" type="module"></script>
+    <script src="assets/js/schedule.js" type="module"></script>
+</head>
+
+<body>
+    <div class="l-container l-container--wide">
+        <header class="l-header c-floating-header">
+            <button type="button" id="js-demo-exit-btn" class="c-btn-demo-exit is-hidden">
+                <i class="fa-solid fa-door-open"></i> デモを終了する
+            </button>
+            <div id="js-world-selector-container" class="c-main__header js-header-container"></div>
+        </header>
+        <main class="l-main p-schedule">
+            <div class="p-schedule-main">
+                <div class="p-schedule__content">
+
+                    <!-- 🏷️ 上部：投資計画・進捗サマリー概要カード（履歴・目標の2軸グループ化リニューアル） -->
+                    <section class="p-schedule__summary">
+                        <h2 class="p-schedule__title"><i class="fa-solid fa-brain"></i> ガチャ投資戦略ボード</h2>
+                        <div class="p-schedule__summary-container">
+
+                            <!-- 📜 【過去の実績（履歴）グループ】 -->
+                            <div class="p-schedule__summary-group p-schedule__summary-group--history">
+                                <div class="p-schedule__summary-card">
+                                    <span class="p-schedule__summary-label">完了済(LR以上)</span>
+                                    <span class="p-schedule__summary-value js-summary-completed-count">0
+                                        <small>体</small></span>
+                                </div>
+                                <div class="p-schedule__summary-card">
+                                    <span class="p-schedule__summary-label">累計消費ダイヤ</span>
+                                    <span class="p-schedule__summary-value js-summary-consumed-diamonds">0</span>
+                                </div>
+                            </div>
+
+                            <!-- 🎯 【これからの計画（目標）グループ】 -->
+                            <div class="p-schedule__summary-group p-schedule__summary-group--target">
+                                <div class="p-schedule__summary-card">
+                                    <span class="p-schedule__summary-label">計画中の魔女</span>
+                                    <span class="p-schedule__summary-value js-summary-planning-count">0
+                                        <small>体</small></span>
+                                </div>
+                                <div class="p-schedule__summary-card">
+                                    <span class="p-schedule__summary-label">必要ダイヤの目安</span>
+                                    <span class="p-schedule__summary-value js-summary-total-diamonds">0</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </section>
+
+
+                    <!-- 🛠️ 中央：コントロール・操作バー -->
+                    <div class="p-schedule__controls">
+                        <button type="button" class="p-schedule__btn p-schedule__btn--add js-btn-add-chara">
+                            <i class="fa-solid fa-plus"></i> 投資対象の魔女を追加
+                        </button>
+
+                        <!-- 🔄 ボード名称改称（キャラ評価 / キャラガチャ） -->
+                        <div class="p-schedule__switcher">
+                            <label class="p-schedule__switcher-label">
+                                <input type="radio" name="table-mode" value="evaluation"
+                                    class="p-schedule__switcher-input js-mode-trigger" checked>
+                                <span class="p-schedule__switcher-text">キャラ評価</span>
+                            </label>
+                            <label class="p-schedule__switcher-label">
+                                <input type="radio" name="table-mode" value="gacha"
+                                    class="p-schedule__switcher-input js-mode-trigger">
+                                <span class="p-schedule__switcher-text">キャラガチャ</span>
+                            </label>
+                        </div>
+
+                        <!-- 🗂 "並び替え" セレクトメニュー -->
+                        <div class="p-schedule__sort">
+                            <label class="p-schedule__sort-label" for="js-schedule-sort"><i
+                                    class="fa-solid fa-sort"></i> 並び替え:</label>
+                            <select id="js-schedule-sort" class="p-schedule__select js-select-sort">
+                                <option value="days">経過日数順（復刻が近い順）</option>
+                                <option value="priority">総合優先度スコア順（高い順）</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 📊 メイン：表示専用・ダイナミック複合テーブル（初期状態：キャラ評価モード） -->
+                    <div class="p-schedule__table-wrapper js-table-container is-mode-evaluation">
+                        <table class="p-schedule-table">
+                            <thead>
+                                <tr class="p-schedule-table__row p-schedule-table__row--head">
+                                    <!-- 🚪 両軸共通（魔女アイコンボタン列） -->
+                                    <th class="p-schedule-table__cell p-schedule-table__cell--head p-schedule-table__cell--center p-schedule-table__cell--common"
+                                        style="width: 70px;">魔女</th>
+
+                                    <!-- ⚔️ 軸①：「キャラ評価」専用カラム -->
+                                    <th
+                                        class="p-schedule-table__cell p-schedule-table__cell--head p-schedule-table__cell--evaluation">
+                                        アルカナ構成</th>
+                                    <th
+                                        class="p-schedule-table__cell p-schedule-table__cell--head p-schedule-table__cell--evaluation">
+                                        アルカナ効果</th>
+                                    <th
+                                        class="p-schedule-table__cell p-schedule-table__cell--head p-schedule-table__cell--evaluation">
+                                        主な用途</th>
+                                    <th
+                                        class="p-schedule-table__cell p-schedule-table__cell--head p-schedule-table__cell--center p-schedule-table__cell--evaluation">
+                                        攻略</th>
+                                    <th
+                                        class="p-schedule-table__cell p-schedule-table__cell--head p-schedule-table__cell--center p-schedule-table__cell--evaluation">
+                                        バトリ</th>
+                                    <th
+                                        class="p-schedule-table__cell p-schedule-table__cell--head p-schedule-table__cell--center p-schedule-table__cell--evaluation">
+                                        ギルバト</th>
+                                    <th
+                                        class="p-schedule-table__cell p-schedule-table__cell--head p-schedule-table__cell--center p-schedule-table__cell--evaluation">
+                                        アルカナ</th>
+                                    <th
+                                        class="p-schedule-table__cell p-schedule-table__cell--head p-schedule-table__cell--center p-schedule-table__cell--evaluation">
+                                        レイド</th>
+                                    <th
+                                        class="p-schedule-table__cell p-schedule-table__cell--head p-schedule-table__cell--center p-schedule-table__cell--evaluation">
+                                        総合</th>
+
+                                    <!-- 💎 軸②：「キャラガチャ」専用カラム -->
+                                    <th
+                                        class="p-schedule-table__cell p-schedule-table__cell--head p-schedule-table__cell--gacha">
+                                        復刻スケジュール</th>
+                                    <th
+                                        class="p-schedule-table__cell p-schedule-table__cell--head p-schedule-table__cell--center p-schedule-table__cell--gacha">
+                                        あと何体</th>
+                                    <th
+                                        class="p-schedule-table__cell p-schedule-table__cell--head p-schedule-table__cell--gacha">
+                                        あとダイヤいくつ</th>
+                                    <th
+                                        class="p-schedule-table__cell p-schedule-table__cell--head p-schedule-table__cell--gacha">
+                                        累計コスト（実績）</th>
+                                    <th
+                                        class="p-schedule-table__cell p-schedule-table__cell--head p-schedule-table__cell--gacha">
+                                        コスト/体</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="js-schedule-table-body-main" class="p-schedule-table__body">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="c-update-btn__wrapper">
+                        <div class="c-update-btn__wrap c-update-btn__wrap--wide">
+                            <button type="button" id="js-schedule-btn-update" class="c-btn c-update-btn">
+                                <i class="fa-solid fa-rotate"></i> 更新する
+                            </button>
+                            <button id="scrollToTopBtn" class="scroll-to-top-btn" title="トップへ戻る">↑</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </main>
+    </div>
+
+    <div class="l-sidebar"></div>
+
+    <!-- 🔮 キャラクターピッカー（main.jsが自動生成するための受け皿コンテナ） -->
+    <div id="js-character-picker-container"></div>
+
+    <!-- 📋 詳細・内訳入力用モーダルウインドウの受け皿 -->
+    <div id="js-schedule-modal-container"></div>
+
+    <!-- 外部から読み込むフッターの受け皿 -->
+    <footer id="js-footer-container" class="l-footer js-footer-container"></footer>
+
+</body>
+
+</html>

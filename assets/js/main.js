@@ -1526,8 +1526,16 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
+  const ADMIN_UID = "ZcWgnVNxShfjr1byRolwgdASFLi2";
   if (user) {
     console.log(`👤 ログイン監視中... (UID: ${user.uid})`);
+
+    // 👇あなたがログインした時だけ隠しナビゲーションを追加、それ以外は削除
+    if (user.uid === ADMIN_UID) {
+      injectAdminNavigation();
+    } else {
+      removeAdminNavigation();
+    }
 
     if (isMainAppLoading) {
       console.warn(
@@ -2774,3 +2782,49 @@ if (shareBtn) {
 // グローバルへ公開
 window.createCharacterBadgeElement = createCharacterBadgeElement;
 window.updateCardAppearance = updateCardAppearance;
+
+/**
+ * 🔒 管理者（あなた）専用の「ガチャ」メニューをフッターナビに注入する関数
+ */
+function injectAdminNavigation() {
+  // 重複防止（すでにボタンがあれば何もしない）
+  if (document.querySelector(".js-nav-admin-schedule")) return;
+
+  // 1. フッター内の <ul> 要素（メニューの並び）を見つける
+  const navList = document.querySelector(".l-footer-nav__list");
+  if (!navList) {
+    console.warn(
+      "🚨 隠しナビの挿入先（.l-footer-nav__list）が見つかりませんでした",
+    );
+    return;
+  }
+
+  // 2. 既存の構造に合わせて <li> 要素を生成
+  const li = document.createElement("li");
+  li.className = "l-footer-nav__item js-nav-admin-schedule";
+
+  // 3. 内部の <a> タグを生成
+  const adminLink = document.createElement("a");
+  adminLink.href = "schedule.html"; // 👈 ここを schedule.html に修正しました
+  adminLink.className = "l-footer-nav__link js-nav-trigger is-admin";
+  adminLink.id = "js-nav-admin-schedule";
+  adminLink.innerHTML = '<i class="fa-solid fa-chart-bar"></i>ガチャ';
+
+  // 4. <li> の中に <a> を入れ、<ul> の最後尾（課金の次）に追加
+  li.appendChild(adminLink);
+  navList.appendChild(li);
+
+  if (typeof setActiveNavigation === "function") {
+    setActiveNavigation();
+  }
+}
+
+/**
+ * 一般ユーザーやログアウト時に安全にリンクを消し去る関数
+ */
+function removeAdminNavigation() {
+  const adminLink = document.querySelector(".js-nav-admin-schedule");
+  if (adminLink) {
+    adminLink.remove();
+  }
+}
