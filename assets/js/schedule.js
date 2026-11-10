@@ -677,8 +677,14 @@ function initScheduleEvents() {
       });
       renderScheduleTable();
 
-      // 🛠️ 【修正】魔女を追加した際、即座にその魔女の詳細モーダルをオープン
-      openScheduleModal(scheduleList.length - 1);
+      // ✨ ソート後の正しいインデックスを新キャラのID（selectedId）で検索し直す
+      const sortedIndex = scheduleList.findIndex(
+        (item) => String(item.charaId) === String(selectedId),
+      );
+
+      if (sortedIndex !== -1) {
+        openScheduleModal(sortedIndex);
+      }
 
       hiddenInput.value = "";
     });
