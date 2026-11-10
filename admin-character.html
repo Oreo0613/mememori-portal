@@ -447,6 +447,7 @@
                 <label for="formRarity">恒常 / 限定</label>
                 <select id="formRarity" name="rarity">
                   <option value="限定">限定</option>
+                  <option value="季節限定">季節限定</option>
                   <option value="恒常">恒常</option>
                 </select>
               </div>
@@ -477,6 +478,26 @@
               <a target="_blank"
                 href="https://app.notion.com/p/3f1ba36becc0802597aeeba9141b2b9c?source=copy_link">画像の作成手順はこちら</a>
             </div>
+
+            <!-- 📅 ガチャスケジュール管理エリア（新規追加） -->
+            <div class="gacha-schedule master-form__gacha-box">
+              <div class="master-form__gacha-title">📅 ガチャスケジュール設定</div>
+              <div class="form-grid">
+                <div>
+                  <label for="formGachaType">ガチャ種別</label>
+                  <select id="formGachaType" name="gachaType">
+                    <option value="未設定">未設定</option>
+                    <option value="運命">運命ガチャ</option>
+                    <option value="星の導き">星の導きガチャ</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="formGachaEndDate">前回ガチャ最終日</label>
+                  <input type="date" id="formGachaEndDate" name="gachaEndDate" />
+                </div>
+              </div>
+            </div>
+
 
           </div>
         </div>

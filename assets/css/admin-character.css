@@ -673,6 +673,39 @@
   display: none;
 }
 
+/* =========================================================================
+   📅 ガチャスケジュール管理エリア専用スタイル
+   ========================================================================= */
+.master-form__gacha-box {
+  margin-top: 20px;
+  background: var(--input-bg-sub);
+  border: 1px dashed var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+}
+
+.master-form__gacha-title {
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--warning);
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+}
+
+#formGachaType option {
+  background-color: #2a2a35;
+  color: #ffffff;
+}
+
+/* 🤍 画面内のすべての日付入力欄のカレンダーマークを「真っ白」にする設定 */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(100%);
+  /* 💡 黒いアイコンの明度を100%反転させて完全な白色にします */
+  opacity: 1;
+  /* 薄暗くならないよう、透明度を100%クッキリ表示にします */
+}
 
 /* =========================================================================
    🌐 エクスポートボタン（hover / active）の立体エフェクト
@@ -681,7 +714,8 @@
 .ar-btn.export-btn {
   font-size: 14px;
   letter-spacing: 0.1em;
-  background: linear-gradient(180deg, #edf2f7 0%, #cbd5e0 100%);;
+  background: linear-gradient(180deg, #edf2f7 0%, #cbd5e0 100%);
+  ;
   color: var(--bg-main);
   gap: 8px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6);

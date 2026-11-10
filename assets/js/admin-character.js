@@ -792,11 +792,16 @@ function openModalForEditByIndex(idx) {
     d.attr,
     ATTR_IMAGES.find((i) => i.name === d.attr)?.url || "",
   );
+
   setDDValue(
     "Type",
     d.type,
     TYPE_IMAGES.find((i) => i.name === d.type)?.url || "",
   );
+
+  // 📝 ガチャスケローカルデータの復元処理
+  document.getElementById("formGachaType").value = d.gachaType || "未設定";
+  document.getElementById("formGachaEndDate").value = d.gachaEndDate || "";
 
   document.getElementById("charModal").classList.add("is-active");
 
@@ -831,6 +836,10 @@ function openModalForCreate() {
   document.getElementById("modalIconPreview").src = "https://placehold.jp";
   document.getElementById("modalCoverPreview").src = "https://placehold.jp";
 
+  // 📝 ガチャスケフォームの初期化
+  document.getElementById("formGachaType").value = "未設定";
+  document.getElementById("formGachaEndDate").value = "";
+
   document.getElementById("charModal").classList.add("is-active");
 
   var delBtn = document.getElementById("cmDeleteBtn");
@@ -851,6 +860,9 @@ function saveMasterData() {
   const formStartDate = document.getElementById("formStartDate").value;
   const formIconUrl = document.getElementById("formIconUrl").value.trim();
   const formCoverUrl = document.getElementById("formCoverUrl").value.trim();
+  // 📝 フォーム値の取得
+  const formGachaType = document.getElementById("formGachaType").value;
+  const formGachaEndDate = document.getElementById("formGachaEndDate").value;
 
   if (!formName || !formAttr || !formType) {
     alert("名前、属性、タイプは必須入力です。");
@@ -900,6 +912,9 @@ function saveMasterData() {
   targetChar.releaseDate = formStartDate || "";
   targetChar.iconUrl = formIconUrl || "https://placehold.co";
   targetChar.coverUrl = formCoverUrl || "https://placehold.co";
+  // 📝 JSON出力対象オブジェクトへのマッピング
+  targetChar.gachaType = formGachaType;
+  targetChar.gachaEndDate = formGachaEndDate || "";
   targetChar.updatedAt = new Date().toLocaleString("ja-JP");
 
   if (existingIdx !== -1) {
