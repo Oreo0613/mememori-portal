@@ -921,3 +921,28 @@
     z-index: 2;
     /* バーの上に常に線を出す */
 }
+
+/* ガチャスケジュールセル内のレイアウト調整 */
+.p-schedule-table__gacha-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+/* ガチャ種別バッジの基本スタイル */
+.c-badge-gacha-type {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #ec4899; /* 運命ガチャ等をイメージした華やかなピンク */
+    border-radius: 4px;
+    line-height: 1.2;
+}
+
+/* 過去のガチャ種別（少しシックにトーンを落とす場合） */
+.c-badge-gacha-type--past {
+    background-color: #64748b; /* シックなスレートグレー */
+}

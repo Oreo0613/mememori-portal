@@ -235,14 +235,58 @@ function renderScheduleTable() {
       const costPerBody =
         pureGachaSR > 0 ? Math.floor(consumedDiamonds / pureGachaSR) : 0;
 
-      const lastDate = new Date(item.lastEndDate || "2026-11-08");
-      const elapsedDays = Math.floor(
-        (today - lastDate) / (1000 * 60 * 60 * 24),
+      // 📅 毎日自動更新：今日の「午前0時0分0秒」を動的に取得して基準日にする
+      const systemNow = new Date();
+      const today = new Date(
+        systemNow.getFullYear(),
+        systemNow.getMonth(),
+        systemNow.getDate(),
       );
-      const scheduleHtml =
-        elapsedDays < 0
-          ? `<span class="p-schedule-table__days is-active-gacha">🔥 開催中 あと ${Math.abs(elapsedDays)}日</span>`
-          : `<span class="p-schedule-table__days ${elapsedDays > 120 ? "is-active-gacha" : ""}">${elapsedDays}日経過</span>`;
+
+      // キャラクターマスタからガチャ種別と終了日を安全に取得
+      const gachaType =
+        foundChara && foundChara.gachaType
+          ? foundChara.gachaType
+          : item.gachaType || "ガチャ";
+      const endDateStr =
+        foundChara && foundChara.gachaEndDate
+          ? foundChara.gachaEndDate
+          : item.lastEndDate;
+
+      let scheduleHtml = "";
+
+      if (endDateStr) {
+        // ガチャ終了日の時分秒のズレを無くすため、こちらも日付のみでオブジェクト化
+        const rawEndDate = new Date(endDateStr);
+        const endDate = new Date(
+          rawEndDate.getFullYear(),
+          rawEndDate.getMonth(),
+          rawEndDate.getDate(),
+        );
+
+        // ミリ秒の差分を日数（1日＝86,400,000ミリ秒）に変換して計算
+        const diffTime = endDate - today;
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays >= 0) {
+          // 🔥 開催中の場合のみ、is-active-gacha（赤文字）を適用
+          scheduleHtml = `
+            <div class="p-schedule-table__gacha-info">
+              <span class="c-badge-gacha-type">${gachaType}</span>
+              <span class="p-schedule-table__days is-active-gacha">🔥 開催中 あと ${diffDays}日</span>
+            </div>`;
+        } else {
+          // 💤 終了している場合は、通常色に固定
+          const elapsedDays = Math.abs(diffDays);
+          scheduleHtml = `
+            <div class="p-schedule-table__gacha-info">
+              <span class="c-badge-gacha-type c-badge-gacha-type--past">${gachaType}</span>
+              <span class="p-schedule-table__days">${elapsedDays}日経過</span>
+            </div>`;
+        }
+      } else {
+        scheduleHtml = `<span style="color: var(--text-sub); font-style: italic;">スケジュール未定</span>`;
+      }
 
       const scoresObj = item.scores || {
         quest: 1,
@@ -1035,11 +1079,63 @@ function sortScheduleList(criteria) {
       );
     });
   } else if (criteria === "days") {
-    scheduleList.sort(
-      (a, b) =>
-        new Date(a.lastEndDate || "2026-11-08") -
-        new Date(b.lastEndDate || "2026-11-08"),
+    // 📅 経過日数順（開催中を上へ、終了済は経過日数が大きい順）
+    const master = window.characterMaster || [];
+    const systemNow = new Date();
+    const today = new Date(
+      systemNow.getFullYear(),
+      systemNow.getMonth(),
+      systemNow.getDate(),
     );
+
+    scheduleList.sort((a, b) => {
+      // 1. 各魔女のマスタデータから終了日（endDate）を取得
+      const charA = master.find(
+        (c) => String(c.id).trim() === String(a.charaId).trim(),
+      );
+      const charB = master.find(
+        (c) => String(c.id).trim() === String(b.charaId).trim(),
+      );
+
+      const dateStrA =
+        charA && charA.gachaEndDate ? charA.gachaEndDate : a.lastEndDate;
+      const dateStrB =
+        charB && charB.gachaEndDate ? charB.gachaEndDate : b.lastEndDate;
+
+      // 終了日がないものは最下位へフォールバック
+      if (!dateStrA) return 1;
+      if (!dateStrB) return -1;
+
+      const dateA = new Date(dateStrA);
+      const dateB = new Date(dateStrB);
+
+      // 今日を基準とした残り日数（diffDays）を算出
+      const diffA = Math.round(
+        (new Date(dateA.getFullYear(), dateA.getMonth(), dateA.getDate()) -
+          today) /
+          (1000 * 60 * 60 * 24),
+      );
+      const diffB = Math.round(
+        (new Date(dateB.getFullYear(), dateB.getMonth(), dateB.getDate()) -
+          today) /
+          (1000 * 60 * 60 * 24),
+      );
+
+      const isLiveA = diffA >= 0;
+      const isLiveB = diffB >= 0;
+
+      // 2. ソート順の判定フラグ
+      if (isLiveA && !isLiveB) return -1; // Aが開催中、Bが終了済なら Aを上にする
+      if (!isLiveA && isLiveB) return 1; // Bが開催中、Aが終了済なら Bを上にする
+
+      if (isLiveA && isLiveB) {
+        // 両方「開催中」なら、終了が迫っている（残り日数が少ない）順
+        return diffA - diffB;
+      } else {
+        // 両方「終了済」なら、過去の終了日が古い（経過日数が大きい）順
+        return diffA - diffB; // diffはマイナス値なので、値が小さい（＝より過去）方が上になる
+      }
+    });
   }
 }
 
