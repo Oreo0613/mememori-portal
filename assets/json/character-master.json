@@ -2,7 +2,7 @@
     {
         "id": "137",
         "tags": "",
-        "isFinished": "FALSE",
+        "isFinished": "TRUE",
         "status": {
             "str": "725694",
             "dex": "593116",
@@ -87,7 +87,9 @@
         "releaseDate": "2026-10-29",
         "iconUrl": "assets/images/chara-icon/137.webp",
         "coverUrl": "https://placehold.co",
-        "updatedAt": "2026/10/29 16:50:11"
+        "updatedAt": "2026/11/10 10:28:31",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-11-30"
     },
     {
         "id": "136",
@@ -177,7 +179,9 @@
         "releaseDate": "2026-10-15",
         "iconUrl": "assets/images/chara-icon/136.webp",
         "coverUrl": "https://placehold.co",
-        "updatedAt": "2026/10/15 21:57:32"
+        "updatedAt": "2026/11/10 10:47:58",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-11-16"
     },
     {
         "id": "135",
@@ -187,7 +191,7 @@
         "rarity": "限定",
         "releaseDate": "2026-09-30",
         "iconUrl": "assets/images/chara-icon/135.webp",
-        "updatedAt": "2026/10/9 14:03:22",
+        "updatedAt": "2026/11/10 10:42:51",
         "status": {
             "str": "654225",
             "dex": "560764",
@@ -267,7 +271,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-10-15"
     },
     {
         "id": "134",
@@ -277,7 +283,7 @@
         "rarity": "限定",
         "releaseDate": "2026-09-15",
         "iconUrl": "assets/images/chara-icon/134.webp",
-        "updatedAt": "2026/10/9 13:43:14",
+        "updatedAt": "2026/11/10 10:52:42",
         "status": {
             "str": "634496",
             "dex": "544839",
@@ -356,7 +362,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-09-30"
     },
     {
         "id": "133",
@@ -366,7 +375,7 @@
         "rarity": "限定",
         "releaseDate": "2026-08-31",
         "iconUrl": "assets/images/chara-icon/133.webp",
-        "updatedAt": "2026/10/26 17:01:52",
+        "updatedAt": "2026/11/10 10:33:21",
         "status": {
             "str": "544839",
             "dex": "620702",
@@ -446,7 +455,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-09-24"
     },
     {
         "id": "132",
@@ -456,7 +467,7 @@
         "rarity": "限定",
         "releaseDate": "2026-08-13",
         "iconUrl": "assets/images/chara-icon/132.webp",
-        "updatedAt": "2026/10/26 16:57:52",
+        "updatedAt": "2026/11/10 10:43:03",
         "status": {
             "str": "722362",
             "dex": "587804",
@@ -536,7 +547,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-09-08"
     },
     {
         "id": "131",
@@ -546,7 +559,7 @@
         "rarity": "限定",
         "releaseDate": "2026-07-28",
         "iconUrl": "assets/images/chara-icon/131.webp",
-        "updatedAt": "2026/07/28 20:21:02",
+        "updatedAt": "2026/11/10 10:37:48",
         "status": {
             "str": "602075",
             "dex": "688086",
@@ -625,17 +638,20 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-08-24"
     },
     {
         "id": "130",
         "name": "プリマヴェーラ [湖畔の歌姫]",
         "attr": "藍",
         "type": "スナイパー",
-        "rarity": "限定",
+        "rarity": "季節限定",
         "releaseDate": "2026-07-15",
         "iconUrl": "assets/images/chara-icon/130.webp",
-        "updatedAt": "2026/10/26 14:46:40",
+        "updatedAt": "2026/11/10 10:52:56",
         "status": {
             "str": "617114",
             "dex": "699396",
@@ -715,7 +731,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-07-28"
     },
     {
         "id": "129",
@@ -725,7 +743,7 @@
         "rarity": "限定",
         "releaseDate": "2026-06-30",
         "iconUrl": "assets/images/chara-icon/129.webp",
-        "updatedAt": "2026/10/26 17:08:04",
+        "updatedAt": "2026/11/10 10:28:45",
         "status": {
             "str": "546427",
             "dex": "629429",
@@ -805,7 +823,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-07-15"
     },
     {
         "id": "128",
@@ -815,7 +835,7 @@
         "rarity": "限定",
         "releaseDate": "2026-06-15",
         "iconUrl": "assets/images/chara-icon/128.webp",
-        "updatedAt": "2026/06/15 19:08:57",
+        "updatedAt": "2026/11/10 10:48:10",
         "status": {
             "str": "589564",
             "dex": "689009",
@@ -894,7 +914,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-06-30"
     },
     {
         "id": "127",
@@ -904,7 +927,7 @@
         "rarity": "限定",
         "releaseDate": "2026-05-28",
         "iconUrl": "assets/images/chara-icon/127.webp",
-        "updatedAt": "2026/10/9 14:15:05",
+        "updatedAt": "2026/11/10 10:37:59",
         "status": {
             "str": "718717",
             "dex": "593116",
@@ -983,7 +1006,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-06-15"
     },
     {
         "id": "126",
@@ -993,7 +1019,7 @@
         "rarity": "限定",
         "releaseDate": "2026-05-14",
         "iconUrl": "assets/images/chara-icon/126.webp",
-        "updatedAt": "2026/06/09 9:34:29",
+        "updatedAt": "2026/11/10 10:43:15",
         "status": {
             "str": "594907",
             "dex": "602075",
@@ -1072,7 +1098,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-05-28"
     },
     {
         "id": "125",
@@ -1082,7 +1111,7 @@
         "rarity": "限定",
         "releaseDate": "2026-04-30",
         "iconUrl": "assets/images/chara-icon/125.webp",
-        "updatedAt": "2026/06/09 9:38:53",
+        "updatedAt": "2026/11/10 10:34:18",
         "status": {
             "str": "559476",
             "dex": "559476",
@@ -1161,7 +1190,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-11-24"
     },
     {
         "id": "124",
@@ -1171,7 +1203,7 @@
         "rarity": "限定",
         "releaseDate": "2026-04-15",
         "iconUrl": "assets/images/chara-icon/124.webp",
-        "updatedAt": "2026/10/26 14:47:18",
+        "updatedAt": "2026/11/10 10:53:09",
         "status": {
             "str": "668979",
             "dex": "510355",
@@ -1251,7 +1283,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-11-16"
     },
     {
         "id": "123",
@@ -1261,7 +1295,7 @@
         "rarity": "限定",
         "releaseDate": "2026-03-31",
         "iconUrl": "assets/images/chara-icon/123.webp",
-        "updatedAt": "2026/06/09 9:42:13",
+        "updatedAt": "2026/11/10 10:38:12",
         "status": {
             "str": "593116",
             "dex": "564532",
@@ -1340,7 +1374,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-04-15"
     },
     {
         "id": "122",
@@ -1350,7 +1387,7 @@
         "rarity": "限定",
         "releaseDate": "2026-03-16",
         "iconUrl": "assets/images/chara-icon/122.webp",
-        "updatedAt": "2026/09/29 11:37:21",
+        "updatedAt": "2026/11/10 10:48:22",
         "status": {
             "str": "516984",
             "dex": "686952",
@@ -1429,7 +1466,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-10-22"
     },
     {
         "id": "121",
@@ -1439,7 +1479,7 @@
         "rarity": "限定",
         "releaseDate": "2026-02-26",
         "iconUrl": "assets/images/chara-icon/121.webp",
-        "updatedAt": "2026/06/09 9:42:37",
+        "updatedAt": "2026/11/10 10:29:03",
         "status": {
             "str": "581011",
             "dex": "684763",
@@ -1518,7 +1558,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-10-08"
     },
     {
         "id": "120",
@@ -1528,7 +1571,7 @@
         "rarity": "限定",
         "releaseDate": "2026-02-12",
         "iconUrl": "assets/images/chara-icon/120.webp",
-        "updatedAt": "2026/06/09 9:42:49",
+        "updatedAt": "2026/11/10 10:43:26",
         "status": {
             "str": "521656",
             "dex": "693159",
@@ -1607,7 +1650,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-09-30"
     },
     {
         "id": "119",
@@ -1617,7 +1663,7 @@
         "rarity": "限定",
         "releaseDate": "2026-01-29",
         "iconUrl": "assets/images/chara-icon/119.webp",
-        "updatedAt": "2026/06/09 9:43:04",
+        "updatedAt": "2026/11/10 10:38:29",
         "status": {
             "str": "621359",
             "dex": "557811",
@@ -1696,7 +1742,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-08-30"
     },
     {
         "id": "118",
@@ -1706,7 +1755,7 @@
         "rarity": "限定",
         "releaseDate": "2026-01-15",
         "iconUrl": "assets/images/chara-icon/118.webp",
-        "updatedAt": "2026/06/09 9:43:19",
+        "updatedAt": "2026/11/10 10:53:24",
         "status": {
             "str": "581011",
             "dex": "587928",
@@ -1785,7 +1834,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-07-15"
     },
     {
         "id": "117",
@@ -1795,7 +1847,7 @@
         "rarity": "限定",
         "releaseDate": "2025-12-25",
         "iconUrl": "assets/images/chara-icon/117.webp",
-        "updatedAt": "2026/10/26 17:02:14",
+        "updatedAt": "2026/11/10 10:34:48",
         "status": {
             "str": "661058",
             "dex": "756544",
@@ -1875,17 +1927,19 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-06-30"
     },
     {
         "id": "116",
         "name": "ステラ [聖なる漆黒の輝く星]",
         "attr": "翠",
         "type": "ソーサラー",
-        "rarity": "限定",
+        "rarity": "季節限定",
         "releaseDate": "2025-12-11",
         "iconUrl": "assets/images/chara-icon/116.webp",
-        "updatedAt": "2026/10/9 16:10:10",
+        "updatedAt": "2026/11/10 10:45:14",
         "status": {
             "str": "628005",
             "dex": "551249",
@@ -1965,17 +2019,19 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-01-06"
     },
     {
         "id": "115",
         "name": "マーリン [深き森の賢者]",
         "attr": "藍",
         "type": "ソーサラー",
-        "rarity": "限定",
+        "rarity": "季節限定",
         "releaseDate": "2025-11-27",
         "iconUrl": "assets/images/chara-icon/115.webp",
-        "updatedAt": "2026/10/26 14:47:54",
+        "updatedAt": "2026/11/10 10:53:38",
         "status": {
             "str": "610258",
             "dex": "548546",
@@ -2055,7 +2111,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2025-12-25"
     },
     {
         "id": "114",
@@ -2065,7 +2123,7 @@
         "rarity": "限定",
         "releaseDate": "2025-11-13",
         "iconUrl": "assets/images/chara-icon/114.webp",
-        "updatedAt": "2026/06/09 10:15:26",
+        "updatedAt": "2026/11/10 10:48:34",
         "status": {
             "str": "645716",
             "dex": "740034",
@@ -2144,7 +2202,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-06-23"
     },
     {
         "id": "113",
@@ -2154,7 +2215,7 @@
         "rarity": "限定",
         "releaseDate": "2025-10-30",
         "iconUrl": "assets/images/chara-icon/113.webp",
-        "updatedAt": "2026/10/26 17:07:42",
+        "updatedAt": "2026/11/10 10:29:17",
         "status": {
             "str": "598214",
             "dex": "550629",
@@ -2234,7 +2295,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-11-09"
     },
     {
         "id": "112",
@@ -2244,7 +2307,7 @@
         "rarity": "限定",
         "releaseDate": "2025-10-16",
         "iconUrl": "assets/images/chara-icon/112.webp",
-        "updatedAt": "2026/10/26 16:59:33",
+        "updatedAt": "2026/11/10 10:39:03",
         "status": {
             "str": "654225",
             "dex": "567953",
@@ -2324,7 +2387,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-10-29"
     },
     {
         "id": "111",
@@ -2334,7 +2399,7 @@
         "rarity": "限定",
         "releaseDate": "2025-09-30",
         "iconUrl": "assets/images/chara-icon/111.webp",
-        "updatedAt": "2026/06/09 10:52:07",
+        "updatedAt": "2026/11/10 10:48:49",
         "status": {
             "str": "705128",
             "dex": "528846",
@@ -2413,7 +2478,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-05-21"
     },
     {
         "id": "110",
@@ -2423,7 +2491,7 @@
         "rarity": "限定",
         "releaseDate": "2025-09-16",
         "iconUrl": "assets/images/chara-icon/110.webp",
-        "updatedAt": "2026/06/05 11:49:51",
+        "updatedAt": "2026/11/10 10:39:26",
         "status": {
             "str": "591334",
             "dex": "598459",
@@ -2502,7 +2570,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-10-15"
     },
     {
         "id": "109",
@@ -2512,7 +2583,7 @@
         "rarity": "限定",
         "releaseDate": "2025-08-28",
         "iconUrl": "assets/images/chara-icon/109.webp",
-        "updatedAt": "2026/10/9 14:21:53",
+        "updatedAt": "2026/11/10 10:29:43",
         "status": {
             "str": "661290",
             "dex": "504489",
@@ -2591,7 +2662,10 @@
                 "michaelText": "1ターン目のターン開始時、攻撃力が高い敵3体に4ターンの間『脱力』を付与する。付帯者のバトル中ステータスの攻撃力が40%減少する。",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-04-08"
     },
     {
         "id": "108",
@@ -2601,7 +2675,7 @@
         "rarity": "限定",
         "releaseDate": "2025-08-14",
         "iconUrl": "assets/images/chara-icon/108.webp",
-        "updatedAt": "2026/10/9 14:22:55",
+        "updatedAt": "2026/11/10 10:44:10",
         "status": {
             "str": "683953",
             "dex": "591334",
@@ -2680,7 +2754,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-09-15"
     },
     {
         "id": "107",
@@ -2690,7 +2767,7 @@
         "rarity": "限定",
         "releaseDate": "2025-07-31",
         "iconUrl": "assets/images/chara-icon/107.webp",
-        "updatedAt": "2026/10/26 14:48:13",
+        "updatedAt": "2026/11/10 10:53:53",
         "status": {
             "str": "715829",
             "dex": "579481",
@@ -2770,7 +2847,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-08-24"
     },
     {
         "id": "106",
@@ -2780,7 +2859,7 @@
         "rarity": "限定",
         "releaseDate": "2025-07-15",
         "iconUrl": "assets/images/chara-icon/106.webp",
-        "updatedAt": "2026/10/26 17:07:18",
+        "updatedAt": "2026/11/10 10:30:02",
         "status": {
             "str": "581011",
             "dex": "581011",
@@ -2860,7 +2939,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-08-06"
     },
     {
         "id": "105",
@@ -2870,7 +2951,7 @@
         "rarity": "限定",
         "releaseDate": "2025-06-30",
         "iconUrl": "assets/images/chara-icon/105.webp",
-        "updatedAt": "2026/10/9 16:19:34",
+        "updatedAt": "2026/11/10 10:34:58",
         "status": {
             "str": "729444",
             "dex": "594886",
@@ -2949,7 +3030,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-09-24"
     },
     {
         "id": "104",
@@ -2959,7 +3043,7 @@
         "rarity": "限定",
         "releaseDate": "2025-06-16",
         "iconUrl": "assets/images/chara-icon/104.webp",
-        "updatedAt": "2026/06/22 13:19:19",
+        "updatedAt": "2026/11/10 10:49:00",
         "status": {
             "str": "516984",
             "dex": "686952",
@@ -3038,7 +3122,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-08-13"
     },
     {
         "id": "103",
@@ -3048,7 +3135,7 @@
         "rarity": "限定",
         "releaseDate": "2025-05-30",
         "iconUrl": "assets/images/chara-icon/103.webp",
-        "updatedAt": "2026/10/9 14:25:41",
+        "updatedAt": "2026/11/10 10:39:38",
         "status": {
             "str": "520089",
             "dex": "691078",
@@ -3127,7 +3214,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-09-09"
     },
     {
         "id": "102",
@@ -3137,7 +3227,7 @@
         "rarity": "限定",
         "releaseDate": "2025-05-14",
         "iconUrl": "assets/images/chara-icon/102.webp",
-        "updatedAt": "2026/06/21 16:37:11",
+        "updatedAt": "2026/11/10 10:49:14",
         "status": {
             "str": "700789",
             "dex": "605890",
@@ -3216,7 +3306,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-07-07"
     },
     {
         "id": "101",
@@ -3226,7 +3319,7 @@
         "rarity": "限定",
         "releaseDate": "2025-04-30",
         "iconUrl": "assets/images/chara-icon/101.webp",
-        "updatedAt": "2026/10/26 17:02:35",
+        "updatedAt": "2026/11/10 10:35:12",
         "status": {
             "str": "606750",
             "dex": "538576",
@@ -3306,7 +3399,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-06-08"
     },
     {
         "id": "100",
@@ -3316,7 +3411,7 @@
         "rarity": "限定",
         "releaseDate": "2025-04-15",
         "iconUrl": "assets/images/chara-icon/100.webp",
-        "updatedAt": "2026/06/11 17:21:35",
+        "updatedAt": "2026/11/10 10:44:21",
         "status": {
             "str": "587804",
             "dex": "552394",
@@ -3395,7 +3490,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-05-28"
     },
     {
         "id": "99",
@@ -3405,7 +3503,7 @@
         "rarity": "限定",
         "releaseDate": "2025-03-31",
         "iconUrl": "assets/images/chara-icon/99.webp",
-        "updatedAt": "2026/06/09 9:53:00",
+        "updatedAt": "2026/11/10 10:39:52",
         "status": {
             "str": "586055",
             "dex": "720212",
@@ -3484,7 +3582,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-06-15"
     },
     {
         "id": "98",
@@ -3494,7 +3595,7 @@
         "rarity": "限定",
         "releaseDate": "2025-03-17",
         "iconUrl": "assets/images/chara-icon/98.webp",
-        "updatedAt": "2026/06/11 17:29:45",
+        "updatedAt": "2026/11/10 10:44:32",
         "status": {
             "str": "628005",
             "dex": "718717",
@@ -3573,7 +3674,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-05-21"
     },
     {
         "id": "97",
@@ -3583,7 +3687,7 @@
         "rarity": "限定",
         "releaseDate": "2025-02-28",
         "iconUrl": "assets/images/chara-icon/97.webp",
-        "updatedAt": "2026/10/9 14:29:29",
+        "updatedAt": "2026/11/10 10:40:12",
         "status": {
             "str": "657429",
             "dex": "564532",
@@ -3662,17 +3766,20 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-08-31"
     },
     {
         "id": "96",
         "name": "シズ [雪花の誓い]",
         "attr": "紅",
         "type": "ウォーリアー",
-        "rarity": "限定",
+        "rarity": "季節限定",
         "releaseDate": "2025-02-14",
         "iconUrl": "assets/images/chara-icon/96.webp",
-        "updatedAt": "2026/10/26 16:56:29",
+        "updatedAt": "2026/11/10 10:49:31",
         "status": {
             "str": "746886",
             "dex": "607760",
@@ -3752,7 +3859,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2026-01-15"
     },
     {
         "id": "95",
@@ -3762,7 +3871,7 @@
         "rarity": "限定",
         "releaseDate": "2025-01-31",
         "iconUrl": "assets/images/chara-icon/95.webp",
-        "updatedAt": "2026/06/11 17:37:45",
+        "updatedAt": "2026/11/10 10:44:42",
         "status": {
             "str": "559476",
             "dex": "552394",
@@ -3841,7 +3950,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-08-31"
     },
     {
         "id": "94",
@@ -3851,7 +3963,7 @@
         "rarity": "限定",
         "releaseDate": "2025-01-15",
         "iconUrl": "assets/images/chara-icon/94.webp",
-        "updatedAt": "2026/10/9 14:30:19",
+        "updatedAt": "2026/11/10 10:49:44",
         "status": {
             "str": "746886",
             "dex": "615083",
@@ -3930,7 +4042,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-08-31"
     },
     {
         "id": "93",
@@ -3940,7 +4055,7 @@
         "rarity": "限定",
         "releaseDate": "2024-12-25",
         "iconUrl": "assets/images/chara-icon/93.webp",
-        "updatedAt": "2026/06/12 10:15:40",
+        "updatedAt": "2026/11/10 10:35:26",
         "status": {
             "str": "598459",
             "dex": "683953",
@@ -4019,17 +4134,20 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-08-31"
     },
     {
         "id": "92",
         "name": "ルナリンド [聖夜の妖精]",
         "attr": "翠",
         "type": "スナイパー",
-        "rarity": "限定",
+        "rarity": "季節限定",
         "releaseDate": "2024-12-13",
         "iconUrl": "assets/images/chara-icon/92.webp",
-        "updatedAt": "2026/10/26 16:58:27",
+        "updatedAt": "2026/11/10 10:45:07",
         "status": {
             "str": "628420",
             "dex": "713151",
@@ -4109,17 +4227,19 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2025-12-18"
     },
     {
         "id": "91",
         "name": "ソルティーナ [温かな記憶]",
         "attr": "紅",
         "type": "ウォーリアー",
-        "rarity": "限定",
+        "rarity": "季節限定",
         "releaseDate": "2024-11-29",
         "iconUrl": "assets/images/chara-icon/91.webp",
-        "updatedAt": "2026/10/26 16:56:55",
+        "updatedAt": "2026/11/10 10:50:06",
         "status": {
             "str": "686952",
             "dex": "594886",
@@ -4199,7 +4319,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "運命",
+        "gachaEndDate": "2025-12-18"
     },
     {
         "id": "90",
@@ -4209,7 +4331,7 @@
         "rarity": "限定",
         "releaseDate": "2024-11-15",
         "iconUrl": "assets/images/chara-icon/90.webp",
-        "updatedAt": "2026/10/9 14:31:24",
+        "updatedAt": "2026/11/10 10:54:05",
         "status": {
             "str": "568836",
             "dex": "548025",
@@ -4288,7 +4410,10 @@
                 "michaelText": "バトル開始時、自身に1層の『多重バリア』を付与する（解除不可）。ダメージを受けるとバリアを1層消費してそのダメージを無効化する。",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-08-31"
     },
     {
         "id": "89",
@@ -4298,7 +4423,7 @@
         "rarity": "限定",
         "releaseDate": "2024-10-31",
         "iconUrl": "assets/images/chara-icon/89.webp",
-        "updatedAt": "2026/10/26 17:07:04",
+        "updatedAt": "2026/11/10 10:30:17",
         "status": {
             "str": "620385",
             "dex": "709012",
@@ -4378,7 +4503,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-08-31"
     },
     {
         "id": "88",
@@ -4388,7 +4515,7 @@
         "rarity": "限定",
         "releaseDate": "2024-10-18",
         "iconUrl": "assets/images/chara-icon/88.webp",
-        "updatedAt": "2026/10/26 17:03:02",
+        "updatedAt": "2026/11/10 10:35:36",
         "status": {
             "str": "731628",
             "dex": "596667",
@@ -4468,7 +4595,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-08-06"
     },
     {
         "id": "87",
@@ -4478,7 +4607,7 @@
         "rarity": "限定",
         "releaseDate": "2024-09-30",
         "iconUrl": "assets/images/chara-icon/87.webp",
-        "updatedAt": "2026/10/9 14:33:38",
+        "updatedAt": "2026/11/10 10:40:22",
         "status": {
             "str": "603900",
             "dex": "690171",
@@ -4557,7 +4686,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-11-09"
     },
     {
         "id": "86",
@@ -4567,7 +4699,7 @@
         "rarity": "限定",
         "releaseDate": "2024-09-12",
         "iconUrl": "assets/images/chara-icon/86.webp",
-        "updatedAt": "2026/10/9 14:36:31",
+        "updatedAt": "2026/11/10 10:54:15",
         "status": {
             "str": "608499",
             "dex": "711055",
@@ -4646,7 +4778,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-08-06"
     },
     {
         "id": "85",
@@ -4656,7 +4791,7 @@
         "rarity": "限定",
         "releaseDate": "2024-08-30",
         "iconUrl": "assets/images/chara-icon/85.webp",
-        "updatedAt": "2026/10/15 16:57:15",
+        "updatedAt": "2026/11/10 10:35:48",
         "status": {
             "str": "512965",
             "dex": "698202",
@@ -4735,7 +4870,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-11-09"
     },
     {
         "id": "84",
@@ -4745,7 +4883,7 @@
         "rarity": "限定",
         "releaseDate": "2024-08-16",
         "iconUrl": "assets/images/chara-icon/84.webp",
-        "updatedAt": "2026/06/12 10:28:32",
+        "updatedAt": "2026/11/10 10:46:06",
         "status": {
             "str": "562836",
             "dex": "562836",
@@ -4824,17 +4962,20 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-05-28"
     },
     {
         "id": "83",
         "name": "アムレート [夏の日の夢]",
         "attr": "黄",
         "type": "ウォーリアー",
-        "rarity": "限定",
+        "rarity": "季節限定",
         "releaseDate": "2024-07-31",
         "iconUrl": "assets/images/chara-icon/83.webp",
-        "updatedAt": "2026/10/26 16:59:58",
+        "updatedAt": "2026/11/10 10:45:30",
         "status": {
             "str": "738731",
             "dex": "596667",
@@ -4914,17 +5055,19 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-07-28"
     },
     {
         "id": "82",
         "name": "ニーナ [小さな大冒険]",
         "attr": "藍",
         "type": "スナイパー",
-        "rarity": "限定",
+        "rarity": "季節限定",
         "releaseDate": "2024-07-16",
         "iconUrl": "assets/images/chara-icon/82.webp",
-        "updatedAt": "2026/10/26 14:48:34",
+        "updatedAt": "2026/11/10 10:54:30",
         "status": {
             "str": "586219",
             "dex": "668979",
@@ -5004,7 +5147,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-07-23"
     },
     {
         "id": "81",
@@ -5014,7 +5159,7 @@
         "rarity": "限定",
         "releaseDate": "2024-06-28",
         "iconUrl": "assets/images/chara-icon/81.webp",
-        "updatedAt": "2026/10/26 17:06:47",
+        "updatedAt": "2026/11/10 10:30:34",
         "status": {
             "str": "589647",
             "dex": "548025",
@@ -5094,7 +5239,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-05-28"
     },
     {
         "id": "80",
@@ -5104,7 +5251,7 @@
         "rarity": "限定",
         "releaseDate": "2024-06-14",
         "iconUrl": "assets/images/chara-icon/80.webp",
-        "updatedAt": "2026/06/12 11:14:50",
+        "updatedAt": "2026/11/10 10:54:43",
         "status": {
             "str": "724153",
             "dex": "586219",
@@ -5183,7 +5330,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-05-28"
     },
     {
         "id": "79",
@@ -5193,7 +5343,7 @@
         "rarity": "限定",
         "releaseDate": "2024-05-31",
         "iconUrl": "assets/images/chara-icon/79.webp",
-        "updatedAt": "2026/10/9 14:40:07",
+        "updatedAt": "2026/11/10 10:46:20",
         "status": {
             "str": "729444",
             "dex": "601968",
@@ -5272,7 +5422,10 @@
                 "michaelText": "バトル開始時6ターンの間自身のHPドレインが40%増加する（解除不可）。",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-11-09"
     },
     {
         "id": "78",
@@ -5282,7 +5435,7 @@
         "rarity": "限定",
         "releaseDate": "2024-05-15",
         "iconUrl": "assets/images/chara-icon/78.webp",
-        "updatedAt": "2026/06/21 15:39:31",
+        "updatedAt": "2026/11/10 10:40:58",
         "status": {
             "str": "644460",
             "dex": "722362",
@@ -5361,7 +5514,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-07-15"
     },
     {
         "id": "77",
@@ -5371,7 +5527,7 @@
         "rarity": "限定",
         "releaseDate": "2024-04-26",
         "iconUrl": "assets/images/chara-icon/77.webp",
-        "updatedAt": "2026/10/9 19:48:25",
+        "updatedAt": "2026/11/10 10:36:04",
         "status": {
             "str": "546965",
             "dex": "546965",
@@ -5451,7 +5607,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-09-24"
     },
     {
         "id": "76",
@@ -5461,7 +5619,7 @@
         "rarity": "限定",
         "releaseDate": "2024-04-15",
         "iconUrl": "assets/images/chara-icon/76.webp",
-        "updatedAt": "2026/06/22 13:09:29",
+        "updatedAt": "2026/11/10 10:50:17",
         "status": {
             "str": "630828",
             "dex": "541689",
@@ -5540,7 +5698,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-11-09"
     },
     {
         "id": "75",
@@ -5550,7 +5711,7 @@
         "rarity": "限定",
         "releaseDate": "2024-03-29",
         "iconUrl": "assets/images/chara-icon/75.webp",
-        "updatedAt": "2026/06/12 11:37:19",
+        "updatedAt": "2026/11/10 10:55:04",
         "status": {
             "str": "624332",
             "dex": "714514",
@@ -5629,7 +5790,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-11-09"
     },
     {
         "id": "74",
@@ -5639,7 +5803,7 @@
         "rarity": "限定",
         "releaseDate": "2024-03-14",
         "iconUrl": "assets/images/chara-icon/74.webp",
-        "updatedAt": "2026/10/26 17:06:31",
+        "updatedAt": "2026/11/10 10:30:45",
         "status": {
             "str": "633595",
             "dex": "725115",
@@ -5719,7 +5883,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-11-09"
     },
     {
         "id": "73",
@@ -5729,7 +5895,7 @@
         "rarity": "限定",
         "releaseDate": "2024-02-29",
         "iconUrl": "assets/images/chara-icon/73.webp",
-        "updatedAt": "2026/10/9 20:00:44",
+        "updatedAt": "2026/11/10 10:46:31",
         "status": {
             "str": "554962",
             "dex": "554962",
@@ -5808,7 +5974,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-09-24"
     },
     {
         "id": "72",
@@ -5818,7 +5987,7 @@
         "rarity": "限定",
         "releaseDate": "2024-02-22",
         "iconUrl": "assets/images/chara-icon/72.webp",
-        "updatedAt": "2026/10/9 14:41:52",
+        "updatedAt": "2026/11/10 10:50:47",
         "status": {
             "str": "596667",
             "dex": "596667",
@@ -5897,7 +6066,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-03-16"
     },
     {
         "id": "71",
@@ -5907,7 +6079,7 @@
         "rarity": "限定",
         "releaseDate": "2024-02-15",
         "iconUrl": "assets/images/chara-icon/71.webp",
-        "updatedAt": "2026/10/9 20:09:44",
+        "updatedAt": "2026/11/10 10:55:31",
         "status": {
             "str": "636856",
             "dex": "559873",
@@ -5986,7 +6158,10 @@
                 "michaelText": "バトル開始時1ターンの間自身のスピードが20％増加する。",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-03-16"
     },
     {
         "id": "70",
@@ -5996,7 +6171,7 @@
         "rarity": "限定",
         "releaseDate": "2024-01-31",
         "iconUrl": "assets/images/chara-icon/70.webp",
-        "updatedAt": "2026/06/21 16:27:29",
+        "updatedAt": "2026/11/10 10:46:47",
         "status": {
             "str": "732155",
             "dex": "598396",
@@ -6075,7 +6250,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-07-15"
     },
     {
         "id": "69",
@@ -6085,7 +6263,7 @@
         "rarity": "限定",
         "releaseDate": "2024-01-15",
         "iconUrl": "assets/images/chara-icon/69.webp",
-        "updatedAt": "2026/10/9 20:17:39",
+        "updatedAt": "2026/11/10 10:55:45",
         "status": {
             "str": "564532",
             "dex": "571678",
@@ -6164,7 +6342,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-09-24"
     },
     {
         "id": "68",
@@ -6174,7 +6355,7 @@
         "rarity": "限定",
         "releaseDate": "2023-12-26",
         "iconUrl": "assets/images/chara-icon/68.webp",
-        "updatedAt": "2026/10/26 17:00:18",
+        "updatedAt": "2026/11/10 10:41:14",
         "status": {
             "str": "730524",
             "dex": "591376",
@@ -6254,17 +6435,19 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-09-24"
     },
     {
         "id": "67",
         "name": "トロポン [聖夜の祈り]",
         "attr": "藍",
         "type": "ソーサラー",
-        "rarity": "限定",
+        "rarity": "季節限定",
         "releaseDate": "2023-12-13",
         "iconUrl": "assets/images/chara-icon/67.webp",
-        "updatedAt": "2026/10/9 21:40:48",
+        "updatedAt": "2026/11/10 10:56:04",
         "status": {
             "str": "626555",
             "dex": "556156",
@@ -6344,17 +6527,19 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2025-12-11"
     },
     {
         "id": "66",
         "name": "アモール [聖夜の贈り物]",
         "attr": "黄",
         "type": "スナイパー",
-        "rarity": "限定",
+        "rarity": "季節限定",
         "releaseDate": "2023-11-30",
         "iconUrl": "assets/images/chara-icon/66.webp",
-        "updatedAt": "2026/10/26 17:00:35",
+        "updatedAt": "2026/11/10 10:45:21",
         "status": {
             "str": "605735",
             "dex": "713902",
@@ -6434,7 +6619,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2025-12-11"
     },
     {
         "id": "65",
@@ -6444,7 +6631,7 @@
         "rarity": "限定",
         "releaseDate": "2023-11-15",
         "iconUrl": "assets/images/chara-icon/65.webp",
-        "updatedAt": "2026/10/9 14:43:04",
+        "updatedAt": "2026/11/10 10:56:20",
         "status": {
             "str": "587928",
             "dex": "726264",
@@ -6523,7 +6710,10 @@
                 "michaelText": "バトル開始時、自身以外のスピードが低い味方2体の最大HPを30%増加させる（解除不可）。",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-07-15"
     },
     {
         "id": "64",
@@ -6533,7 +6723,7 @@
         "rarity": "限定",
         "releaseDate": "2023-10-31",
         "iconUrl": "assets/images/chara-icon/64.webp",
-        "updatedAt": "2026/10/9 22:08:22",
+        "updatedAt": "2026/11/10 10:31:05",
         "status": {
             "str": "719967",
             "dex": "589687",
@@ -6613,7 +6803,9 @@
                 "metatronText": "自身以外の冥属性の味方の編成数が2体以上の場合、自身の防御貫通が40%増加する（解除不可）。"
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-09-24"
     },
     {
         "id": "63",
@@ -6623,7 +6815,7 @@
         "rarity": "限定",
         "releaseDate": "2023-10-18",
         "iconUrl": "assets/images/chara-icon/63.webp",
-        "updatedAt": "2026/10/26 17:03:32",
+        "updatedAt": "2026/11/10 10:36:26",
         "status": {
             "str": "732155",
             "dex": "598396",
@@ -6703,7 +6895,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-07-15"
     },
     {
         "id": "62",
@@ -6713,7 +6907,7 @@
         "rarity": "限定",
         "releaseDate": "2023-09-29",
         "iconUrl": "assets/images/chara-icon/62.webp",
-        "updatedAt": "2026/10/9 22:40:09",
+        "updatedAt": "2026/11/10 10:51:12",
         "status": {
             "str": "552394",
             "dex": "559476",
@@ -6792,7 +6986,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-09-24"
     },
     {
         "id": "61",
@@ -6802,7 +6999,7 @@
         "rarity": "限定",
         "releaseDate": "2023-09-15",
         "iconUrl": "assets/images/chara-icon/61.webp",
-        "updatedAt": "2026/10/10 8:30:29",
+        "updatedAt": "2026/11/10 10:56:32",
         "status": {
             "str": "603401",
             "dex": "534832",
@@ -6881,7 +7078,10 @@
                 "michaelText": "",
                 "metatronText": "バトル開始時1ターンの間自身のスピードが25%増加する（解除不可）。"
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-10-15"
     },
     {
         "id": "60",
@@ -6891,7 +7091,7 @@
         "rarity": "限定",
         "releaseDate": "2023-08-31",
         "iconUrl": "assets/images/chara-icon/60.webp",
-        "updatedAt": "2026/10/26 17:06:09",
+        "updatedAt": "2026/11/10 10:31:18",
         "status": {
             "str": "640635",
             "dex": "732155",
@@ -6971,17 +7171,19 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-07-15"
     },
     {
         "id": "59",
         "name": "コルティ [夏の残響]",
         "attr": "紅",
         "type": "スナイパー",
-        "rarity": "限定",
+        "rarity": "季節限定",
         "releaseDate": "2023-08-14",
         "iconUrl": "assets/images/chara-icon/59.webp",
-        "updatedAt": "2026/10/26 16:57:23",
+        "updatedAt": "2026/11/10 10:51:32",
         "status": {
             "str": "611309",
             "dex": "720472",
@@ -7061,7 +7263,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-08-06"
     },
     {
         "id": "58",
@@ -7071,7 +7275,7 @@
         "rarity": "限定",
         "releaseDate": "2023-07-31",
         "iconUrl": "assets/images/chara-icon/58.webp",
-        "updatedAt": "2026/06/12 12:04:39",
+        "updatedAt": "2026/11/10 10:46:58",
         "status": {
             "str": "615336",
             "dex": "546965",
@@ -7150,17 +7354,20 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-10-15"
     },
     {
         "id": "57",
         "name": "モーザ [墓守の夏休み]",
         "attr": "黄",
         "type": "ソーサラー",
-        "rarity": "限定",
+        "rarity": "季節限定",
         "releaseDate": "2023-07-13",
         "iconUrl": "assets/images/chara-icon/57.webp",
-        "updatedAt": "2026/10/26 17:00:55",
+        "updatedAt": "2026/11/10 10:41:55",
         "status": {
             "str": "605583",
             "dex": "534338",
@@ -7240,17 +7447,19 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-08-06"
     },
     {
         "id": "56",
         "name": "サブリナ [涼風の軍神]",
         "attr": "翠",
         "type": "ウォーリアー",
-        "rarity": "限定",
+        "rarity": "季節限定",
         "releaseDate": "2023-06-30",
         "iconUrl": "assets/images/chara-icon/56.webp",
-        "updatedAt": "2026/10/26 16:58:54",
+        "updatedAt": "2026/11/10 10:47:14",
         "status": {
             "str": "641392",
             "dex": "558632",
@@ -7330,7 +7539,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-08-05"
     },
     {
         "id": "55",
@@ -7340,7 +7551,7 @@
         "rarity": "限定",
         "releaseDate": "2023-06-16",
         "iconUrl": "assets/images/chara-icon/55.webp",
-        "updatedAt": "2026/10/10 8:38:57",
+        "updatedAt": "2026/11/10 10:42:05",
         "status": {
             "str": "664290",
             "dex": "562091",
@@ -7419,7 +7630,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-10-15"
     },
     {
         "id": "54",
@@ -7429,7 +7643,7 @@
         "rarity": "限定",
         "releaseDate": "2023-05-31",
         "iconUrl": "assets/images/chara-icon/54.webp",
-        "updatedAt": "2026/06/21 15:25:39",
+        "updatedAt": "2026/11/10 10:51:48",
         "status": {
             "str": "615595",
             "dex": "546427",
@@ -7508,7 +7722,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-07-15"
     },
     {
         "id": "53",
@@ -7518,7 +7735,7 @@
         "rarity": "限定",
         "releaseDate": "2023-05-15",
         "iconUrl": "assets/images/chara-icon/53.webp",
-        "updatedAt": "2026/06/07 15:23:35",
+        "updatedAt": "2026/11/10 10:56:45",
         "status": {
             "str": "636346",
             "dex": "553344",
@@ -7597,7 +7814,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-06-23"
     },
     {
         "id": "52",
@@ -7607,7 +7827,7 @@
         "rarity": "限定",
         "releaseDate": "2023-04-28",
         "iconUrl": "assets/images/chara-icon/52.webp",
-        "updatedAt": "2026/10/26 17:03:50",
+        "updatedAt": "2026/11/10 10:36:40",
         "status": {
             "str": "591356",
             "dex": "605435",
@@ -7687,7 +7907,9 @@
                 "metatronText": "バトル開始時1ターンの間自身のスピードが30%増加する。"
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-10-15"
     },
     {
         "id": "51",
@@ -7697,7 +7919,7 @@
         "rarity": "限定",
         "releaseDate": "2023-04-14",
         "iconUrl": "assets/images/chara-icon/51.webp",
-        "updatedAt": "2026/10/10 9:07:56",
+        "updatedAt": "2026/11/10 10:52:01",
         "status": {
             "str": "586219",
             "dex": "544839",
@@ -7776,7 +7998,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-10-15"
     },
     {
         "id": "50",
@@ -7786,7 +8011,7 @@
         "rarity": "限定",
         "releaseDate": "2023-03-31",
         "iconUrl": "assets/images/chara-icon/50.webp",
-        "updatedAt": "2026/06/07 16:01:11",
+        "updatedAt": "2026/11/10 10:47:30",
         "status": {
             "str": "615083",
             "dex": "732242",
@@ -7865,7 +8090,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-06-23"
     },
     {
         "id": "49",
@@ -7875,7 +8103,7 @@
         "rarity": "限定",
         "releaseDate": "2023-03-16",
         "iconUrl": "assets/images/chara-icon/49.webp",
-        "updatedAt": "2026/06/07 16:08:57",
+        "updatedAt": "2026/11/10 10:42:22",
         "status": {
             "str": "456809",
             "dex": "633639",
@@ -7954,7 +8182,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-06-23"
     },
     {
         "id": "48",
@@ -7964,7 +8195,7 @@
         "rarity": "限定",
         "releaseDate": "2023-02-28",
         "iconUrl": "assets/images/chara-icon/48.webp",
-        "updatedAt": "2026/10/26 17:05:55",
+        "updatedAt": "2026/11/10 10:31:31",
         "status": {
             "str": "626163",
             "dex": "556589",
@@ -8044,7 +8275,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-10-15"
     },
     {
         "id": "47",
@@ -8054,7 +8287,7 @@
         "rarity": "限定",
         "releaseDate": "2023-02-15",
         "iconUrl": "assets/images/chara-icon/47.webp",
-        "updatedAt": "2026/10/26 17:05:17",
+        "updatedAt": "2026/11/10 10:31:48",
         "status": {
             "str": "631721",
             "dex": "554510",
@@ -8134,7 +8367,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-06-23"
     },
     {
         "id": "46",
@@ -8144,7 +8379,7 @@
         "rarity": "限定",
         "releaseDate": "2023-01-31",
         "iconUrl": "assets/images/chara-icon/46.webp",
-        "updatedAt": "2026/10/9 14:50:30",
+        "updatedAt": "2026/11/10 10:52:15",
         "status": {
             "str": "694893",
             "dex": "589606",
@@ -8223,7 +8458,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-06-23"
     },
     {
         "id": "45",
@@ -8233,7 +8471,7 @@
         "rarity": "限定",
         "releaseDate": "2023-01-17",
         "iconUrl": "assets/images/chara-icon/45.webp",
-        "updatedAt": "2026/10/26 17:04:10",
+        "updatedAt": "2026/11/10 10:36:51",
         "status": {
             "str": "701912",
             "dex": "582587",
@@ -8313,7 +8551,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-06-23"
     },
     {
         "id": "44",
@@ -8323,7 +8563,7 @@
         "rarity": "限定",
         "releaseDate": "2022-12-28",
         "iconUrl": "assets/images/chara-icon/44.webp",
-        "updatedAt": "2026/10/10 9:39:04",
+        "updatedAt": "2026/11/10 10:56:59",
         "status": {
             "str": "593116",
             "dex": "706090",
@@ -8402,7 +8642,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-11-30"
     },
     {
         "id": "43",
@@ -8412,7 +8655,7 @@
         "rarity": "限定",
         "releaseDate": "2022-12-15",
         "iconUrl": "assets/images/chara-icon/43.webp",
-        "updatedAt": "2026/10/10 9:46:29",
+        "updatedAt": "2026/11/10 10:42:32",
         "status": {
             "str": "594865",
             "dex": "552875",
@@ -8491,7 +8734,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-11-30"
     },
     {
         "id": "42",
@@ -8501,7 +8747,7 @@
         "rarity": "限定",
         "releaseDate": "2022-11-30",
         "iconUrl": "assets/images/chara-icon/42.webp",
-        "updatedAt": "2026/10/10 9:57:44",
+        "updatedAt": "2026/11/10 10:47:39",
         "status": {
             "str": "626163",
             "dex": "556589",
@@ -8580,7 +8826,10 @@
                 "michaelText": "毎ターン開始時自身のHPを自身の攻撃力×20％回復する。",
                 "metatronText": "毎ターン開始時自身のHPを自身の攻撃力×25％回復する。"
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-11-30"
     },
     {
         "id": "41",
@@ -8590,7 +8839,7 @@
         "rarity": "限定",
         "releaseDate": "2022-11-15",
         "iconUrl": "assets/images/chara-icon/41.webp",
-        "updatedAt": "2026/10/26 17:04:58",
+        "updatedAt": "2026/11/10 10:32:18",
         "status": {
             "str": "699841",
             "dex": "601864",
@@ -8670,7 +8919,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-11-30"
     },
     {
         "id": "40",
@@ -8680,7 +8931,7 @@
         "rarity": "限定",
         "releaseDate": "2022-11-01",
         "iconUrl": "assets/images/chara-icon/40.webp",
-        "updatedAt": "2026/10/12 11:50:04",
+        "updatedAt": "2026/11/10 10:52:23",
         "status": {
             "str": "629857",
             "dex": "559873",
@@ -8759,7 +9010,10 @@
                 "michaelText": "",
                 "metatronText": ""
             }
-        ]
+        ],
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-11-30"
     },
     {
         "id": "39",
@@ -8769,7 +9023,7 @@
         "rarity": "限定",
         "releaseDate": "2022-10-21",
         "iconUrl": "assets/images/chara-icon/39.webp",
-        "updatedAt": "2026/10/26 17:04:25",
+        "updatedAt": "2026/11/10 10:37:08",
         "status": {
             "str": "661755",
             "dex": "605435",
@@ -8849,7 +9103,9 @@
                 "metatronText": ""
             }
         ],
-        "coverUrl": "https://placehold.co"
+        "coverUrl": "https://placehold.co",
+        "gachaType": "星の導き",
+        "gachaEndDate": "2026-11-30"
     },
     {
         "id": "38",
