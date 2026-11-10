@@ -88,7 +88,8 @@
     font-weight: bold;
     color: #475569;
     margin-bottom: 6px;
-    letter-spacing: 0e = "p-.03em;
+    letter-spacing: 0e="p-.03em;
+
 }
 
 .p-schedule__summary-value {
@@ -253,7 +254,7 @@
 
     width: 48px;
     height: 48px;
-    overflow: hidden;  
+    overflow: hidden;
 }
 
 .p-schedule-table__chara-btn:hover {
@@ -856,4 +857,67 @@
     border-top: 1px dashed var(--theme-border-main);
     display: flex;
     justify-content: space-between;
+}
+
+
+/* ==========================================================================
+   📈 GACHA SPARKLINE (最大35,000ダイヤ上限・ダイレクトヒートマップ仕様)
+   ========================================================================== */
+.p-schedule-sparkline {
+    position: relative;
+    width: 100px;
+    /* 計算しやすいように100px幅に固定（1px = 350ダイヤ換算） */
+    height: 14px;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: middle;
+    box-sizing: border-box;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.p-schedule-sparkline__bar {
+    height: 100%;
+    border-radius: 20px 0 0 20px;
+    transition: width 0.4s ease;
+}
+
+/* 🟦 ① 超神引き：期待値-5000以下（ディープブルー） */
+.p-schedule-sparkline__bar.is-super-good-luck {
+    background: linear-gradient(90deg, #1d4ed8 0%, #3b82f6 100%);
+}
+
+/* 🚙 ② 微良引き：期待値未満（マイルドブルー） */
+.p-schedule-sparkline__bar.is-good-luck {
+    background: linear-gradient(90deg, #60a5fa 0%, #93c5fd 100%);
+}
+
+/* 😐 ③ 期待値通り：期待値の前後ジャスト圏（プラチナグレー） */
+.p-schedule-sparkline__bar.is-normal-luck {
+    background: linear-gradient(90deg, #94a3b8 0%, #cbd5e1 100%);
+}
+
+/* 🍊 ④ 微沼：期待値超過（警告ライトレッド） */
+.p-schedule-sparkline__bar.is-bad-luck {
+    background: linear-gradient(90deg, #f87171 0%, #fca5a5 100%);
+}
+
+/* 🟥 ⑤ 大爆死：30,000ダイヤ以上〜上限（ビビッドレッド） */
+.p-schedule-sparkline__bar.is-super-bad-luck {
+    background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%);
+}
+
+/* 🎯 動的期待値センターライン */
+.p-schedule-sparkline__center-line {
+    position: absolute;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background: #334155;
+    opacity: 0.8;
+    pointer-events: none;
+    z-index: 2;
+    /* バーの上に常に線を出す */
 }

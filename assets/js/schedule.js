@@ -395,6 +395,63 @@ function renderScheduleTable() {
       unitCostCell.innerHTML = `<div class="p-schedule-table__cost-flex"><span class="p-schedule-table__cost-value" style="color: #475569;">${costPerBody.toLocaleString()}</span></div>`;
       tr.appendChild(unitCostCell);
 
+      // 📈 【統計的リニューアル】スパークライン効率インジケーター列
+      const sparklineCell = document.createElement("td");
+      sparklineCell.className =
+        "p-schedule-table__cell p-schedule-table__cell--gacha";
+
+      if (pureGachaSR > 0) {
+        // ① 1体あたりの実際の消費ダイヤを算出
+        const actualCostPerBody = consumedDiamonds / pureGachaSR;
+
+        // ② 基準となる期待値と最大値の定義
+        const baseExpect = isSpecialType ? 19000 : 18500;
+        const maxLimit = 35000; // ユーザー指定の最大上限値
+
+        // ③ メーターの長さ（パーセンテージ）を単純割合で計算（上限100%ガード）
+        let displayPercentage = (actualCostPerBody / maxLimit) * 100;
+        displayPercentage = Math.max(5, Math.min(100, displayPercentage));
+
+        // ④ 期待値（センターライン）の表示位置を動的に計算
+        const centerLinePosition = (baseExpect / maxLimit) * 100;
+
+        // ⑤ 期待値（分岐点）と、どれだけ離れているかでヒートマップの色（クラス）を5段階判定
+        let luckClass = "is-normal-luck";
+        let luckTitle = "";
+
+        // 期待値からの差額を計算
+        const diffFromExpect = actualCostPerBody - baseExpect;
+
+        if (diffFromExpect <= -5000) {
+          luckClass = "is-super-good-luck"; // 期待値より5000ダイヤ以上安い（濃い青）
+          luckTitle = `超神引き！(期待値より大幅に安上がり) [1体あたり平均: ${Math.round(actualCostPerBody).toLocaleString()}ダイヤ]`;
+        } else if (diffFromExpect < -1000) {
+          luckClass = "is-good-luck"; // 期待値より1000〜5000ダイヤ安い（薄い青）
+          luckTitle = `微良引き (平均よりやや低コスト) [1体あたり平均: ${Math.round(actualCostPerBody).toLocaleString()}ダイヤ]`;
+        } else if (diffFromExpect >= 8000) {
+          luckClass = "is-super-bad-luck"; // 期待値より8000ダイヤ以上高い（濃い赤：30000ダイヤ前後〜大爆死）
+          luckTitle = `大爆死中…(深刻な沼状態) [1体あたり平均: ${Math.round(actualCostPerBody).toLocaleString()}ダイヤ]`;
+        } else if (diffFromExpect >= 1500) {
+          luckClass = "is-bad-luck"; // 期待値より1500〜8000ダイヤ高い（薄い赤）
+          luckTitle = `微沼気味 (平均よりやや高コスト) [1体あたり平均: ${Math.round(actualCostPerBody).toLocaleString()}ダイヤ]`;
+        } else {
+          luckClass = "is-normal-luck"; // 期待値のほぼジャスト圏内（グレー）
+          luckTitle = `期待値通り (標準的な引き) [1体あたり平均: ${Math.round(actualCostPerBody).toLocaleString()}ダイヤ]`;
+        }
+
+        sparklineCell.innerHTML = `
+          <div class="p-schedule-sparkline" title="${luckTitle}">
+            <div class="p-schedule-sparkline__bar ${luckClass}" style="width: ${displayPercentage}%"></div>
+            <!-- 👇 属性（4属性 or 天冥）に合わせて期待値の縦線を動的に配置 -->
+            <div class="p-schedule-sparkline__center-line" style="left: ${centerLinePosition}%"></div>
+          </div>
+        `;
+      } else {
+        sparklineCell.innerHTML = `<span style="color: var(--text-muted); font-style: italic;">-</span>`;
+      }
+
+      tr.appendChild(sparklineCell);
+
       tbodyMain.appendChild(tr);
     });
   });
