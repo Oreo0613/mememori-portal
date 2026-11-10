@@ -639,6 +639,14 @@ function initScheduleEvents() {
       hiddenInput.value = "";
     });
   }
+  // 💎 初期表示を「キャラガチャ」モードに強制設定する
+  const defaultRadio = document.querySelector(
+    '.js-mode-trigger[value="gacha"]',
+  );
+  if (defaultRadio) {
+    defaultRadio.checked = true; // ラジオボタンのチェックをガチャに変更
+    defaultRadio.dispatchEvent(new Event("change")); // 変更イベントを発火させてテーブル表示をガチャに切り替える
+  }
 }
 
 // 📋 詳細モーダル動的生成
@@ -651,7 +659,7 @@ function openScheduleModal(index) {
   document.body.classList.add("is-modal-open");
 
   const currentMode =
-    document.querySelector(".js-mode-trigger:checked")?.value || "evaluation";
+    document.querySelector(".js-mode-trigger:checked")?.value || "gacha";
 
   let scoreOptionsHtml = "";
   for (let v = 1; v <= 5; v++) {
@@ -680,8 +688,8 @@ function openScheduleModal(index) {
           <button type="button" class="p-schedule-modal__close-btn js-close-modal"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="p-schedule-modal__tabs">
-          <button type="button" class="p-schedule-modal__tab-btn js-modal-tab-trigger ${currentMode === "evaluation" ? "is-active" : ""}" data-tab="evaluation">⚔️ キャラ評価</button>
           <button type="button" class="p-schedule-modal__tab-btn js-modal-tab-trigger ${currentMode === "gacha" ? "is-active" : ""}" data-tab="gacha">💎 キャラガチャ</button>
+          <button type="button" class="p-schedule-modal__tab-btn js-modal-tab-trigger ${currentMode === "evaluation" ? "is-active" : ""}" data-tab="evaluation">⚔️ キャラ評価</button>
         </div>
         <div class="p-schedule-modal__body">
           <div class="p-schedule-modal__group">
