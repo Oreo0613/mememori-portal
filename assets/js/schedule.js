@@ -225,11 +225,13 @@ function renderScheduleTable() {
       const diffSR = Math.max(0, targetSR - currentSR);
       const remainingDiamonds = diffSR * baseDiamondRate;
 
-      const countUnmei = item.historyUnmeiCount || 0;
-      const countMichi = item.historyMichiCount || 0;
-      const countPickup = item.historyPickupCount || 0;
+      // 【変更後】保存された累計コストを直接参照（旧データがある場合は自動合算して互換維持）
       const consumedDiamonds =
-        countUnmei * 500 + countMichi * 500 + countPickup * 300;
+        item.consumedDiamonds !== undefined
+          ? Number(item.consumedDiamonds)
+          : (item.historyUnmeiCount || 0) * 500 +
+            (item.historyMichiCount || 0) * 500 +
+            (item.historyPickupCount || 0) * 300;
 
       const pureGachaSR = currentSR - giftSR;
       const costPerBody =
@@ -662,17 +664,15 @@ function initScheduleEvents() {
       scheduleList.push({
         charaId: foundChara.id,
         charaName: foundChara.name,
-        status: "planning",
+        status: "priority", // ※お好みで "planning" 等に合わせてください
         sortOrder: scheduleList.length,
-        usage: "バトリ用",
+        usage: "",
         scores: { quest: 1, battle: 1, guild: 1, arcana: 1, raid: 1 },
         targetSR: initialTargetSR,
         currentSR: 0,
         giftSR: 0,
         currentRarity: "none",
-        historyUnmeiCount: 0,
-        historyMichiCount: 0,
-        historyPickupCount: 0,
+        consumedDiamonds: 0,
         lastEndDate: "2026-11-08",
       });
       renderScheduleTable();
@@ -718,6 +718,14 @@ function openScheduleModal(index) {
 
   const master = window.characterMaster || [];
   const foundChara = master.find((c) => String(c.id) === String(item.charaId));
+
+  // モーダル生成時に、既存の累計消費ダイヤを算出しておく
+  const initialConsumedDiamonds =
+    item.consumedDiamonds !== undefined
+      ? Number(item.consumedDiamonds)
+      : (item.historyUnmeiCount || 0) * 500 +
+        (item.historyMichiCount || 0) * 500 +
+        (item.historyPickupCount || 0) * 300;
 
   const isSpecialType =
     foundChara && (foundChara.attr === "天" || foundChara.attr === "冥");
@@ -806,30 +814,61 @@ function openScheduleModal(index) {
               <div class="p-schedule-modal__field"><label class="p-schedule-modal__label">現在の獲得数 (体)</label><input type="number" id="js-modal-current-sr" class="p-schedule-modal__input js-modal-calc-trigger" value="${item.currentSR || 0}" min="0"></div>
               <div class="p-schedule-modal__field"><label class="p-schedule-modal__label">（うち）贈り物での獲得数 (体)</label><input type="number" id="js-modal-gift-sr" class="p-schedule-modal__input" value="${item.giftSR || 0}" min="0"></div>
             </div>
+
             <div class="p-schedule-modal__group">
-              <div class="p-schedule-modal__group-title">📜 [ガチャ履歴] エリア</div>
-              ${[
-                ["unmei", "運命ガチャ回数 (回)", 500],
-                ["michi", "導きガチャ回数 (回)", 500],
-                ["pickup", "ピックアップガチャ回数 (回)", 300],
-              ]
-                .map(
-                  ([k, label, rate]) => `
-                <div class="p-schedule-modal__field">
-                  <label class="p-schedule-modal__label">${label}</label>
-                  <div class="p-schedule-modal__history-row-flex">
-                    <input type="number" id="js-modal-history-${k}-count" class="p-schedule-modal__input js-modal-calc-trigger p-schedule-modal__input--flex-fill" value="${item[`history${k.charAt(0).toUpperCase() + k.slice(1)}Count`] || 0}" min="0">
-                    <span class="p-schedule-modal__multiplier-label">× ${rate} ＝</span>
-                    <span id="js-modal-subtotal-${k}" class="p-schedule-modal__subtotal-output">0</span>
+              <div class="p-schedule-modal__group-title">📜 [ガチャ履歴・コスト計算] エリア</div>
+              
+              <div class="p-schedule-modal__field">
+                <label class="p-schedule-modal__label">累計消費ダイヤ（最終保存値・直接修正も可）</label>
+                <input type="number" id="js-modal-consumed-diamonds" class="p-schedule-modal__input js-modal-calc-trigger" value="${initialConsumedDiamonds}" min="0">
+              </div>
+
+              <div class="p-schedule-modal__calc-box">
+                <div class="p-schedule-modal__calc-header">🧮 今回の差引コスト計算機（一時入力用）</div>
+                <table class="p-schedule-modal__calc-table">
+                  <thead>
+                    <tr>
+                      <th>リソース</th>
+                      <th>開始前</th>
+                      <th>購入</th>
+                      <th>開始後</th>
+                      <th>差引コスト</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${[
+                      { id: "diamond", label: "ダイヤ", rate: 1 },
+                      { id: "unmei", label: "運命チケ", rate: 500 },
+                      { id: "michi", label: "導きチケ", rate: 500 },
+                    ]
+                      .map(
+                        (res) => `
+                      <tr data-res-id="${res.id}" data-rate="${res.rate}">
+                        <td class="p-schedule-modal__calc-name">${res.label}</td>
+                        <td><input type="number" class="p-schedule-modal__calc-input js-calc-diff-input" data-col="before" placeholder="0" min="0"></td>
+                        <td><input type="number" class="p-schedule-modal__calc-input js-calc-diff-input" data-col="buy" placeholder="0" min="0"></td>
+                        <td><input type="number" class="p-schedule-modal__calc-input js-calc-diff-input" data-col="after" placeholder="0" min="0"></td>
+                        <td class="p-schedule-modal__calc-cost js-calc-row-cost">0</td>
+                      </tr>
+                    `,
+                      )
+                      .join("")}
+                  </tbody>
+                </table>
+
+                <div class="p-schedule-modal__calc-footer">
+                  <div class="p-schedule-modal__calc-subtotal">
+                    <span>今回の消費合計:</span>
+                    <strong id="js-modal-session-total">0 ダイヤ</strong>
                   </div>
+                  <button type="button" id="js-btn-apply-session-cost" class="p-schedule-modal__apply-btn">
+                    <i class="fa-solid fa-plus"></i> 今回の消費を累計コストに加算する
+                  </button>
                 </div>
-              `,
-                )
-                .join("")}
-              <div class="p-schedule-modal__history-total-wrapper">
-                <span>履歴小計合計:</span><span id="js-modal-history-total" class="p-schedule-modal__total-output">0 ダイヤ</span>
               </div>
             </div>
+
+
           </div>
         </div>
         <div class="p-schedule-modal__footer"><button type="button" class="p-schedule-modal__delete-btn id-btn-delete-record"><i class="fa-solid fa-trash-can"></i> 計画リストからこの魔女を削除する</button></div>
@@ -853,11 +892,17 @@ function openScheduleModal(index) {
   bindModalEvents(container, item);
 }
 
+// ==========================================================================
+// 4. bindModalEvents() / calculateModalPreview() / closeModalAndSave() / updateSummary()
+// ==========================================================================
+
 function bindModalEvents(container, item) {
   calculateModalPreview();
+
   container
     .querySelectorAll(".js-close-modal")
     .forEach((el) => el.addEventListener("click", closeModalAndSave));
+
   container.querySelectorAll(".js-modal-tab-trigger").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       container
@@ -872,9 +917,45 @@ function bindModalEvents(container, item) {
         ?.classList.add("is-active");
     });
   });
+
+  // 目標・現在数・累計コストの直接変更時
   container
     .querySelectorAll(".js-modal-calc-trigger")
     .forEach((input) => input.addEventListener("input", calculateModalPreview));
+
+  // 🧮 差引コスト計算機の入力時（リアルタイム計算）
+  container.querySelectorAll(".js-calc-diff-input").forEach((input) => {
+    input.addEventListener("input", calculateSessionDiffCost);
+  });
+
+  // ➕ 「今回の消費を累計コストに加算する」ボタン押下時
+  const applyBtn = document.getElementById("js-btn-apply-session-cost");
+  if (applyBtn) {
+    applyBtn.addEventListener("click", () => {
+      const sessionCost = calculateSessionDiffCost();
+      if (sessionCost <= 0) {
+        alert(
+          "加算する消費コストがありません（開始前・開始後を入力してください）。",
+        );
+        return;
+      }
+
+      const consumedInput = document.getElementById(
+        "js-modal-consumed-diamonds",
+      );
+      if (consumedInput) {
+        const currentTotal = Number(consumedInput.value || 0);
+        consumedInput.value = currentTotal + sessionCost;
+      }
+
+      // 一時入力欄をリセット
+      container.querySelectorAll(".js-calc-diff-input").forEach((inp) => {
+        inp.value = "";
+      });
+      calculateSessionDiffCost();
+      calculateModalPreview();
+    });
+  }
 
   container
     .querySelector(".id-btn-delete-record")
@@ -886,10 +967,7 @@ function bindModalEvents(container, item) {
           document
             .getElementById("js-schedule-modal")
             ?.classList.remove("is-active");
-
-          // 🛠️ 【追加】削除によるクローズ時も body の状態クラスを削除
           document.body.classList.remove("is-modal-open");
-
           activeEditIndex = null;
           renderScheduleTable();
         } catch (e) {
@@ -900,6 +978,46 @@ function bindModalEvents(container, item) {
     });
 }
 
+// 🧮 一時計算機の「差引コスト」を計算して画面反映＆合計値を返す関数
+function calculateSessionDiffCost() {
+  const rows = document.querySelectorAll(
+    ".p-schedule-modal__calc-table tbody tr",
+  );
+  let sessionTotal = 0;
+
+  rows.forEach((tr) => {
+    const rate = Number(tr.dataset.rate || 1);
+    const beforeVal = tr.querySelector('[data-col="before"]')?.value;
+    const buyVal = tr.querySelector('[data-col="buy"]')?.value;
+    const afterVal = tr.querySelector('[data-col="after"]')?.value;
+
+    const before = Number(beforeVal || 0);
+    const buy = Number(buyVal || 0);
+    const after = Number(afterVal || 0);
+
+    // 開始前・購入・開始後のいずれかが入力されている場合のみ差引計算
+    let diffCount = 0;
+    if (beforeVal !== "" || buyVal !== "" || afterVal !== "") {
+      diffCount = Math.max(0, before + buy - after);
+    }
+
+    const rowCost = diffCount * rate;
+    sessionTotal += rowCost;
+
+    const costCell = tr.querySelector(".js-calc-row-cost");
+    if (costCell) {
+      costCell.textContent = rowCost.toLocaleString();
+    }
+  });
+
+  const sessionTotalEl = document.getElementById("js-modal-session-total");
+  if (sessionTotalEl) {
+    sessionTotalEl.textContent = `${sessionTotal.toLocaleString()} ダイヤ`;
+  }
+
+  return sessionTotal;
+}
+
 function calculateModalPreview() {
   const targetSR = Number(
     document.getElementById("js-modal-target-sr")?.value || 0,
@@ -907,14 +1025,8 @@ function calculateModalPreview() {
   const currentSR = Number(
     document.getElementById("js-modal-current-sr")?.value || 0,
   );
-  const countUnmei = Number(
-    document.getElementById("js-modal-history-unmei-count")?.value || 0,
-  );
-  const countMichi = Number(
-    document.getElementById("js-modal-history-michi-count")?.value || 0,
-  );
-  const countPickup = Number(
-    document.getElementById("js-modal-history-pickup-count")?.value || 0,
+  const consumedDiamonds = Number(
+    document.getElementById("js-modal-consumed-diamonds")?.value || 0,
   );
 
   const container = document.getElementById("js-schedule-modal-container");
@@ -931,32 +1043,15 @@ function calculateModalPreview() {
   const diffSR = Math.max(0, targetSR - currentSR);
   const remainingDiamonds = diffSR * baseDiamondRate;
 
-  const subtotalUnmei = countUnmei * 500;
-  const subtotalMichi = countMichi * 500;
-  const subtotalPickup = countPickup * 300;
-  const consumedDiamonds = subtotalUnmei + subtotalMichi + subtotalPickup;
+  const previewDiff = document.getElementById("js-modal-preview-diff");
+  const previewDiamonds = document.getElementById("js-modal-preview-diamonds");
+  const previewConsumed = document.getElementById("js-modal-preview-consumed");
 
-  document.getElementById("js-modal-preview-diff") &&
-    (document.getElementById("js-modal-preview-diff").textContent =
-      `あと ${diffSR} 体`);
-  document.getElementById("js-modal-preview-diamonds") &&
-    (document.getElementById("js-modal-preview-diamonds").textContent =
-      `${remainingDiamonds.toLocaleString()} ダイヤ`);
-  document.getElementById("js-modal-preview-consumed") &&
-    (document.getElementById("js-modal-preview-consumed").textContent =
-      `${consumedDiamonds.toLocaleString()} ダイヤ`);
-  document.getElementById("js-modal-subtotal-unmei") &&
-    (document.getElementById("js-modal-subtotal-unmei").textContent =
-      subtotalUnmei.toLocaleString());
-  document.getElementById("js-modal-subtotal-michi") &&
-    (document.getElementById("js-modal-subtotal-michi").textContent =
-      subtotalMichi.toLocaleString());
-  document.getElementById("js-modal-subtotal-pickup") &&
-    (document.getElementById("js-modal-subtotal-pickup").textContent =
-      subtotalPickup.toLocaleString());
-  document.getElementById("js-modal-history-total") &&
-    (document.getElementById("js-modal-history-total").textContent =
-      `${consumedDiamonds.toLocaleString()} ダイヤ`);
+  if (previewDiff) previewDiff.textContent = `あと ${diffSR} 体`;
+  if (previewDiamonds)
+    previewDiamonds.textContent = `${remainingDiamonds.toLocaleString()} ダイヤ`;
+  if (previewConsumed)
+    previewConsumed.textContent = `${consumedDiamonds.toLocaleString()} ダイヤ`;
 }
 
 function closeModalAndSave() {
@@ -964,6 +1059,23 @@ function closeModalAndSave() {
   const item = scheduleList[activeEditIndex];
   const container = document.getElementById("js-schedule-modal-container");
   if (!container) return;
+
+  // 💡 もし計算機に未加算の数値が残っていたら、閉じるときに確認して自動加算できるようにする親切ガード
+  const unappliedCost = calculateSessionDiffCost();
+  if (unappliedCost > 0) {
+    if (
+      confirm(
+        `計算機に入力された「${unappliedCost.toLocaleString()} ダイヤ」がまだ累計コストに加算されていません。\n累計コストに加算してから閉じますか？`,
+      )
+    ) {
+      const consumedInput = document.getElementById(
+        "js-modal-consumed-diamonds",
+      );
+      if (consumedInput) {
+        consumedInput.value = Number(consumedInput.value || 0) + unappliedCost;
+      }
+    }
+  }
 
   const statusSelect = document.getElementById("js-modal-status-select");
   if (statusSelect) item.status = statusSelect.value;
@@ -984,19 +1096,16 @@ function closeModalAndSave() {
   item.giftSR = Number(document.getElementById("js-modal-gift-sr")?.value || 0);
   item.currentRarity =
     document.getElementById("js-modal-current-rarity")?.value || "none";
-  item.historyUnmeiCount = Number(
-    document.getElementById("js-modal-history-unmei-count")?.value || 0,
+
+  // ✨ 累計消費ダイヤのみを保存（古い回数フィールドは削除してデータクリーンアップ）
+  item.consumedDiamonds = Number(
+    document.getElementById("js-modal-consumed-diamonds")?.value || 0,
   );
-  item.historyMichiCount = Number(
-    document.getElementById("js-modal-history-michi-count")?.value || 0,
-  );
-  item.historyPickupCount = Number(
-    document.getElementById("js-modal-history-pickup-count")?.value || 0,
-  );
+  delete item.historyUnmeiCount;
+  delete item.historyMichiCount;
+  delete item.historyPickupCount;
 
   document.getElementById("js-schedule-modal")?.classList.remove("is-active");
-
-  // 🛠️ 【追加】モーダルが閉じるため body の状態クラスを削除
   document.body.classList.remove("is-modal-open");
 
   activeEditIndex = null;
@@ -1004,12 +1113,10 @@ function closeModalAndSave() {
 }
 
 function updateSummary() {
-  // 🛠️ 【修正】「①完了」のみを完了済数としてカウント
   const completedCount = scheduleList.filter(
     (i) => i.status === "completed",
   ).length;
 
-  // 🛠️ 【修正】「⑤仮完了」を含む、完了以外をすべて計画中数としてカウント
   const planningCount = scheduleList.filter(
     (i) => i.status !== "completed",
   ).length;
@@ -1019,12 +1126,15 @@ function updateSummary() {
   const master = window.characterMaster || [];
 
   scheduleList.forEach((item) => {
-    totalConsumedDiamonds +=
-      (item.historyUnmeiCount || 0) * 500 +
-      (item.historyMichiCount || 0) * 500 +
-      (item.historyPickupCount || 0) * 300;
+    const itemConsumed =
+      item.consumedDiamonds !== undefined
+        ? Number(item.consumedDiamonds)
+        : (item.historyUnmeiCount || 0) * 500 +
+          (item.historyMichiCount || 0) * 500 +
+          (item.historyPickupCount || 0) * 300;
 
-    // 🛠️ 【修正】「①完了」以外の魔女（仮完了も含む）に対して、必要ダイヤの目安を算出
+    totalConsumedDiamonds += itemConsumed;
+
     if (item.status !== "completed") {
       const foundChara = master.find(
         (c) => String(c.id) === String(item.charaId),

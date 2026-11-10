@@ -946,3 +946,115 @@
 .c-badge-gacha-type--past {
     background-color: #64748b; /* シックなスレートグレー */
 }
+
+
+/* ==========================================================================
+   🧮 ガチャ履歴・差引コスト計算機（一時入力用テーブル）
+   ========================================================================== */
+   .p-schedule-modal__calc-box {
+    margin-top: 14px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.p-schedule-modal__calc-header {
+    font-size: 12px;
+    font-weight: bold;
+    color: #334155;
+    margin-bottom: 8px;
+}
+
+.p-schedule-modal__calc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    table-layout: fixed;
+}
+
+.p-schedule-modal__calc-table th {
+    background: #f1f5f9;
+    color: #475569;
+    font-weight: bold;
+    padding: 6px 4px;
+    text-align: center;
+    border-bottom: 1px solid #cbd5e1;
+}
+
+.p-schedule-modal__calc-table td {
+    padding: 6px 4px;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+}
+
+.p-schedule-modal__calc-name {
+    font-weight: bold;
+    color: #1e293b;
+    white-space: nowrap;
+}
+
+.p-schedule-modal__calc-input {
+    width: 100%;
+    min-width: 56px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 5px 6px;
+    font-size: 12px;
+    text-align: right;
+    font-family: monospace;
+}
+
+.p-schedule-modal__calc-input:focus {
+    background: #ffffff;
+    border-color: #2563eb;
+    outline: none;
+}
+
+.p-schedule-modal__calc-cost {
+    text-align: right;
+    font-weight: bold;
+    font-family: monospace;
+    color: #0f172a;
+    white-space: nowrap;
+    padding-right: 4px;
+}
+
+.p-schedule-modal__calc-footer {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.p-schedule-modal__calc-subtotal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: #334155;
+    padding: 4px 2px;
+}
+
+.p-schedule-modal__calc-subtotal strong {
+    font-size: 15px;
+    color: #2563eb;
+    font-family: monospace;
+}
+
+.p-schedule-modal__apply-btn {
+    width: 100%;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 8px 12px;
+    border-radius: 6px;
+    text-align: center;
+    transition: background 0.2s;
+}
+
+.p-schedule-modal__apply-btn:hover {
+    background: #1d4ed8;
+}
