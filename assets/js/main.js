@@ -2787,9 +2787,6 @@ window.updateCardAppearance = updateCardAppearance;
  * 🔒 管理者（あなた）専用の「ガチャ」メニューをフッターナビに注入する関数
  */
 function injectAdminNavigation() {
-  // 重複防止（すでにボタンがあれば何もしない）
-  if (document.querySelector(".js-nav-admin-schedule")) return;
-
   // 1. フッター内の <ul> 要素（メニューの並び）を見つける
   const navList = document.querySelector(".l-footer-nav__list");
   if (!navList) {
@@ -2799,32 +2796,39 @@ function injectAdminNavigation() {
     return;
   }
 
-  // 2. 既存の構造に合わせて <li> 要素を生成
-  const li = document.createElement("li");
-  li.className = "l-footer-nav__item js-nav-admin-schedule";
+  // --- ① ガチャ（schedule.html）の追加 ---
+  if (!document.querySelector(".js-nav-admin-schedule")) {
+    const liSchedule = document.createElement("li");
+    liSchedule.className = "l-footer-nav__item js-nav-admin-schedule";
 
-  // 3. 内部の <a> タグを生成
-  const adminLink = document.createElement("a");
-  adminLink.href = "schedule.html"; // 👈 ここを schedule.html に修正しました
-  adminLink.className = "l-footer-nav__link js-nav-trigger is-admin";
-  adminLink.id = "js-nav-admin-schedule";
-  adminLink.innerHTML = '<i class="fa-solid fa-chart-bar"></i>ガチャ';
+    const scheduleLink = document.createElement("a");
+    scheduleLink.href = "schedule.html";
+    scheduleLink.className = "l-footer-nav__link js-nav-trigger is-admin";
+    scheduleLink.id = "js-nav-admin-schedule";
+    scheduleLink.innerHTML = '<i class="fa-solid fa-chart-bar"></i>ガチャ';
 
-  // 4. <li> の中に <a> を入れ、<ul> の最後尾（課金の次）に追加
-  li.appendChild(adminLink);
-  navList.appendChild(li);
+    liSchedule.appendChild(scheduleLink);
+    navList.appendChild(liSchedule);
+  }
 
+  // --- ② ダイヤ管理（diamond.html）の追加 ---
+  if (!document.querySelector(".js-nav-admin-diamond")) {
+    const liDiamond = document.createElement("li");
+    liDiamond.className = "l-footer-nav__item js-nav-admin-diamond";
+
+    const diamondLink = document.createElement("a");
+    diamondLink.href = "diamond.html";
+    diamondLink.className = "l-footer-nav__link js-nav-trigger is-admin";
+    diamondLink.id = "js-nav-admin-diamond";
+    diamondLink.innerHTML = '<i class="fa-solid fa-gem"></i>ダイヤ';
+
+    liDiamond.appendChild(diamondLink);
+    navList.appendChild(liDiamond);
+  }
+
+  // 現在のページに応じたアクティブ状態（is-active）の付与
   if (typeof setActiveNavigation === "function") {
     setActiveNavigation();
   }
 }
 
-/**
- * 一般ユーザーやログアウト時に安全にリンクを消し去る関数
- */
-function removeAdminNavigation() {
-  const adminLink = document.querySelector(".js-nav-admin-schedule");
-  if (adminLink) {
-    adminLink.remove();
-  }
-}
