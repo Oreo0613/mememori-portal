@@ -1,0 +1,534 @@
+@charset "UTF-8";
+
+/* ==========================================================================
+   💎 ダイヤ管理ページ（diamond.html）専用スタイル
+   ========================================================================== */
+
+/* ユーティリティ：JSによる表示・非表示制御 */
+.p-diamond .is-hidden {
+    display: none !important;
+}
+
+/* メインレイアウト */
+.p-diamond {
+    padding-bottom: 96px;
+    /* 固定フッターナビゲーションとの重なり防止 */
+}
+
+.p-diamond-main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 16px;
+}
+
+.p-diamond__content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ==========================================================================
+   共通カードセクション
+   ========================================================================== */
+.p-diamond-section {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+}
+
+.p-diamond-section__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.p-diamond-section__title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.p-diamond-section__title i {
+    color: #0ea5e9;
+    /* ダイヤをイメージしたシアンブルー */
+}
+
+/* 選択中ワールドバッジ */
+.p-diamond-world-badge {
+    background-color: #f1f5f9;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    border: 1px solid #cbd5e1;
+    white-space: nowrap;
+}
+
+/* ==========================================================================
+   1. Googleスプレッドシート連携設定（アコーディオン）
+   ========================================================================== */
+.p-diamond-config {
+    padding: 0;
+    overflow: hidden;
+}
+
+.p-diamond-config__toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 14px 16px;
+    background-color: #f8fafc;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    text-align: left;
+}
+
+.p-diamond-config__toggle:hover {
+    background-color: #f1f5f9;
+}
+
+.p-diamond-config__toggle-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.p-diamond-config__toggle-title i {
+    color: #10b981;
+    /* スプレッドシートをイメージしたグリーン */
+}
+
+/* 連携ステータスバッジ */
+.p-diamond-config__status {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background-color: #fef3c7;
+    color: #b45309;
+}
+
+.p-diamond-config__status.is-linked {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+.p-diamond-config__arrow {
+    font-size: 12px;
+    color: #64748b;
+    transition: transform 0.25s ease;
+}
+
+.p-diamond-config__toggle.is-open .p-diamond-config__arrow {
+    transform: rotate(180deg);
+}
+
+.p-diamond-config__body {
+    padding: 16px;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.p-diamond-config__desc {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #64748b;
+}
+
+/* 連携済みシート情報ボックス */
+.p-diamond-config__linked {
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.p-diamond-config__linked-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.p-diamond-config__linked-label {
+    font-weight: 700;
+    color: #166534;
+}
+
+.p-diamond-config__linked-id {
+    font-family: monospace;
+    background-color: #ffffff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #bbf7d0;
+    color: #1e293b;
+    word-break: break-all;
+}
+
+.p-diamond-config__external-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    align-self: flex-start;
+    font-size: 12px;
+    font-weight: 700;
+    color: #15803d;
+    background-color: #ffffff;
+    border: 1px solid #86efac;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.p-diamond-config__external-btn:hover {
+    background-color: #dcfce7;
+}
+
+.p-diamond-config__block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px dashed #e2e8f0;
+}
+
+.p-diamond-config__sub-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+}
+
+.p-diamond-config__form {
+    display: flex;
+    gap: 8px;
+}
+
+.p-diamond-config__form .p-diamond-input {
+    flex: 1;
+}
+
+/* ==========================================================================
+   2. ダイヤ記録フォーム & 共通インプット・ボタン
+   ========================================================================== */
+.p-diamond-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.p-diamond-form__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.p-diamond-form__group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.p-diamond-form__label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #475569;
+}
+
+.p-diamond-input {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    font-size: 14px;
+    color: #1e293b;
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.p-diamond-input:focus {
+    outline: none;
+    background-color: #ffffff;
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+}
+
+.p-diamond-form__actions {
+    margin-top: 4px;
+}
+
+/* ボタンスタイル */
+.p-diamond-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 18px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.1s ease, background-color 0.2s ease;
+    white-space: nowrap;
+}
+
+.p-diamond-btn:active {
+    transform: translateY(1px);
+}
+
+.p-diamond-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.p-diamond-btn--primary {
+    width: 100%;
+    background-color: #10b981;
+    color: #ffffff;
+}
+
+.p-diamond-btn--primary:hover:not(:disabled) {
+    background-color: #059669;
+}
+
+.p-diamond-btn--secondary {
+    height: 42px;
+    background-color: #475569;
+    color: #ffffff;
+}
+
+.p-diamond-btn--secondary:hover:not(:disabled) {
+    background-color: #334155;
+}
+
+.p-diamond-btn--submit {
+    width: 100%;
+    background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+    color: #ffffff;
+    box-shadow: 0 3px 8px rgba(37, 99, 235, 0.25);
+}
+
+.p-diamond-btn--submit:hover:not(:disabled) {
+    opacity: 0.92;
+}
+
+/* ==========================================================================
+   3. 履歴一覧・推移テーブル
+   ========================================================================== */
+.p-diamond-reload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.p-diamond-reload-btn:hover:not(:disabled) {
+    background-color: #e2e8f0;
+}
+
+.p-diamond-history__message {
+    text-align: center;
+    padding: 28px 12px;
+    font-size: 13px;
+    color: #64748b;
+    background-color: #f8fafc;
+    border-radius: 8px;
+}
+
+.p-diamond-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.p-diamond-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: left;
+}
+
+.p-diamond-table thead {
+    background-color: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.p-diamond-table th {
+    padding: 10px 12px;
+    font-weight: 700;
+    color: #475569;
+    white-space: nowrap;
+}
+
+.p-diamond-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+    vertical-align: middle;
+}
+
+.p-diamond-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.p-diamond-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* 数値列・増減バッジの装飾 */
+.p-diamond-table__date {
+    font-family: monospace;
+    color: #475569;
+    white-space: nowrap;
+}
+
+.p-diamond-table__amount {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.p-diamond-table__diff {
+    font-weight: 700;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.p-diamond-table__diff.is-plus {
+    color: #16a34a;
+    /* 増加：緑 */
+}
+
+.p-diamond-table__diff.is-minus {
+    color: #dc2626;
+    /* 減少：赤 */
+}
+
+.p-diamond-table__diff.is-zero {
+    color: #94a3b8;
+}
+
+.p-diamond-table__memo {
+    color: #475569;
+    min-width: 120px;
+    word-break: break-word;
+}
+
+/* ==========================================================================
+   📱 レスポンシブ調整（スマートフォン表示）
+   ========================================================================== */
+@media (max-width: 480px) {
+    .p-diamond-main {
+        padding: 12px;
+    }
+
+    .p-diamond-form__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .p-diamond-config__form {
+        flex-direction: column;
+    }
+
+    .p-diamond-config__form .p-diamond-btn--secondary {
+        width: 100%;
+    }
+
+    .p-diamond-table th,
+    .p-diamond-table td {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+}
+
+
+/* ==========================================================================
+   4. エリア分け（仕切り線・サブヘッダー・バッジ）追加スタイル
+   ========================================================================== */
+.p-diamond-form__divider-block {
+    padding-top: 14px;
+    border-top: 1px dashed #cbd5e1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.p-diamond-form__sub-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.p-diamond-form__sub-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.p-diamond-form__sub-title i {
+    color: #6366f1;
+}
+
+.p-diamond-badge-manual {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    vertical-align: middle;
+    margin-left: 4px;
+}
+
+.p-diamond-badge-manual {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+.p-diamond-badge-auto {
+    background-color: #e0f2fe;
+    color: #0369a1;
+}
+
+.p-diamond-table__ticket {
+    font-variant-numeric: tabular-nums;
+    color: #334155;
+    white-space: nowrap;
+}

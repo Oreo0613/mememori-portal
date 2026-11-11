@@ -74,7 +74,9 @@ import {
 // Firebaseの初期設定
 const firebaseConfig = {
   apiKey: "AIzaSyCxPoxxpZMYJAF4I_HM-QeZxI120YOg5YA",
-  authDomain: "://firebaseapp.com",
+  // authDomain: "://firebaseapp.com",
+  authDomain: "mememori-potal.firebaseapp.com",
+
   projectId: "mememori-potal",
   storageBucket: "mememori-potal.firebasestorage.app",
   messagingSenderId: "773521822661",
