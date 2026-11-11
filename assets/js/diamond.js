@@ -346,6 +346,11 @@ async function appendHeaderRow(sheetId, tabTitle) {
 }
 
 let cachedWorldRows = [];
+let visibleHistoryLimit = 30;
+let selectedMonthFilter = "all";
+let processedAssetRows = [];
+let diamondChartInstance = null;
+let selectedChartRange = "30";
 
 // ==========================================================================
 // 7. 履歴データの読み込み ＆ 選択日付に応じたフォーム自動反映
@@ -394,6 +399,9 @@ async function loadWorldDiamondHistory() {
     const rows = result.values || [];
 
     cachedWorldRows = rows;
+    visibleHistoryLimit = 30;
+    selectedMonthFilter = "all";
+    populateMonthFilterOptions(rows);
 
     if (rows.length === 0) {
       syncFormWithSelectedDate();
@@ -511,74 +519,141 @@ function syncFormWithSelectedDate() {
   }
 }
 
+/**
+ * 履歴データに存在する年月（YYYY/MM）を抽出し、右上のプルダウンにセットする
+ */
+function populateMonthFilterOptions(rows) {
+  const selectEl = document.getElementById("js-diamond-month-filter");
+  if (!selectEl) return;
+
+  const monthSet = new Set();
+  rows.forEach((row) => {
+    const dateStr = String(row.at(0) || "").trim();
+    const parts = dateStr.split("/");
+    if (parts.length >= 2 && parts.at(0) && parts.at(1)) {
+      monthSet.add(`${parts.at(0)}/${parts.at(1).padStart(2, "0")}`);
+    }
+  });
+
+  const sortedMonths = Array.from(monthSet).sort((a, b) => b.localeCompare(a));
+
+  selectEl.innerHTML = `<option value="all">すべて (${rows.length}件)</option>`;
+  sortedMonths.forEach((ym) => {
+    const [y, m] = ym.split("/");
+    const opt = document.createElement("option");
+    opt.value = ym;
+    opt.textContent = `${y}年${Number(m)}月`;
+    selectEl.appendChild(opt);
+  });
+
+  selectEl.value = "all";
+  selectEl.classList.remove("is-hidden");
+}
+
 function renderHistoryTable(rows) {
   const messageEl = document.getElementById("js-diamond-history-message");
   const tableWrap = document.getElementById("js-diamond-table-wrap");
   const tbody = document.getElementById("js-diamond-history-tbody");
+  const moreWrap = document.getElementById("js-diamond-more-wrap");
+  const moreBtn = document.getElementById("js-diamond-more-btn");
 
   if (!tbody || !tableWrap || !messageEl) return;
 
   tbody.innerHTML = "";
 
-  // 古い順のまま1行ずつ「前回比」を自動計算してから、新しい順（逆順）に並べ替える
-  const processedRows = rows.map((row, index) => {
-    const currentAmount =
-      row[1] !== undefined && row[1] !== ""
-        ? Number(String(row[1]).replace(/,/g, ""))
+  // 1. 日付の古い順にソートして、各行の「ガチャ資産」と「前日比（当日のガチャ資産 - 前日のガチャ資産）」を計算
+  const sortedAsc = [...rows].sort((a, b) =>
+    String(a.at(0) || "").localeCompare(String(b.at(0) || "")),
+  );
+
+  const processedRows = sortedAsc.map((row, index) => {
+    const diamondVal =
+      row.at(1) !== undefined && row.at(1) !== ""
+        ? Number(String(row.at(1)).replace(/,/g, ""))
         : NaN;
+    const fateVal =
+      row.at(2) !== undefined && row.at(2) !== ""
+        ? Number(String(row.at(2)).replace(/,/g, ""))
+        : 0;
+    const guidanceVal =
+      row.at(3) !== undefined && row.at(3) !== ""
+        ? Number(String(row.at(3)).replace(/,/g, ""))
+        : 0;
 
-    let diffNum = null;
-    if (index > 0 && !isNaN(currentAmount)) {
-      const prevRow = rows[index - 1];
-      const prevAmount =
-        prevRow[1] !== undefined && prevRow[1] !== ""
-          ? Number(String(prevRow[1]).replace(/,/g, ""))
-          : NaN;
-      if (!isNaN(prevAmount)) {
-        diffNum = currentAmount - prevAmount;
-      }
-    }
+    // ガチャ資産 ＝ ダイヤ ＋ 運命チケット×500 ＋ 導きチケット×500
+    const totalAsset = !isNaN(diamondVal)
+      ? diamondVal +
+        (isNaN(fateVal) ? 0 : fateVal) * 500 +
+        (isNaN(guidanceVal) ? 0 : guidanceVal) * 500
+      : NaN;
 
-    return { row, currentAmount, diffNum };
+    return { row, diamondVal, totalAsset, diffNum: null };
   });
 
-  const reversedRows = processedRows.reverse();
+  // 2. 前日比の算出（1つ前の記録のガチャ資産との差分）
+  for (let i = 1; i < processedRows.length; i++) {
+    const currAsset = processedRows[i].totalAsset;
+    const prevAsset = processedRows[i - 1].totalAsset;
+    if (!isNaN(currAsset) && !isNaN(prevAsset)) {
+      processedRows[i].diffNum = currAsset - prevAsset;
+    }
+  }
 
-  reversedRows.forEach(({ row, currentAmount, diffNum }) => {
-    const dateStr = row[0] || "-";
+  // グラフ用に計算済みデータ（古い順）を保持して独立グラフを描画
+  processedAssetRows = processedRows;
+  renderAssetChart();
+
+  // 3. 新しい順（逆順）に並べ替え（元の配列を壊さないようコピーしてから反転）
+  let displayTargets = [...processedRows].reverse();
+
+  // 4. 年月フィルターが選択されている場合は該当月のみに絞り込み
+  if (selectedMonthFilter !== "all") {
+    displayTargets = displayTargets.filter(({ row }) => {
+      const dateStr = String(row.at(0) || "").trim();
+      const parts = dateStr.split("/");
+      if (parts.length < 2) return false;
+      const ym = `${parts.at(0)}/${parts.at(1).padStart(2, "0")}`;
+      return ym === selectedMonthFilter;
+    });
+  }
+
+  const totalCount = displayTargets.length;
+  const slicedTargets = displayTargets.slice(0, visibleHistoryLimit);
+
+  slicedTargets.forEach(({ row, diamondVal, totalAsset, diffNum }) => {
+    const dateStr = row.at(0) || "-";
     const fateStr =
-      row[2] !== undefined && row[2] !== ""
-        ? Number(row[2]).toLocaleString()
+      row.at(2) !== undefined && row.at(2) !== ""
+        ? Number(row.at(2)).toLocaleString()
         : "-";
     const guidanceStr =
-      row[3] !== undefined && row[3] !== ""
-        ? Number(row[3]).toLocaleString()
+      row.at(3) !== undefined && row.at(3) !== ""
+        ? Number(row.at(3)).toLocaleString()
         : "-";
     const oracleStr =
-      row[4] !== undefined && row[4] !== ""
-        ? Number(row[4]).toLocaleString()
+      row.at(4) !== undefined && row.at(4) !== ""
+        ? Number(row.at(4)).toLocaleString()
         : "-";
     const arcanaStr =
-      row[5] !== undefined && row[5] !== ""
-        ? Number(row[5]).toLocaleString()
+      row.at(5) !== undefined && row.at(5) !== ""
+        ? Number(row.at(5)).toLocaleString()
         : "-";
-    const memoStr = row[6] || "";
+    const memoStr = row.at(6) || "";
 
     const tr = document.createElement("tr");
+    tr.dataset.date = dateStr;
 
-    // A列：記録日
+    // 1列目：記録日
     const tdDate = document.createElement("td");
     tdDate.className = "p-diamond-table__date";
     tdDate.textContent = dateStr;
 
-    // B列：所持ダイヤ数
-    const tdAmount = document.createElement("td");
-    tdAmount.className = "p-diamond-table__amount";
-    tdAmount.textContent = isNaN(currentAmount)
-      ? row[1] || "-"
-      : currentAmount.toLocaleString();
+    // 2列目：ガチャ資産（ダイヤ + 運命×500 + 導き×500）
+    const tdAsset = document.createElement("td");
+    tdAsset.className = "p-diamond-table__asset";
+    tdAsset.textContent = isNaN(totalAsset) ? "-" : totalAsset.toLocaleString();
 
-    // 画面表示用に自動計算した「前回比」
+    // 3列目：前日比（当日のガチャ資産 - 前日のガチャ資産）
     const tdDiff = document.createElement("td");
     tdDiff.className = "p-diamond-table__diff";
     if (diffNum !== null) {
@@ -597,7 +672,14 @@ function renderHistoryTable(rows) {
       tdDiff.classList.add("is-zero");
     }
 
-    // C〜F列：各種チケット
+    // 4列目：所持ダイヤ数
+    const tdAmount = document.createElement("td");
+    tdAmount.className = "p-diamond-table__amount";
+    tdAmount.textContent = isNaN(diamondVal)
+      ? row.at(1) || "-"
+      : diamondVal.toLocaleString();
+
+    // 5〜8列目：各種チケット
     const createTicketCell = (val) => {
       const td = document.createElement("td");
       td.className = "p-diamond-table__ticket";
@@ -605,14 +687,15 @@ function renderHistoryTable(rows) {
       return td;
     };
 
-    // G列：メモ
+    // 9列目：メモ
     const tdMemo = document.createElement("td");
     tdMemo.className = "p-diamond-table__memo";
     tdMemo.textContent = memoStr;
 
     tr.appendChild(tdDate);
-    tr.appendChild(tdAmount);
+    tr.appendChild(tdAsset);
     tr.appendChild(tdDiff);
+    tr.appendChild(tdAmount);
     tr.appendChild(createTicketCell(fateStr));
     tr.appendChild(createTicketCell(guidanceStr));
     tr.appendChild(createTicketCell(oracleStr));
@@ -621,6 +704,18 @@ function renderHistoryTable(rows) {
 
     tbody.appendChild(tr);
   });
+
+  // 「もっと見る」ボタンの表示・非表示制御
+  if (moreWrap && moreBtn) {
+    const remaining = totalCount - slicedTargets.length;
+    if (remaining > 0) {
+      const nextBatch = Math.min(30, remaining);
+      moreBtn.innerHTML = `<i class="fa-solid fa-chevron-down"></i> 次の${nextBatch}件を表示（残り${remaining}件）`;
+      moreWrap.classList.remove("is-hidden");
+    } else {
+      moreWrap.classList.add("is-hidden");
+    }
+  }
 
   messageEl.classList.add("is-hidden");
   tableWrap.classList.remove("is-hidden");
@@ -791,12 +886,17 @@ function updateConfigUIState(isLinked, sheetId) {
     }
   }
 }
-
 function showHistoryMessage(text) {
   const messageEl = document.getElementById("js-diamond-history-message");
   const tableWrap = document.getElementById("js-diamond-table-wrap");
+  const moreWrap = document.getElementById("js-diamond-more-wrap");
+  const selectEl = document.getElementById("js-diamond-month-filter");
+  const chartSection = document.getElementById("js-diamond-chart-section");
 
   if (tableWrap) tableWrap.classList.add("is-hidden");
+  if (moreWrap) moreWrap.classList.add("is-hidden");
+  if (selectEl) selectEl.classList.add("is-hidden");
+  if (chartSection) chartSection.classList.add("is-hidden");
   if (messageEl) {
     messageEl.textContent = text;
     messageEl.classList.remove("is-hidden");
@@ -804,10 +904,38 @@ function showHistoryMessage(text) {
 }
 
 function bindUIEvents() {
+  // グラフ表示期間プルダウン変更時（bindUIEvents の中に追加）
+  const chartRangeSelect = document.getElementById("js-diamond-chart-range");
+  if (chartRangeSelect) {
+    chartRangeSelect.addEventListener("change", (e) => {
+      selectedChartRange = e.target.value;
+      renderAssetChart();
+    });
+  }
+
   // 記録日のカレンダー変更時にフォーム内容を自動同期
   const dateInput = document.getElementById("js-diamond-input-date");
   if (dateInput) {
     dateInput.addEventListener("change", syncFormWithSelectedDate);
+  }
+
+  // 年月フィルター変更時
+  const monthFilter = document.getElementById("js-diamond-month-filter");
+  if (monthFilter) {
+    monthFilter.addEventListener("change", (e) => {
+      selectedMonthFilter = e.target.value;
+      visibleHistoryLimit = 30;
+      renderHistoryTable(cachedWorldRows);
+    });
+  }
+
+  // もっと見る（次の30件）ボタンクリック時
+  const moreBtn = document.getElementById("js-diamond-more-btn");
+  if (moreBtn) {
+    moreBtn.addEventListener("click", () => {
+      visibleHistoryLimit += 30;
+      renderHistoryTable(cachedWorldRows);
+    });
   }
 
   // アコーディオン開閉
@@ -860,4 +988,251 @@ function bindUIEvents() {
   window.addEventListener("appWorldChanged", async () => {
     await loadWorldDiamondHistory();
   });
+}
+
+// ==========================================================================
+// 10. 独立グラフセクション描画（資産合計 ＆ 前日比）
+// ==========================================================================
+function renderAssetChart() {
+  const chartSection = document.getElementById("js-diamond-chart-section");
+  const canvas = document.getElementById("js-diamond-chart");
+  if (!chartSection || !canvas || typeof Chart === "undefined") return;
+
+  if (!Array.isArray(processedAssetRows) || processedAssetRows.length === 0) {
+    chartSection.classList.add("is-hidden");
+    return;
+  }
+
+  chartSection.classList.remove("is-hidden");
+
+  // 選択された表示期間（直近30件 / 直近90件 / すべて）で切り出し
+  let targetList = processedAssetRows;
+  if (selectedChartRange !== "all") {
+    const limit = Number(selectedChartRange);
+    if (!isNaN(limit) && limit > 0) {
+      targetList = processedAssetRows.slice(-limit);
+    }
+  }
+
+  const labels = targetList.map(({ row }) => {
+    const rawDate = String(row.at(0) || "");
+    const parts = rawDate.split("/");
+    return parts.length === 3 ? `${parts.at(1)}/${parts.at(2)}` : rawDate;
+  });
+
+  const assetData = targetList.map(({ totalAsset }) =>
+    isNaN(totalAsset) ? null : totalAsset,
+  );
+
+  const diffData = targetList.map(({ diffNum }) =>
+    diffNum !== null ? diffNum : 0,
+  );
+  const diffColors = diffData.map((val) =>
+    val >= 0 ? "rgba(22, 163, 74, 0.55)" : "rgba(220, 38, 38, 0.55)",
+  );
+
+  if (diamondChartInstance) {
+    diamondChartInstance.destroy();
+  }
+
+  const ctx = canvas.getContext("2d");
+
+  // 縦書きラベルを描画するカスタムプラグイン
+  const verticalAxisTitlePlugin = {
+    id: "verticalAxisTitle",
+    afterDraw(chart) {
+      const { ctx, chartArea } = chart;
+      if (!chartArea) return;
+
+      const drawVerticalText = (text, x, color) => {
+        ctx.save();
+        ctx.font = "bold 11px sans-serif";
+        ctx.fillStyle = color;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        const chars = text.split("");
+        const lineHeight = 14;
+        const totalHeight = chars.length * lineHeight;
+        const centerY = (chartArea.top + chartArea.bottom) / 2;
+        let currentY = centerY - totalHeight / 2 + lineHeight / 2;
+
+        chars.forEach((char) => {
+          ctx.fillText(char, x, currentY);
+          currentY += lineHeight;
+        });
+        ctx.restore();
+      };
+
+      // 左端に「資産合計」を縦書き描画
+      drawVerticalText("資産合計", 10, "#0284c7");
+      // 右端に「前日比」を縦書き描画
+      drawVerticalText("前日比", chart.width - 10, "#475569");
+    },
+  };
+
+  diamondChartInstance = new Chart(ctx, {
+    plugins: [verticalAxisTitlePlugin],
+    data: {
+      labels,
+      datasets: [
+        {
+          type: "line",
+          label: "ガチャ資産合計",
+          data: assetData,
+          borderColor: "#0284c7",
+          backgroundColor: "rgba(2, 132, 199, 0.12)",
+          borderWidth: 2.5,
+          pointRadius: targetList.length > 60 ? 1.5 : 3,
+          pointBackgroundColor: "#0284c7",
+          tension: 0.2,
+          fill: true,
+          yAxisID: "yAsset",
+          order: 1,
+        },
+        {
+          type: "bar",
+          label: "前日比",
+          data: diffData,
+          backgroundColor: diffColors,
+          borderRadius: 3,
+          yAxisID: "yDiff",
+          order: 2,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: {
+        padding: {
+          left: 18,
+          right: 18,
+        },
+      },
+      interaction: {
+        mode: "index",
+        intersect: false,
+      },
+      // 👇 ここから追加：棒や点にカーソルを合わせたときに指マークにする
+      onHover: (event, elements) => {
+        if (event.native && event.native.target) {
+          event.native.target.style.cursor =
+            elements.length > 0 ? "pointer" : "default";
+        }
+      },
+      // 👇 ここから追加：クリックされた日付の履歴行へジャンプする
+      onClick: (event, elements) => {
+        if (!elements || elements.length === 0) return;
+        const dataIndex = elements.at(0).index;
+        const clickedItem = targetList.at(dataIndex);
+        if (clickedItem && clickedItem.row) {
+          const fullDateStr = String(clickedItem.row.at(0) || "").trim();
+          scrollToHistoryRowByDate(fullDateStr);
+        }
+      },
+
+      plugins: {
+        legend: {
+          position: "top",
+          labels: {
+            boxWidth: 12,
+            font: { size: 11, weight: "bold" },
+          },
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const val = context.parsed.y;
+              if (val === null) return "";
+              const prefix =
+                context.dataset.yAxisID === "yDiff" && val > 0 ? "+" : "";
+              return `${context.dataset.label}: ${prefix}${val.toLocaleString()}`;
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          ticks: { font: { size: 10 }, maxRotation: 0 },
+          grid: { display: false },
+        },
+        yAsset: {
+          type: "linear",
+          position: "left",
+          title: {
+            display: false,
+          },
+          ticks: {
+            font: { size: 10 },
+            callback: (val) => val.toLocaleString(),
+          },
+        },
+        yDiff: {
+          type: "linear",
+          position: "right",
+          title: {
+            display: false,
+          },
+          grid: {
+            drawOnChartArea: false,
+          },
+          ticks: {
+            font: { size: 10 },
+            callback: (val) =>
+              val > 0 ? `+${val.toLocaleString()}` : val.toLocaleString(),
+          },
+        },
+      },
+    },
+  });
+}
+
+// ==========================================================================
+// 11. グラフクリック時の該当履歴行へのスクロール ＆ ハイライト
+// ==========================================================================
+function scrollToHistoryRowByDate(targetDate) {
+  if (!targetDate) return;
+
+  // 1. 年月フィルターがかかっていて該当月以外が隠れている場合は「すべて」に戻す
+  const selectEl = document.getElementById("js-diamond-month-filter");
+  if (selectedMonthFilter !== "all") {
+    selectedMonthFilter = "all";
+    if (selectEl) selectEl.value = "all";
+  }
+
+  // 2. 新しい順で何番目にあるか調べ、現在の表示件数（visibleHistoryLimit）より後ろなら拡張する
+  const reversedAll = [...processedAssetRows].reverse();
+  const targetIndex = reversedAll.findIndex(
+    (item) => String(item.row.at(0) || "").trim() === targetDate,
+  );
+
+  if (targetIndex === -1) return;
+
+  if (targetIndex >= visibleHistoryLimit) {
+    visibleHistoryLimit = targetIndex + 10;
+  }
+
+  // テーブルを再描画して該当行を確実にDOM上に生成する
+  renderHistoryTable(cachedWorldRows);
+
+  // 3. 該当行（tr[data-date="YYYY/MM/DD"]）を取得して画面中央へスクロール
+  const tbody = document.getElementById("js-diamond-history-tbody");
+  if (!tbody) return;
+
+  const targetRow = tbody.querySelector(`tr[data-date="${targetDate}"]`);
+  if (!targetRow) return;
+
+  // 既存のハイライトをすべて解除
+  tbody.querySelectorAll("tr.is-highlighted").forEach((el) => {
+    el.classList.remove("is-highlighted");
+  });
+
+  targetRow.scrollIntoView({ behavior: "smooth", block: "center" });
+  targetRow.classList.add("is-highlighted");
+
+  // 2.5秒後にハイライトを自然に消す
+  setTimeout(() => {
+    targetRow.classList.remove("is-highlighted");
+  }, 2500);
 }

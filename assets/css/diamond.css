@@ -16,15 +16,8 @@
 }
 
 .p-diamond-main {
-    max-width: 720px;
     margin: 0 auto;
     padding: 16px;
-}
-
-.p-diamond__content {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
 }
 
 /* ==========================================================================
@@ -239,6 +232,10 @@
     gap: 14px;
 }
 
+.p-diamond-form-area {
+    padding-block: 32px;
+}
+
 .p-diamond-form__grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -267,6 +264,11 @@
     border: 1px solid #cbd5e1;
     border-radius: 8px;
     transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.p-diamond-input--textarea {
+    text-align: left;
+    height: 80px;
 }
 
 .p-diamond-input:focus {
@@ -531,4 +533,111 @@
     font-variant-numeric: tabular-nums;
     color: #334155;
     white-space: nowrap;
+}
+
+.p-diamond__content {
+    display: flex;
+    gap: 64px;
+}
+
+.p-diamond__column-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.p-diamond__column-right {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+/* ==========================================================================
+   5. 履歴フィルター（年月プルダウン）＆ もっと見るボタン
+   ========================================================================== */
+.p-diamond-history__controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.p-diamond-month-select {
+    height: 30px;
+    padding: 0 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #334155;
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.p-diamond-month-select:focus {
+    outline: none;
+    border-color: #0ea5e9;
+}
+
+.p-diamond-more-wrap {
+    margin-top: 12px;
+    text-align: center;
+}
+
+.p-diamond-more-btn {
+    width: 100%;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #475569;
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.p-diamond-more-btn:hover {
+    background-color: #e2e8f0;
+    color: #1e293b;
+}
+
+/* ==========================================================================
+   6. 資産合計列のスタイル
+   ========================================================================== */
+.p-diamond-table__asset {
+    font-weight: 800;
+    color: #0369a1;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+
+/* ==========================================================================
+   7. 資産推移グラフセクション（独立カード）
+   ========================================================================== */
+.p-diamond-chart-wrap {
+    position: relative;
+    width: 100%;
+    height: 270px;
+}
+
+@media (max-width: 600px) {
+    .p-diamond-chart-wrap {
+        height: 220px;
+    }
+}
+
+
+/* ==========================================================================
+   8. グラフクリック時の該当行ハイライト演出
+   ========================================================================== */
+.p-diamond-table tbody tr.is-highlighted {
+    background-color: #bae6fd !important;
+    transition: background-color 0.4s ease;
 }

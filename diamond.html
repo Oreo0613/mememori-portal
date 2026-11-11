@@ -15,6 +15,7 @@
 
     <script src="assets/js/main.js" type="module"></script>
     <script src="assets/js/diamond.js" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -28,197 +29,240 @@
         <main class="l-main p-diamond">
             <div class="p-diamond-main">
                 <div class="p-diamond__content">
-
-
-
-                    <section class="p-diamond-section p-diamond-config">
-                        <button type="button" id="js-diamond-config-toggle" class="p-diamond-config__toggle"
-                            aria-expanded="false">
-                            <span class="p-diamond-config__toggle-title">
-                                <i class="fa-solid fa-table"></i> スプレッドシート連携設定
-                            </span>
-                            <span id="js-diamond-sheet-status" class="p-diamond-config__status">確認中...</span>
-                            <i class="fa-solid fa-chevron-down p-diamond-config__arrow"></i>
-                        </button>
-
-                        <div id="js-diamond-config-body" class="p-diamond-config__body is-hidden">
-                            <p class="p-diamond-config__desc">
-                                ダイヤの履歴データは、あなた自身のGoogleドライブ内のスプレッドシートに直接保存されます。
-                            </p>
-
-                            <!-- 連携済みのシート情報表示（連携後に出現） -->
-                            <div id="js-diamond-linked-info" class="p-diamond-config__linked is-hidden">
-                                <div class="p-diamond-config__linked-row">
-                                    <span class="p-diamond-config__linked-label">連携中シートID：</span>
-                                    <code id="js-diamond-current-sheet-id" class="p-diamond-config__linked-id"></code>
-                                </div>
-                                <a id="js-diamond-open-sheet-link" href="#" target="_blank" rel="noopener noreferrer"
-                                    class="p-diamond-config__external-btn">
-                                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Googleスプレッドシートを開く
-                                </a>
-                            </div>
-
-                            <!-- 新規自動作成アクション -->
-                            <div class="p-diamond-config__block">
-                                <h2 class="p-diamond-config__sub-title">新しく専用シートを作成して連携</h2>
-                                <button type="button" id="js-diamond-create-sheet-btn"
-                                    class="p-diamond-btn p-diamond-btn--primary">
-                                    <i class="fa-solid fa-file-circle-plus"></i> スプレッドシートを新規自動作成
-                                </button>
-                            </div>
-
-                            <!-- 既存スプレッドシート連携フォーム -->
-                            <div class="p-diamond-config__block">
-                                <h2 class="p-diamond-config__sub-title">既存のスプレッドシートと紐づける</h2>
-                                <form id="js-diamond-link-form" class="p-diamond-config__form">
-                                    <input type="text" id="js-diamond-sheet-input" class="p-diamond-input"
-                                        placeholder="スプレッドシートのURL または ID を貼り付け" required />
-                                    <button type="submit" id="js-diamond-link-submit-btn"
-                                        class="p-diamond-btn p-diamond-btn--secondary">
-                                        紐づける
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </section>
-                    <!-- =========================================================
-                         2. ダイヤ・ガチャチケット記録フォーム（入力エリア）
-                         ========================================================= -->
-                    <section class="p-diamond-section p-diamond-form-area">
-                        <div class="p-diamond-section__header">
-                            <h1 class="p-diamond-section__title">
-                                <i class="fa-solid fa-gem"></i> 資産を記録する
-                            </h1>
-                            <span id="js-diamond-target-world-label" class="p-diamond-world-badge">ワールド未選択</span>
-                        </div>
-
-                        <form id="js-diamond-record-form" class="p-diamond-form">
-                            <!-- 基本エリア：記録日 ＆ ダイヤ（手入力） -->
-                            <div class="p-diamond-form__grid">
-                                <div class="p-diamond-form__group">
-                                    <label for="js-diamond-input-date" class="p-diamond-form__label">記録日</label>
-                                    <input type="date" id="js-diamond-input-date" class="p-diamond-input" required />
-                                </div>
-
-                                <div class="p-diamond-form__group">
-                                    <label for="js-diamond-input-amount" class="p-diamond-form__label">
-                                        所持ダイヤ数 <span class="p-diamond-badge-manual">手入力</span>
-                                    </label>
-                                    <input type="number" id="js-diamond-input-amount" class="p-diamond-input"
-                                        placeholder="例: 45000" min="0" inputmode="numeric" required />
-                                </div>
-                            </div>
-
-                            <!-- キャラガチャチケットエリア（前回値自動引き継ぎ） -->
-                            <div class="p-diamond-form__divider-block">
-                                <div class="p-diamond-form__sub-header">
-                                    <span class="p-diamond-form__sub-title">
-                                        <i class="fa-solid fa-ticket"></i> キャラガチャチケット
-                                    </span>
-                                </div>
-
-                                <div class="p-diamond-form__grid">
-                                    <div class="p-diamond-form__group">
-                                        <label for="js-diamond-input-fate" class="p-diamond-form__label">運命チケット</label>
-                                        <input type="number" id="js-diamond-input-fate" class="p-diamond-input"
-                                            placeholder="0" min="0" inputmode="numeric" />
-                                    </div>
-
-                                    <div class="p-diamond-form__group">
-                                        <label for="js-diamond-input-guidance"
-                                            class="p-diamond-form__label">導きチケット</label>
-                                        <input type="number" id="js-diamond-input-guidance" class="p-diamond-input"
-                                            placeholder="0" min="0" inputmode="numeric" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 武具ガチャチケットエリア（仕切り線付き・前回値自動引き継ぎ） -->
-                            <div class="p-diamond-form__divider-block">
-                                <div class="p-diamond-form__sub-header">
-                                    <span class="p-diamond-form__sub-title">
-                                        <i class="fa-solid fa-shield-halved"></i> 武具ガチャチケット
-                                    </span>
-                                </div>
-
-                                <div class="p-diamond-form__grid">
-                                    <div class="p-diamond-form__group">
-                                        <label for="js-diamond-input-oracle"
-                                            class="p-diamond-form__label">信託チケット</label>
-                                        <input type="number" id="js-diamond-input-oracle" class="p-diamond-input"
-                                            placeholder="0" min="0" inputmode="numeric" />
-                                    </div>
-
-                                    <div class="p-diamond-form__group">
-                                        <label for="js-diamond-input-arcana-ticket"
-                                            class="p-diamond-form__label">秘奥チケット</label>
-                                        <input type="number" id="js-diamond-input-arcana-ticket" class="p-diamond-input"
-                                            placeholder="0" min="0" inputmode="numeric" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- メモエリア -->
-                            <div class="p-diamond-form__divider-block">
-                                <div class="p-diamond-form__group">
-                                    <label for="js-diamond-input-memo" class="p-diamond-form__label">メモ（自由入力）</label>
-                                    <input type="text" id="js-diamond-input-memo" class="p-diamond-input"
-                                        placeholder="例: 新魔女ガチャ消費、イベント報酬など" />
-                                </div>
-                            </div>
-
-                            <div class="p-diamond-form__actions">
-                                <button type="submit" id="js-diamond-submit-btn"
-                                    class="p-diamond-btn p-diamond-btn--submit">
-                                    <i class="fa-solid fa-pen-to-square"></i> 記録する
-                                </button>
-                            </div>
-                        </form>
-                    </section>
-
-                    <!-- =========================================================
-                             3. 履歴一覧・推移表示エリア
-                             ========================================================= -->
-                    <section class="p-diamond-section p-diamond-history">
-                        <div class="p-diamond-section__header">
-                            <h2 class="p-diamond-section__title">
-                                <i class="fa-solid fa-clock-rotate-left"></i> 記録履歴
-                            </h2>
-                            <button type="button" id="js-diamond-reload-btn" class="p-diamond-reload-btn"
-                                title="最新データを再取得">
-                                <i class="fa-solid fa-rotate"></i> 再読込
+                    <div class="p-diamond__column-left">
+                        <section class="p-diamond-section p-diamond-config">
+                            <button type="button" id="js-diamond-config-toggle" class="p-diamond-config__toggle"
+                                aria-expanded="false">
+                                <span class="p-diamond-config__toggle-title">
+                                    <i class="fa-solid fa-table"></i> スプレッドシート連携設定
+                                </span>
+                                <span id="js-diamond-sheet-status" class="p-diamond-config__status">確認中...</span>
+                                <i class="fa-solid fa-chevron-down p-diamond-config__arrow"></i>
                             </button>
-                        </div>
 
-                        <!-- 読み込み中・未連携・データなし等の状態メッセージ -->
-                        <div id="js-diamond-history-message" class="p-diamond-history__message">
-                            データを読み込んでいます...
-                        </div>
+                            <div id="js-diamond-config-body" class="p-diamond-config__body is-hidden">
+                                <p class="p-diamond-config__desc">
+                                    ダイヤの履歴データは、あなた自身のGoogleドライブ内のスプレッドシートに直接保存されます。
+                                </p>
 
-                        <!-- 履歴テーブル -->
-                        <div id="js-diamond-table-wrap" class="p-diamond-table-wrap is-hidden">
-                            <table class="p-diamond-table">
-                                <thead>
-                                    <tr>
-                                        <th>記録日</th>
-                                        <th>ダイヤ</th>
-                                        <th>前回比</th>
-                                        <th>運命</th>
-                                        <th>導き</th>
-                                        <th>信託</th>
-                                        <th>秘奥</th>
-                                        <th>メモ</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="js-diamond-history-tbody">
-                                    <!-- JSで動的に行を生成 -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
+                                <!-- 連携済みのシート情報表示（連携後に出現） -->
+                                <div id="js-diamond-linked-info" class="p-diamond-config__linked is-hidden">
+                                    <div class="p-diamond-config__linked-row">
+                                        <span class="p-diamond-config__linked-label">連携中シートID：</span>
+                                        <code id="js-diamond-current-sheet-id"
+                                            class="p-diamond-config__linked-id"></code>
+                                    </div>
+                                    <a id="js-diamond-open-sheet-link" href="#" target="_blank"
+                                        rel="noopener noreferrer" class="p-diamond-config__external-btn">
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i> Googleスプレッドシートを開く
+                                    </a>
+                                </div>
 
+                                <!-- 新規自動作成アクション -->
+                                <div class="p-diamond-config__block">
+                                    <h2 class="p-diamond-config__sub-title">新しく専用シートを作成して連携</h2>
+                                    <button type="button" id="js-diamond-create-sheet-btn"
+                                        class="p-diamond-btn p-diamond-btn--primary">
+                                        <i class="fa-solid fa-file-circle-plus"></i> スプレッドシートを新規自動作成
+                                    </button>
+                                </div>
 
+                                <!-- 既存スプレッドシート連携フォーム -->
+                                <div class="p-diamond-config__block">
+                                    <h2 class="p-diamond-config__sub-title">既存のスプレッドシートと紐づける</h2>
+                                    <form id="js-diamond-link-form" class="p-diamond-config__form">
+                                        <input type="text" id="js-diamond-sheet-input" class="p-diamond-input"
+                                            placeholder="スプレッドシートのURL または ID を貼り付け" required />
+                                        <button type="submit" id="js-diamond-link-submit-btn"
+                                            class="p-diamond-btn p-diamond-btn--secondary">
+                                            紐づける
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </section>
+                        <!-- =========================================================
+                             2. ダイヤ・ガチャチケット記録フォーム（入力エリア）
+                             ========================================================= -->
+                        <section class="p-diamond-section p-diamond-form-area">
+                            <div class="p-diamond-section__header">
+                                <h1 class="p-diamond-section__title">
+                                    <i class="fa-solid fa-gem"></i> 資産を記録する
+                                </h1>
+                                <span id="js-diamond-target-world-label" class="p-diamond-world-badge">ワールド未選択</span>
+                            </div>
 
+                            <form id="js-diamond-record-form" class="p-diamond-form">
+                                <!-- 基本エリア：記録日 ＆ ダイヤ（手入力） -->
+                                <div class="p-diamond-form__grid">
+                                    <div class="p-diamond-form__group">
+                                        <label for="js-diamond-input-date" class="p-diamond-form__label">記録日</label>
+                                        <input type="date" id="js-diamond-input-date" class="p-diamond-input"
+                                            required />
+                                    </div>
+
+                                    <div class="p-diamond-form__group">
+                                        <label for="js-diamond-input-amount" class="p-diamond-form__label">
+                                            所持ダイヤ数 <span class="p-diamond-badge-manual">手入力</span>
+                                        </label>
+                                        <input type="number" id="js-diamond-input-amount" class="p-diamond-input"
+                                            placeholder="例: 45000" min="0" inputmode="numeric" required />
+                                    </div>
+                                </div>
+
+                                <!-- キャラガチャチケットエリア（前回値自動引き継ぎ） -->
+                                <div class="p-diamond-form__divider-block">
+                                    <div class="p-diamond-form__sub-header">
+                                        <span class="p-diamond-form__sub-title">
+                                            <i class="fa-solid fa-ticket"></i> キャラガチャチケット
+                                        </span>
+                                    </div>
+
+                                    <div class="p-diamond-form__grid">
+                                        <div class="p-diamond-form__group">
+                                            <label for="js-diamond-input-fate"
+                                                class="p-diamond-form__label">運命チケット</label>
+                                            <input type="number" id="js-diamond-input-fate" class="p-diamond-input"
+                                                placeholder="0" min="0" inputmode="numeric" />
+                                        </div>
+
+                                        <div class="p-diamond-form__group">
+                                            <label for="js-diamond-input-guidance"
+                                                class="p-diamond-form__label">導きチケット</label>
+                                            <input type="number" id="js-diamond-input-guidance" class="p-diamond-input"
+                                                placeholder="0" min="0" inputmode="numeric" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 武具ガチャチケットエリア（仕切り線付き・前回値自動引き継ぎ） -->
+                                <div class="p-diamond-form__divider-block">
+                                    <div class="p-diamond-form__sub-header">
+                                        <span class="p-diamond-form__sub-title">
+                                            <i class="fa-solid fa-shield-halved"></i> 武具ガチャチケット
+                                        </span>
+                                    </div>
+
+                                    <div class="p-diamond-form__grid">
+                                        <div class="p-diamond-form__group">
+                                            <label for="js-diamond-input-oracle"
+                                                class="p-diamond-form__label">信託チケット</label>
+                                            <input type="number" id="js-diamond-input-oracle" class="p-diamond-input"
+                                                placeholder="0" min="0" inputmode="numeric" />
+                                        </div>
+
+                                        <div class="p-diamond-form__group">
+                                            <label for="js-diamond-input-arcana-ticket"
+                                                class="p-diamond-form__label">秘奥チケット</label>
+                                            <input type="number" id="js-diamond-input-arcana-ticket"
+                                                class="p-diamond-input" placeholder="0" min="0" inputmode="numeric" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- メモエリア -->
+                                <div class="p-diamond-form__divider-block">
+                                    <div class="p-diamond-form__group">
+                                        <label for="js-diamond-input-memo"
+                                            class="p-diamond-form__label">メモ（自由入力）</label>
+                                        <input type="text" id="js-diamond-input-memo"
+                                            class="p-diamond-input p-diamond-input--textarea"
+                                            placeholder="例: 新魔女ガチャ消費、イベント報酬など" />
+                                    </div>
+                                </div>
+
+                                <div class="p-diamond-form__actions">
+                                    <button type="submit" id="js-diamond-submit-btn"
+                                        class="p-diamond-btn p-diamond-btn--submit">
+                                        <i class="fa-solid fa-pen-to-square"></i> 記録する
+                                    </button>
+                                </div>
+                            </form>
+                        </section>
+                    </div>
+                    <div class="p-diamond__column-right">
+                        <!-- =========================================================
+                         3. 資産推移グラフセクション（独立エリア）
+                         ========================================================= -->
+                        <section id="js-diamond-chart-section"
+                            class="p-diamond-section p-diamond-chart-section is-hidden">
+                            <div class="p-diamond-section__header">
+                                <h2 class="p-diamond-section__title">
+                                    <i class="fa-solid fa-chart-line"></i> 資産推移グラフ
+                                </h2>
+
+                                <div class="p-diamond-history__controls">
+                                    <select id="js-diamond-chart-range" class="p-diamond-month-select"
+                                        aria-label="グラフの表示期間">
+                                        <option value="30">直近30件</option>
+                                        <option value="90">直近90件</option>
+                                        <option value="all">すべて</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="p-diamond-chart-wrap">
+                                <canvas id="js-diamond-chart"></canvas>
+                            </div>
+                        </section>
+                        <!-- =========================================================
+                         3. 履歴一覧・推移表示エリア
+                         ========================================================= -->
+                        <section class="p-diamond-section p-diamond-history">
+                            <div class="p-diamond-section__header">
+                                <h2 class="p-diamond-section__title">
+                                    <i class="fa-solid fa-clock-rotate-left"></i> 記録履歴
+                                </h2>
+
+                                <div class="p-diamond-history__controls">
+                                    <select id="js-diamond-month-filter" class="p-diamond-month-select is-hidden"
+                                        aria-label="年月で絞り込み">
+                                        <option value="all">すべて</option>
+                                    </select>
+
+                                    <button type="button" id="js-diamond-reload-btn" class="p-diamond-reload-btn"
+                                        title="最新データを再取得">
+                                        <i class="fa-solid fa-rotate"></i> 再読込
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 読み込み中・未連携・データなし等の状態メッセージ -->
+                            <div id="js-diamond-history-message" class="p-diamond-history__message">
+                                データを読み込んでいます...
+                            </div>
+
+                            <!-- 履歴テーブル -->
+                            <div id="js-diamond-table-wrap" class="p-diamond-table-wrap is-hidden">
+                                <table class="p-diamond-table">
+                                    <thead>
+                                        <tr>
+                                            <th>記録日</th>
+                                            <th>資産合計</th>
+                                            <th>前日比</th>
+                                            <th>ダイヤ</th>
+                                            <th>運命</th>
+                                            <th>導き</th>
+                                            <th>信託</th>
+                                            <th>秘奥</th>
+                                            <th>メモ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="js-diamond-history-tbody">
+                                        <!-- JSで動的に行を生成 -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- もっと見るボタンエリア -->
+                            <div id="js-diamond-more-wrap" class="p-diamond-more-wrap is-hidden">
+                                <button type="button" id="js-diamond-more-btn" class="p-diamond-more-btn">
+                                    <i class="fa-solid fa-chevron-down"></i> 次の30件を表示
+                                </button>
+                            </div>
+                        </section>
+
+                    </div>
                 </div>
             </div>
 

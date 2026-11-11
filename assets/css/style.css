@@ -150,7 +150,7 @@ body.is-modal-open {
         left: 50%;
         transform: translateX(-50%);
         width: 90%;
-        max-width: 320px;
+        max-width: 360px;
         background-color: var(--theme-bg-surface);
         border: 1px solid var(--theme-border-main);
         border-radius: 30px;
