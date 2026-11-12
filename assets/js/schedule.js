@@ -56,7 +56,7 @@ onAuthStateChanged(auth, async (user) => {
 // 🔄 1. ロード処理
 async function loadScheduleData() {
   const user = auth.currentUser;
-  const currentWorldId = sessionStorage.getItem("app_current_world_id");
+  const currentWorldId = localStorage.getItem("app_current_world_id");
   if (!user || !currentWorldId) return;
   try {
     if (!window.arcanaMaster || window.arcanaMaster.length === 0) {
@@ -118,7 +118,7 @@ async function loadScheduleData() {
 // 🔄 2. 保存処理
 async function saveScheduleData() {
   const user = auth.currentUser;
-  const currentWorldId = sessionStorage.getItem("app_current_world_id");
+  const currentWorldId = localStorage.getItem("app_current_world_id");
   if (!user || !currentWorldId) return;
   try {
     const scheduleMap = {};
@@ -697,6 +697,11 @@ function initScheduleEvents() {
     defaultRadio.checked = true; // ラジオボタンのチェックをガチャに変更
     defaultRadio.dispatchEvent(new Event("change")); // 変更イベントを発火させてテーブル表示をガチャに切り替える
   }
+
+  // ヘッダーのワールドセレクター切り替えに連動して再読み込み
+  window.addEventListener("appWorldChanged", async () => {
+    await loadScheduleData();
+  });
 }
 
 // 📋 詳細モーダル動的生成

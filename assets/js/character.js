@@ -56,7 +56,7 @@ window.initUserCharacterTab = async function (
 ) {
   // 🌟【重要解決策】引数、またはセッションストレージのどちらにもまだワールドIDが無い場合は、インフラ側の復元を50msごとに待つ
   const currentActiveWorldId =
-    worldId || sessionStorage.getItem("app_current_world_id");
+    worldId || localStorage.getItem("app_current_world_id");
 
   if (
     ((!masterData || masterData.length === 0) &&
@@ -591,7 +591,7 @@ async function saveAllCharacterRarityData() {
   const updateBtn = document.getElementById("js-character-btn-update");
   if (!updateBtn) return;
 
-  const currentWorldId = sessionStorage.getItem("app_current_world_id");
+  const currentWorldId = localStorage.getItem("app_current_world_id");
 
   // 🧪 【デモ用ガード】クラウドへの無駄な通信をここで完璧にシャットアウト
   if (sessionStorage.getItem("mememori_portal_demo") === "true") {

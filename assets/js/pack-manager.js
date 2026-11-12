@@ -885,7 +885,7 @@ const auth = getAuth();
  */
 async function initAndRenderPackPortal() {
   const activeWorldId =
-    sessionStorage.getItem("app_current_world_id") || "demo_w175";
+    localStorage.getItem("app_current_world_id") || "demo_w175";
   const isDemo = sessionStorage.getItem("mememori_portal_demo") === "true";
 
   if (isDemo) {

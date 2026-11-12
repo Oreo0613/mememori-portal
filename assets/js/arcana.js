@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
 
     currentWorldId =
-      sessionStorage.getItem("app_current_world_id") || "demo_w175";
+      localStorage.getItem("app_current_world_id") || "demo_w175";
     currentUserId = "demo_user"; // デモ用ダミーUIDをセット
 
     // main.js側でロード済みのグローバルキャッシュを参照、無ければ新しくfetch
@@ -153,7 +153,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!currentUserId && !isDemo) return;
 
     const newWorldId =
-      e.detail?.worldId || sessionStorage.getItem("app_current_world_id");
+      e.detail?.worldId || localStorage.getItem("app_current_world_id");
     if (currentWorldId === newWorldId) return;
 
     console.log(
@@ -255,7 +255,7 @@ async function initAndRenderArcana() {
 
     // 🌟 常にセッションストレージから今選択されたばかりの最新のワールドIDを最優先で回収！
     currentWorldId =
-      sessionStorage.getItem("app_current_world_id") || "demo_w175";
+      localStorage.getItem("app_current_world_id") || "demo_w175";
     userArcanaStatusMap = {};
     userCharactersMap = {};
 
@@ -770,7 +770,7 @@ function injectArcanaTotalModal() {
 
     lvInput.addEventListener("input", () => {
       const currentWorldId =
-        sessionStorage.getItem("app_current_world_id") || "w1";
+        localStorage.getItem("app_current_world_id") || "w1";
       const currentStorageKey = `mememori_link_level_${currentWorldId}`;
 
       localStorage.setItem(currentStorageKey, lvInput.value);
@@ -896,7 +896,7 @@ function openTotalEffectsModal() {
   injectArcanaTotalModal();
 
   // 💡 【重要・不具合解決】モーダルを開くたびに、現在のワールドに応じた最新の値をlocalStorageからロードして画面に強制同期する！
-  const currentWorldId = sessionStorage.getItem("app_current_world_id") || "w1";
+  const currentWorldId = localStorage.getItem("app_current_world_id") || "w1";
   const storageKey = `mememori_link_level_${currentWorldId}`;
   const savedLevel = localStorage.getItem(storageKey) || "240";
 
@@ -932,7 +932,7 @@ function initUpdateEvent() {
   if (!updateBtn) return;
 
   updateBtn.addEventListener("click", async () => {
-    const currentWorldId = sessionStorage.getItem("app_current_world_id");
+    const currentWorldId = localStorage.getItem("app_current_world_id");
 
     // 🧪 【デモ用ガード】クラウドへの無駄な通信をここで完璧にシャットアウト
     if (sessionStorage.getItem("mememori_portal_demo") === "true") {

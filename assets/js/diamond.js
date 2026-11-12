@@ -91,6 +91,13 @@ async function requestFreshGoogleToken() {
   const provider = new GoogleAuthProvider();
   provider.addScope(DRIVE_FILE_SCOPE);
 
+  // 現在ログイン中のメールアドレスを指定し、アカウント選択画面をスキップする
+  if (window.auth.currentUser && window.auth.currentUser.email) {
+    provider.setCustomParameters({
+      login_hint: window.auth.currentUser.email,
+    });
+  }
+
   const result = await reauthenticateWithPopup(
     window.auth.currentUser,
     provider,
@@ -101,7 +108,7 @@ async function requestFreshGoogleToken() {
     throw new Error("Googleアクセストークンの取得に失敗しました。");
   }
 
-  sessionStorage.setItem(TOKEN_STORAGE_KEY, credential.accessToken);
+  localStorage.setItem(TOKEN_STORAGE_KEY, credential.accessToken);
   return credential.accessToken;
 }
 
@@ -109,7 +116,7 @@ async function requestFreshGoogleToken() {
  * Google Sheets API へのリクエストラッパー（401期限切れ検知時に自動でトークン更新してリトライ）
  */
 async function fetchSheetsApi(url, options = {}, isRetry = false) {
-  let token = sessionStorage.getItem(TOKEN_STORAGE_KEY);
+  let token = localStorage.getItem(TOKEN_STORAGE_KEY);
 
   // トークンが未保存の場合はポップアップ認証で取得
   if (!token) {
@@ -129,7 +136,7 @@ async function fetchSheetsApi(url, options = {}, isRetry = false) {
     console.log(
       "🔄 アクセストークンの有効期限切れを検知。再認証を実行します...",
     );
-    sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
     await requestFreshGoogleToken();
     return fetchSheetsApi(url, options, true);
   }
@@ -146,10 +153,10 @@ async function fetchSheetsApi(url, options = {}, isRetry = false) {
 // 4. ワールド情報ヘルパー（シートタブ名の生成）
 // ==========================================================================
 function getActiveWorldInfo() {
-  const worldId = sessionStorage.getItem("app_current_world_id");
+  const worldId = localStorage.getItem("app_current_world_id");
   if (!worldId) return null;
 
-  const cachedListStr = sessionStorage.getItem("mememori_world_list");
+  const cachedListStr = localStorage.getItem("mememori_world_list");
   if (cachedListStr) {
     const worlds = JSON.parse(cachedListStr);
     const found = worlds.find((w) => String(w.id) === String(worldId));

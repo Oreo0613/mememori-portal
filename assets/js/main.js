@@ -27,7 +27,7 @@ async function fetchCharacterMaster() {
     }
 
     // 💡 選択中のワールドがあればヘッダーアイコンも再同期
-    const activeWorldId = sessionStorage.getItem("app_current_world_id");
+    const activeWorldId = localStorage.getItem("app_current_world_id");
     const user = auth.currentUser;
     if (user && activeWorldId) {
       const worldDocRef = doc(db, "users", user.uid, "worlds", activeWorldId);
@@ -122,7 +122,7 @@ async function loadWorldList(userId) {
 
     // ----------- 💡 キャッシュ戦略） -----------
     const cacheKey = "mememori_world_list";
-    const cachedData = sessionStorage.getItem(cacheKey);
+    const cachedData = localStorage.getItem(cacheKey);
     let worldsArray = [];
 
     if (cachedData) {
@@ -150,7 +150,7 @@ async function loadWorldList(userId) {
       });
 
       // 取得したデータをセッションストレージに保存
-      sessionStorage.setItem(cacheKey, JSON.stringify(worldsArray));
+      localStorage.setItem(cacheKey, JSON.stringify(worldsArray));
     }
     // -----------------------------------------------------------
 
@@ -163,7 +163,7 @@ async function loadWorldList(userId) {
     }
 
     let activeCount = 0;
-    const cachedWorldId = sessionStorage.getItem("app_current_world_id");
+    const cachedWorldId = localStorage.getItem("app_current_world_id");
 
     // 💡 querySnapshot.forEach から worldsArray.forEach に変更して、以降のUI生成ロジックはそのまま流用
     worldsArray.forEach((worldDoc) => {
@@ -228,7 +228,7 @@ async function loadWorldList(userId) {
           .forEach((b) => b.classList.remove("is-active"));
         button.classList.add("is-active");
 
-        sessionStorage.setItem("app_current_world_id", worldId);
+        localStorage.setItem("app_current_world_id", worldId);
 
         // 🌟【ここを修正】デモモードならFirestoreを叩かずに、JSONデータから即時再マッピングする！
         if (sessionStorage.getItem("mememori_portal_demo") === "true") {
@@ -409,7 +409,7 @@ function checkAccountRegistrationStatus() {
   const addWorldBtn = document.querySelector(".js-create-world");
 
   // アプリ側で手動保存したカスタム名を取得
-  const savedCustomName = sessionStorage.getItem("app_custom_username");
+  const savedCustomName = localStorage.getItem("app_custom_username");
 
   if (!savedCustomName) {
     if (accountTrigger) accountTrigger.classList.add("is-require-setup");
@@ -547,7 +547,7 @@ function initWorldSelectorEvent() {
     const targetAddTrigger = e.target.closest(".js-create-world");
     if (!targetAddTrigger) return;
 
-    const savedCustomName = sessionStorage.getItem("app_custom_username");
+    const savedCustomName = localStorage.getItem("app_custom_username");
     if (!savedCustomName) {
       alert(
         "順番に登録しましょう！まずは「アカウント設定」からカスタムアカウント名を保存してください。",
@@ -597,7 +597,7 @@ function initWorldSelectorEvent() {
 
       const user = auth.currentUser;
       if (user) {
-        const savedCustomName = sessionStorage.getItem("app_custom_username");
+        const savedCustomName = localStorage.getItem("app_custom_username");
         if (inputAccountName) {
           inputAccountName.value = savedCustomName ? savedCustomName : "";
         }
@@ -688,7 +688,7 @@ function initWorldSelectorEvent() {
 
         // ★★★【通信削減】キャッシュを消さずに、手元で合体させて上書き保存する
         const cacheKey = "mememori_world_list";
-        const cachedData = sessionStorage.getItem(cacheKey);
+        const cachedData = localStorage.getItem(cacheKey);
         let worldsArray = cachedData ? JSON.parse(cachedData) : [];
 
         // 必要な項目だけを厳選してキャッシュに混ぜる
@@ -702,10 +702,10 @@ function initWorldSelectorEvent() {
 
         // 数値（サーバー番号）順に綺麗に並び替えてセッションに再格納
         worldsArray.sort((a, b) => a.worldNumber - b.worldNumber);
-        sessionStorage.setItem(cacheKey, JSON.stringify(worldsArray));
+        localStorage.setItem(cacheKey, JSON.stringify(worldsArray));
 
         // セッションに現在選択IDをセット
-        sessionStorage.setItem("app_current_world_id", newWorldRef.id);
+        localStorage.setItem("app_current_world_id", newWorldRef.id);
 
         // フォームリセット
         createWorldForm.reset();
@@ -773,7 +773,7 @@ function initWorldSelectorEvent() {
           '<i class="fa-solid fa-spinner fa-spin"></i> ワールド読込中...';
 
         // 💡 セレクター用のキャッシュをピンポイントで削除！
-        sessionStorage.removeItem("mememori_world_list");
+        localStorage.removeItem("mememori_world_list");
 
         // 💡 [Cache Miss] を発生させて Firestore から強制的に最新の型抜き一覧を再取得
         await loadWorldList(user.uid);
@@ -819,7 +819,7 @@ function initWorldSelectorEvent() {
           modalHeaderName.textContent = newName;
         }
 
-        sessionStorage.setItem("app_custom_username", newName);
+        localStorage.setItem("app_custom_username", newName);
 
         await saveAccountData(user.uid, {
           accountId: user.uid,
@@ -1090,7 +1090,7 @@ function initPortalDashboardEvents() {
         return; // 🛑 ここで処理を終了させてFirestore通信を防ぐ
       }
       const user = auth.currentUser;
-      const currentWorldId = sessionStorage.getItem("app_current_world_id");
+      const currentWorldId = localStorage.getItem("app_current_world_id");
 
       if (!user || !currentWorldId) {
         alert("ワールドが選択されていないか、セッションが切れています。");
@@ -1150,7 +1150,7 @@ function initPortalDashboardEvents() {
 
         // 2. ★★★【通信削減】手元のセッションストレージ（キャッシュ）を部分書き換え★★★
         const cacheKey = "mememori_world_list";
-        const cachedData = sessionStorage.getItem(cacheKey);
+        const cachedData = localStorage.getItem(cacheKey);
 
         if (cachedData) {
           let worldsArray = JSON.parse(cachedData);
@@ -1175,7 +1175,7 @@ function initPortalDashboardEvents() {
             }
 
             // 書き換えた最新の配列をキャッシュに上書き保存
-            sessionStorage.setItem(cacheKey, JSON.stringify(worldsArray));
+            localStorage.setItem(cacheKey, JSON.stringify(worldsArray));
           }
         }
 
@@ -1184,7 +1184,7 @@ function initPortalDashboardEvents() {
 
         // 💡 もし詳細設定で非アクティブ化（アーカイブ化）された場合のUI制御
         if (!isActive) {
-          sessionStorage.removeItem("app_current_world_id");
+          localStorage.removeItem("app_current_world_id");
           document
             .querySelectorAll(".js-world-choice")
             .forEach((b) => b.classList.remove("is-active"));
@@ -1243,7 +1243,7 @@ function initPortalDashboardEvents() {
         return;
       }
       const user = auth.currentUser;
-      const currentWorldId = sessionStorage.getItem("app_current_world_id");
+      const currentWorldId = localStorage.getItem("app_current_world_id");
 
       if (!user || !currentWorldId) {
         alert(
@@ -1280,7 +1280,7 @@ function initPortalDashboardEvents() {
 
         // 2. キャッシュ（セッションストレージ）からも該当のワールドを取り除いて整合性を保つ
         const cacheKey = "mememori_world_list";
-        const cachedData = sessionStorage.getItem(cacheKey);
+        const cachedData = localStorage.getItem(cacheKey);
         if (cachedData) {
           let worldsArray = JSON.parse(cachedData);
           const targetIndex = worldsArray.findIndex(
@@ -1288,12 +1288,12 @@ function initPortalDashboardEvents() {
           );
           if (targetIndex !== -1) {
             worldsArray.splice(targetIndex, 1); // 一軍のキャッシュリストから該当の1件を削除
-            sessionStorage.setItem(cacheKey, JSON.stringify(worldsArray));
+            localStorage.setItem(cacheKey, JSON.stringify(worldsArray));
           }
         }
 
         // 3. セッション上の「現在選択中のワールドID」もクリア
-        sessionStorage.removeItem("app_current_world_id");
+        localStorage.removeItem("app_current_world_id");
 
         alert("ワールドデータをクラウドから完全に削除しました。");
 
@@ -1323,12 +1323,16 @@ document.addEventListener("click", async (e) => {
     if (confirm("ログアウトしますか？")) {
       try {
         console.log("⏳ サインアウト中...");
-        sessionStorage.clear(); // すべてのキャッシュを完全消去して安全にリロード
+        const isDemo =
+          sessionStorage.getItem("mememori_portal_demo") === "true";
+        sessionStorage.clear();
+        localStorage.clear(); // すべてのキャッシュを完全消去して安全にリロード
 
         // デモモードでない場合のみFirebaseのサインアウトを実行
-        if (sessionStorage.getItem("mememori_portal_demo") !== "true") {
+        if (!isDemo) {
           await signOut(auth);
         }
+
         window.location.href = "login.html";
       } catch (error) {
         console.error("❌ ログアウトに失敗しました。原因:", error);
@@ -1355,7 +1359,9 @@ async function initDemoMode() {
     if (!exitBtn.dataset.hasListener) {
       exitBtn.dataset.hasListener = "true";
       exitBtn.addEventListener("click", () => {
-        sessionStorage.clear(); // デモフラグ・ワールド選択キャッシュを全消去
+        sessionStorage.clear();
+        localStorage.clear(); // デモフラグ・ワールド選択キャッシュを全消去
+
         window.location.href = "login.html"; // 即座にログインページへリダイレクト
       });
     }
@@ -1373,7 +1379,7 @@ async function initDemoMode() {
 
     if (modalHeaderName)
       modalHeaderName.textContent = demoDataCache.accountName;
-    sessionStorage.setItem("app_custom_username", demoDataCache.accountName);
+    localStorage.setItem("app_custom_username", demoDataCache.accountName);
 
     // 2. ワールド一覧（セレクター用）の型抜き配列を作ってキャッシュへ注入
     const cacheKey = "mememori_world_list";
@@ -1384,18 +1390,18 @@ async function initDemoMode() {
       characterId: w.characterId,
       isActive: w.isActive,
     }));
-    sessionStorage.setItem(cacheKey, JSON.stringify(demoWorlds));
+    localStorage.setItem(cacheKey, JSON.stringify(demoWorlds));
 
     // 3. UIのワールド一覧を即座にレンダリング（通信0回）
     await loadWorldList("demo_user");
 
     // 4. セッションに現在選択ワールドが無ければ、1つ目のデモワールドを自動セット
-    let activeWorldId = sessionStorage.getItem("app_current_world_id");
+    let activeWorldId = localStorage.getItem("app_current_world_id");
     const foundDemo = demoDataCache.worlds.find((w) => w.id === activeWorldId);
 
     if (!activeWorldId || !foundDemo) {
       activeWorldId = demoDataCache.worlds[0].id;
-      sessionStorage.setItem("app_current_world_id", activeWorldId);
+      localStorage.setItem("app_current_world_id", activeWorldId);
     }
 
     // 5. 選択されたワールドの、詳細なJSONデータをダッシュボードへ流し込む
@@ -1522,7 +1528,7 @@ async function initDemoMode() {
 
 // 🟢 メインの認証状態・デモ状態の総合受付ゲート
 onAuthStateChanged(auth, async (user) => {
-  // 🌟【最優先チェック】セッションストレージにデモフラグがある場合はFirebaseをスキップして爆速起動！
+  // ストレージにデモフラグがある場合はFirebaseをスキップして爆速起動！
   if (sessionStorage.getItem("mememori_portal_demo") === "true") {
     await initDemoMode();
     return;
@@ -1561,17 +1567,17 @@ onAuthStateChanged(auth, async (user) => {
 
       if (accountData && accountData.accountName) {
         const savedCustomName = accountData.accountName;
-        sessionStorage.setItem("app_custom_username", savedCustomName);
+        localStorage.setItem("app_custom_username", savedCustomName);
         if (modalHeaderName) modalHeaderName.textContent = savedCustomName;
       } else {
-        sessionStorage.removeItem("app_custom_username");
+        localStorage.removeItem("app_custom_username");
         if (modalHeaderName) modalHeaderName.textContent = "未設定";
       }
 
       console.log("⏳ [Main: Step 2] ワールド一覧をロード中...");
       await loadWorldList(user.uid);
 
-      const activeWorldId = sessionStorage.getItem("app_current_world_id");
+      const activeWorldId = localStorage.getItem("app_current_world_id");
       if (activeWorldId) {
         console.log(
           `⏳ [Main: Step 3] 選択中ワールド[${activeWorldId}]のデータをロード中...`,
@@ -2833,4 +2839,3 @@ function injectAdminNavigation() {
     setActiveNavigation();
   }
 }
-
