@@ -183,14 +183,11 @@ function renderScheduleTable() {
 
   // ④ グループごとに行を組み立ててテーブルへ追加
   groups.forEach((group) => {
-    // 🏢 グループのタイトル行（仕切り）を生成
-    const groupHeaderTr = document.createElement("tr");
-    groupHeaderTr.className = "p-schedule-table__row-group-title";
-    groupHeaderTr.innerHTML = `<td colspan="15" class="p-schedule-table__group-title-cell">${group.name} (${group.items.length}体)</td>`;
-    tbodyMain.appendChild(groupHeaderTr);
+    let groupTotalDiffSR = 0;
+    let groupTotalRemainingDiamonds = 0;
+    let groupTotalConsumedDiamonds = 0;
 
-    // 🦊 グループに所属する魔女の行を順に生成
-    group.items.forEach((item) => {
+    const itemRows = group.items.map((item) => {
       // 元の scheduleList 内での正しいインデックスを取得（モーダル連動用）
       const originalIndex = scheduleList.findIndex(
         (s) => s.charaId === item.charaId,
@@ -232,6 +229,10 @@ function renderScheduleTable() {
           : (item.historyUnmeiCount || 0) * 500 +
             (item.historyMichiCount || 0) * 500 +
             (item.historyPickupCount || 0) * 300;
+
+      groupTotalDiffSR += diffSR;
+      groupTotalRemainingDiamonds += remainingDiamonds;
+      groupTotalConsumedDiamonds += consumedDiamonds;
 
       const pureGachaSR = currentSR - giftSR;
       const costPerBody =
@@ -497,9 +498,32 @@ function renderScheduleTable() {
       }
 
       tr.appendChild(sparklineCell);
-
-      tbodyMain.appendChild(tr);
+      return tr;
     });
+
+    const groupHeaderTr = document.createElement("tr");
+    groupHeaderTr.className = "p-schedule-table__row-group-title";
+    groupHeaderTr.innerHTML = `
+      <td colspan="2" class="p-schedule-table__group-title-cell p-schedule-table__cell--gacha">
+        ${group.name} (${group.items.length}体)
+      </td>
+      <td colspan="10" class="p-schedule-table__group-title-cell p-schedule-table__cell--evaluation">
+        ${group.name} (${group.items.length}体)
+      </td>
+      <td class="p-schedule-table__group-title-cell p-schedule-table__group-summary-cell p-schedule-table__cell--center p-schedule-table__cell--gacha">
+        <span class="p-schedule-table__group-summary-val">計 ${groupTotalDiffSR} 体</span>
+      </td>
+      <td class="p-schedule-table__group-title-cell p-schedule-table__group-summary-cell p-schedule-table__cell--gacha">
+        <span class="p-schedule-table__group-summary-val p-schedule-table__group-summary-val--alert">${groupTotalRemainingDiamonds.toLocaleString()}</span>
+      </td>
+      <td class="p-schedule-table__group-title-cell p-schedule-table__group-summary-cell p-schedule-table__cell--gacha">
+        <span class="p-schedule-table__group-summary-val">${groupTotalConsumedDiamonds.toLocaleString()}</span>
+      </td>
+      <td colspan="2" class="p-schedule-table__group-title-cell p-schedule-table__cell--gacha"></td>
+    `;
+
+    tbodyMain.appendChild(groupHeaderTr);
+    itemRows.forEach((tr) => tbodyMain.appendChild(tr));
   });
 
   updateSummary();
